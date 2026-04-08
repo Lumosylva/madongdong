@@ -63,7 +63,7 @@ async def get_article_detail(
 async def create_article_endpoint(
     payload: ArticleCreate,
     session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(require_role("author")),
+    current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     article = await create_article(
         session=session,

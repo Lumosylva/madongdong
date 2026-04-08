@@ -113,6 +113,19 @@ async def _ensure_admin_user(session: AsyncSession, admin_role: Role) -> None:
         )
         session.add(admin_user)
         await session.flush()
+        return
+
+    role_names = {role.name for role in admin_user.roles}
+    if "admin" not in role_names:
+        admin_user.roles.append(admin_role)
+        await session.flush()
+
+    author_statement = select(Role).where(Role.name == "author")
+    author_result = await session.execute(author_statement)
+    author_role = author_result.scalar_one_or_none()
+    if author_role is not None and "author" not in role_names:
+        admin_user.roles.append(author_role)
+        await session.flush()
 
 
 async def _ensure_default_site(session: AsyncSession) -> None:

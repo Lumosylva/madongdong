@@ -1,4 +1,13 @@
 [2026-04-08 当前会话]
+- 已修改：app/api/admin/article.py app/api/admin/comment.py app/api/admin/media.py app/api/admin/site.py app/api/admin/auth.py
+- 更改：统一修复后台管理接口返回类型注解过窄的问题，将统一响应接口改为兼容 success(bool) + data(any) 的结构
+- 原因：避免 FastAPI 响应校验将 success=True 错判为类型不匹配，导致 500 Internal Server Error
+- 阻碍因素：无
+- 状态：成功
+
+---
+
+[2026-04-08 当前会话]
 - 已修改：admin/src/views/LoginView.vue admin/src/styles.css
 - 更改：增加登录页自动跳转、登录中禁用态、登录失败错误提示，并补充按钮禁用样式
 - 原因：完善管理员认证链路，避免重复登录与无反馈体验
