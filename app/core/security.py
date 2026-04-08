@@ -4,7 +4,6 @@ from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException, status
-from fastapi.params import Depends as DependsType
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -72,7 +71,29 @@ async def get_current_user(
     return user
 
 
-def require_role(role_name: str) -> Callable[..., DependsType]:
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
+    session: AsyncSession = Depends(get_db_session),
+) -> User | None:
+    """获取可选登录用户。"""
+
+    if credentials is None:
+        return None
+
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        token_data = TokenPayload(**payload)
+    except (JWTError, ValueError):
+        return None
+
+    user = await get_user_by_username(session, token_data.sub)
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
+def require_role(role_name: str) -> Callable:
     """校验用户角色。"""
 
     async def checker(current_user: User = Depends(get_current_user)) -> User:

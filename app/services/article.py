@@ -90,6 +90,38 @@ async def list_articles(session: AsyncSession, current_user: User) -> list[Artic
     return list(result.scalars().unique().all())
 
 
+async def list_published_articles_by_category(session: AsyncSession, slug: str) -> list[Article]:
+    """按分类 slug 查询已发布文章。"""
+
+    statement: Select[tuple[Article]] = (
+        select(Article)
+        .join(Category, Article.category_id == Category.id)
+        .where(
+            Category.slug == slug,
+            Article.status == ArticleStatus.PUBLISHED,
+        )
+        .order_by(Article.published_at.desc(), Article.id.desc())
+    )
+    result = await session.execute(statement)
+    return list(result.scalars().unique().all())
+
+
+async def list_published_articles_by_tag(session: AsyncSession, slug: str) -> list[Article]:
+    """按标签 slug 查询已发布文章。"""
+
+    statement: Select[tuple[Article]] = (
+        select(Article)
+        .join(Article.tags)
+        .where(
+            Tag.slug == slug,
+            Article.status == ArticleStatus.PUBLISHED,
+        )
+        .order_by(Article.published_at.desc(), Article.id.desc())
+    )
+    result = await session.execute(statement)
+    return list(result.scalars().unique().all())
+
+
 async def create_article(
     session: AsyncSession,
     current_user: User,

@@ -6,11 +6,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin.site import router as admin_site_router
 from app.api.admin.article import router as admin_article_router
 from app.api.admin.auth import router as admin_auth_router
 from app.api.admin.comment import router as admin_comment_router
 from app.api.admin.media import router as admin_media_router
 from app.api.health import router as health_router
+from app.api.web import router as web_router
 from app.core.config import settings
 from app.core.init_db import init_db
 
