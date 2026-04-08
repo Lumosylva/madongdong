@@ -23,7 +23,7 @@ router = APIRouter(prefix="/admin/site", tags=["admin-site"])
 async def get_site_setting_endpoint(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     setting = await get_or_create_site_setting(session)
     return success_response(SiteSettingResponse.model_validate(setting).model_dump())
 
@@ -33,7 +33,7 @@ async def update_site_setting_endpoint(
     payload: SiteSettingUpdate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     setting = await update_site_setting(
         session=session,
         site_title=payload.site_title,
@@ -51,7 +51,7 @@ async def update_site_setting_endpoint(
 async def get_nav_items_endpoint(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     items = await list_nav_items(session)
     return success_response([NavItemResponse.model_validate(item).model_dump() for item in items])
 
@@ -61,7 +61,7 @@ async def create_nav_item_endpoint(
     payload: NavItemCreate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     item = await create_nav_item(
         session=session,
         title=payload.title,
@@ -80,7 +80,7 @@ async def update_nav_item_endpoint(
     payload: NavItemUpdate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     item = await update_nav_item(
         session=session,
         nav_id=nav_id,

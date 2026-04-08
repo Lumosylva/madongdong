@@ -17,7 +17,7 @@ router = APIRouter(prefix="/admin/comments", tags=["admin-comments"])
 async def get_comments(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     comments = await list_comments(session)
     return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
 
@@ -27,7 +27,7 @@ async def approve_comment_endpoint(
     comment_id: int,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     comment = await approve_comment(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())
 
@@ -37,6 +37,6 @@ async def reject_comment_endpoint(
     comment_id: int,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     comment = await reject_comment(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())

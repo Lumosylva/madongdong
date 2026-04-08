@@ -41,7 +41,7 @@ router = APIRouter(prefix="/admin", tags=["admin-articles"])
 async def get_articles(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     articles = await list_articles(session, current_user)
     data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
     return success_response(data)
@@ -52,7 +52,7 @@ async def get_article_detail(
     article_id: int,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     article = await get_article_or_404(session, article_id)
     if all(role.name != "admin" for role in current_user.roles) and article.author_id != current_user.id:
         return success_response({})
@@ -64,7 +64,7 @@ async def create_article_endpoint(
     payload: ArticleCreate,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role("author")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     article = await create_article(
         session=session,
         current_user=current_user,
@@ -85,7 +85,7 @@ async def update_article_endpoint(
     payload: ArticleUpdate,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     article = await update_article(
         session=session,
         article_id=article_id,
@@ -107,7 +107,7 @@ async def approve_article_endpoint(
     payload: ArticleReviewRequest,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     article = await approve_article(session, article_id, current_user, payload.comment)
     return success_response(ArticleDetailResponse.model_validate(article).model_dump())
 
@@ -118,7 +118,7 @@ async def reject_article_endpoint(
     payload: ArticleReviewRequest,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     article = await reject_article(session, article_id, current_user, payload.comment)
     return success_response(ArticleDetailResponse.model_validate(article).model_dump())
 
@@ -127,7 +127,7 @@ async def reject_article_endpoint(
 async def get_categories(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     categories = await list_categories(session)
     return success_response([CategoryResponse.model_validate(item).model_dump() for item in categories])
 
@@ -137,7 +137,7 @@ async def create_category_endpoint(
     payload: CategoryCreate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     category = await create_category(session, payload.name, payload.slug, payload.description)
     return success_response(CategoryResponse.model_validate(category).model_dump())
 
@@ -148,7 +148,7 @@ async def update_category_endpoint(
     payload: CategoryUpdate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     category = await update_category(session, category_id, payload.name, payload.slug, payload.description)
     return success_response(CategoryResponse.model_validate(category).model_dump())
 
@@ -157,7 +157,7 @@ async def update_category_endpoint(
 async def get_tags(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     tags = await list_tags(session)
     return success_response([TagResponse.model_validate(item).model_dump() for item in tags])
 
@@ -167,7 +167,7 @@ async def create_tag_endpoint(
     payload: TagCreate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     tag = await create_tag(session, payload.name, payload.slug)
     return success_response(TagResponse.model_validate(tag).model_dump())
 
@@ -178,6 +178,6 @@ async def update_tag_endpoint(
     payload: TagUpdate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_role("admin")),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     tag = await update_tag(session, tag_id, payload.name, payload.slug)
     return success_response(TagResponse.model_validate(tag).model_dump())

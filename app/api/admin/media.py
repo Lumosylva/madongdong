@@ -34,7 +34,7 @@ router = APIRouter(prefix="/admin/media", tags=["admin-media"])
 async def get_media_folders(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     folders = await list_media_folders(session)
     data = [MediaFolderTreeResponse.model_validate(item).model_dump() for item in build_folder_tree(folders)]
     return success_response(data)
@@ -45,7 +45,7 @@ async def create_media_folder_endpoint(
     payload: MediaFolderCreate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     folder = await create_media_folder(session, payload.name, payload.parent_id, payload.sort_order)
     return success_response(MediaFolderResponse.model_validate(folder).model_dump())
 
@@ -56,7 +56,7 @@ async def update_media_folder_endpoint(
     payload: MediaFolderUpdate,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     folder = await update_media_folder(session, folder_id, payload.name, payload.parent_id, payload.sort_order)
     return success_response(MediaFolderResponse.model_validate(folder).model_dump())
 
@@ -65,7 +65,7 @@ async def update_media_folder_endpoint(
 async def get_media_files(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     files = await list_media_files(session, current_user)
     return success_response([MediaResponse.model_validate(item).model_dump() for item in files])
 
@@ -76,7 +76,7 @@ async def upload_media_endpoint(
     folder_id: int | None = Form(default=None),
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     media = await upload_media_file(session, current_user, file, folder_id)
     return success_response(MediaResponse.model_validate(media).model_dump())
 
@@ -86,7 +86,7 @@ async def move_media_endpoint(
     payload: MediaMoveRequest,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, list[dict]]:
+) -> dict[str, object]:
     files = await move_media_files(session, current_user, payload.media_ids, payload.target_folder_id)
     return success_response([MediaResponse.model_validate(item).model_dump() for item in files])
 
@@ -96,6 +96,6 @@ async def delete_media_endpoint(
     payload: MediaBatchDeleteRequest,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
-) -> dict[str, dict]:
+) -> dict[str, object]:
     await delete_media_files(session, current_user, payload.media_ids)
     return success_response({"deleted_ids": payload.media_ids})
