@@ -9,6 +9,8 @@ type WrappedResponse<T> = {
 
 const getToken = () => localStorage.getItem('blog_admin_token') || ''
 
+const clearToken = () => localStorage.removeItem('blog_admin_token')
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
@@ -20,6 +22,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken()
+    }
     throw new Error(await response.text())
   }
 

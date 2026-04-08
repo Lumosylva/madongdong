@@ -1,3 +1,12 @@
+[2026-04-08 当前会话]
+- 已修改：admin/src/views/LoginView.vue admin/src/styles.css
+- 更改：增加登录页自动跳转、登录中禁用态、登录失败错误提示，并补充按钮禁用样式
+- 原因：完善管理员认证链路，避免重复登录与无反馈体验
+- 阻碍因素：一次样式替换定位失败，已重新读取文件后修正
+- 状态：成功
+
+---
+
 任务进度更新：
 [2026-04-08 当前会话]
 - 已修改：app/core/config.py admin/vite.config.ts web/src/styles.css admin/src/styles.css

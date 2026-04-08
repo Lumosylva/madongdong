@@ -16,6 +16,8 @@
         <p class="eyebrow">Admin Console</p>
         <h2>博客运营后台</h2>
         <p>统一管理文章审核、媒体资源、评论审核与站点设置。</p>
+        <p v-if="loading" class="tips">正在同步后台数据...</p>
+        <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </section>
 
       <section class="grid-panels">
@@ -71,9 +73,11 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
 
+const router = useRouter()
 const articles = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
@@ -81,6 +85,8 @@ const siteTitle = ref('')
 const siteSubtitle = ref('')
 const icpBeian = ref('')
 const copyrightText = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
 
 const title = ref('')
 const summary = ref('')
@@ -91,19 +97,33 @@ const tagIdsText = ref('')
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
 
 const loadAll = async () => {
-  const [articleRes, mediaRes, commentRes, siteRes] = await Promise.all([
-    adminApi.getArticles(),
-    adminApi.getMedia(),
-    adminApi.getComments(),
-    adminApi.getSiteSettings(),
-  ])
-  articles.value = articleRes.data
-  media.value = mediaRes.data
-  comments.value = commentRes.data
-  siteTitle.value = siteRes.data.site_title
-  siteSubtitle.value = siteRes.data.site_subtitle || ''
-  icpBeian.value = siteRes.data.icp_beian || ''
-  copyrightText.value = siteRes.data.copyright_text || ''
+  loading.value = true
+  errorMessage.value = ''
+  try {
+    const [articleRes, mediaRes, commentRes, siteRes] = await Promise.all([
+      adminApi.getArticles(),
+      adminApi.getMedia(),
+      adminApi.getComments(),
+      adminApi.getSiteSettings(),
+    ])
+    articles.value = articleRes.data
+    media.value = mediaRes.data
+    comments.value = commentRes.data
+    siteTitle.value = siteRes.data.site_title
+    siteSubtitle.value = siteRes.data.site_subtitle || ''
+    icpBeian.value = siteRes.data.icp_beian || ''
+    copyrightText.value = siteRes.data.copyright_text || ''
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '加载后台数据失败'
+    if (message.includes('401') || message.includes('未提供认证令牌') || message.includes('无效的认证令牌')) {
+      localStorage.removeItem('blog_admin_token')
+      await router.push('/login')
+      return
+    }
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
 }
 
 const saveSite = async () => {
