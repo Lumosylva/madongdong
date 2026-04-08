@@ -3,22 +3,28 @@
     <header class="topbar">
       <div class="brand-block">
         <span class="brand-mark">MD</span>
-        <div>
-          <h1>{{ data.site.site_title }}</h1>
-          <p>{{ data.site.site_subtitle || '记录技术、生活与长期主义' }}</p>
-        </div>
+        <h1>{{ data.site.site_title }}</h1>
       </div>
       <nav class="nav">
         <a v-for="item in data.nav_items" :key="item.id" :href="item.path">{{ item.title }}</a>
       </nav>
       <form class="search-box" @submit.prevent="goSearch">
         <input v-model="keyword" placeholder="搜索文章、摘要与内容" />
-        <button type="submit">Search</button>
+        <button type="submit" aria-label="搜索">
+          <span aria-hidden="true">⌕</span>
+        </button>
+        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
+        </button>
       </form>
     </header>
 
     <main class="layout">
       <section class="content-panel">
+        <div class="hero-intro">
+          <p class="hero-kicker">Personal Dispatches</p>
+          <p class="hero-subtitle">{{ data.site.site_subtitle || '记录技术、生活与长期主义' }}</p>
+        </div>
         <div class="section-head">
           <h2>最新文章</h2>
           <span>第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页</span>
@@ -61,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { webApi } from '../api'
@@ -71,6 +77,18 @@ const router = useRouter()
 const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
+type ThemeMode = 'light' | 'dark'
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (value: ThemeMode) => {
+  theme.value = value
+  document.documentElement.dataset.theme = value
+  localStorage.setItem('md-theme', value)
+}
+
+const toggleTheme = () => {
+  applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
 
 const loadData = async () => {
   data.value = await webApi.getHome(page.value)
@@ -89,5 +107,13 @@ const goSearch = () => {
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString('zh-CN')
 
-onMounted(loadData)
+const themeToggleLabel = computed(() =>
+  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
+)
+
+onMounted(() => {
+  const storedTheme = localStorage.getItem('md-theme')
+  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  loadData()
+})
 </script>

@@ -1,3 +1,13 @@
+任务进度更新：
+[2026-04-08 当前会话]
+- 已修改：app/core/config.py admin/vite.config.ts web/src/styles.css admin/src/styles.css
+- 更改：补充后台开发/预览端口跨域白名单，固定 admin Vite 端口，进一步降低前后台主要卡片和表单元素圆角
+- 原因：修复管理员提交文章时 OPTIONS 400 导致的无响应问题，并继续落实“更低圆角”视觉要求
+- 阻碍因素：一次管理员构建验证被中断，已重跑完成
+- 状态：成功
+
+---
+
 当前执行清单已经全部完成：
 
 - [x] 1. 重构 app/main.py 为 FastAPI 应用入口，并建立基础应用结构。
