@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.admin.article import router as admin_article_router
 from app.api.admin.auth import router as admin_auth_router
 from app.api.health import router as health_router
 from app.core.config import settings
@@ -35,6 +36,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(admin_auth_router, prefix=settings.api_v1_prefix)
+app.include_router(admin_article_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/", summary="应用根路径")

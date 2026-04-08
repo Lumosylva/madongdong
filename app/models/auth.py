@@ -8,6 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 from app.models.base import TimestampMixin
 
+if False:  # pragma: no cover
+    from app.models.article import Article
+
 
 class UserRole(Base):
     """用户与角色关联表。"""
@@ -48,6 +51,7 @@ class User(TimestampMixin, Base):
         back_populates="users",
         lazy="selectin",
     )
+    articles: Mapped[list["Article"]] = relationship(back_populates="author")
 
 
 class Role(TimestampMixin, Base):

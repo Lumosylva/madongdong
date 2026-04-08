@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal, Base, engine
 from app.core.security import get_password_hash
 from app.models.auth import Permission, Role, User
+from app.models.article import Article, Category, Tag
 
 DEFAULT_ROLES = {
     "admin": "系统管理员",
