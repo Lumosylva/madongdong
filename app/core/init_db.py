@@ -1,6 +1,6 @@
 """数据库初始化。"""
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal, Base, engine
@@ -87,17 +87,14 @@ async def _bind_role_permissions(
     roles: dict[str, Role],
     permissions: dict[str, Permission],
 ) -> None:
-    role_permissions = {
-        role.id: [permission.id for permission in role.permissions]
-        for role in roles.values()
-    }
+    role_permission_table = Role.permissions.property.secondary
     for role_name, permission_codes in ROLE_PERMISSION_MAP.items():
         role = roles[role_name]
-        target_permission_ids = [permissions[code].id for code in permission_codes]
-        if role_permissions.get(role.id) == target_permission_ids:
-            continue
-        role.permissions = [permissions[code] for code in permission_codes]
-        session.add(role)
+        await session.execute(delete(role_permission_table).where(role_permission_table.c.role_id == role.id))
+        for code in permission_codes:
+            await session.execute(
+                role_permission_table.insert().values(role_id=role.id, permission_id=permissions[code].id)
+            )
     await session.flush()
 
 

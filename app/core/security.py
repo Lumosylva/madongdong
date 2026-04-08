@@ -15,7 +15,7 @@ from app.models.auth import User
 from app.schemas.auth import TokenPayload
 from app.services.auth import get_user_by_username
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security_scheme = HTTPBearer(auto_error=False)
 
 

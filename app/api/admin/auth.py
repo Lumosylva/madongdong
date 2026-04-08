@@ -17,7 +17,7 @@ router = APIRouter(prefix="/admin/auth", tags=["admin-auth"])
 async def login(
     payload: LoginRequest,
     session: AsyncSession = Depends(get_db_session),
-) -> dict[str, dict[str, str]]:
+) -> dict[str, object]:
     """后台管理员或作者登录。"""
 
     user = await get_user_by_username(session, payload.username)
