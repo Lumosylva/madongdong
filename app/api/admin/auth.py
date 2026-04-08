@@ -37,7 +37,7 @@ async def login(
 
 
 @router.get("/me", summary="获取当前登录用户")
-async def me(current_user: User = Depends(get_current_user)) -> dict[str, dict]:
+async def me(current_user: User = Depends(get_current_user)) -> dict[str, object]:
     """返回当前登录用户信息。"""
 
     return success_response(CurrentUserResponse.model_validate(current_user).model_dump())
