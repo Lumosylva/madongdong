@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
+    upload_dir: str = "app/static/uploads"
+    upload_url_prefix: str = "/uploads"
 
     cors_origins: list[str] = Field(
         default_factory=lambda: [

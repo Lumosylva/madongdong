@@ -7,6 +7,8 @@ from app.core.database import AsyncSessionLocal, Base, engine
 from app.core.security import get_password_hash
 from app.models.auth import Permission, Role, User
 from app.models.article import Article, Category, Tag
+from app.models.comment import Comment
+from app.models.media import MediaFile, MediaFolder
 
 DEFAULT_ROLES = {
     "admin": "系统管理员",
