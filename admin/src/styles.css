@@ -1,0 +1,157 @@
+:root {
+  --bg: #0b1020;
+  --bg-soft: #111a31;
+  --panel: rgba(17, 26, 49, 0.88);
+  --line: rgba(118, 151, 255, 0.16);
+  --text: #eff6ff;
+  --text-soft: #9fb0d8;
+  --accent: #a78bfa;
+  --accent-2: #22d3ee;
+  font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top right, rgba(167, 139, 250, 0.18), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(34, 211, 238, 0.12), transparent 24%),
+    linear-gradient(180deg, #050816 0%, #0b1020 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-card,
+.hero-panel,
+.panel,
+.editor-panel,
+.sidebar {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
+}
+
+.login-card {
+  width: min(440px, calc(100% - 24px));
+  display: grid;
+  gap: 14px;
+  padding: 30px;
+}
+
+.login-card input,
+.login-card button,
+.panel input,
+.editor-panel input,
+.editor-panel textarea,
+.panel button,
+.editor-panel button,
+.editor-panel select {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  padding: 14px 16px;
+  font: inherit;
+}
+
+.login-card button,
+.panel button,
+.editor-panel button {
+  cursor: pointer;
+  border: none;
+  color: #0b1020;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  width: min(1400px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.sidebar {
+  padding: 24px;
+  height: fit-content;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 12px;
+}
+
+.sidebar a {
+  color: var(--text-soft);
+  text-decoration: none;
+}
+
+.dashboard-main {
+  display: grid;
+  gap: 24px;
+}
+
+.hero-panel,
+.editor-panel {
+  padding: 24px;
+}
+
+.grid-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel ul {
+  padding-left: 18px;
+  color: var(--text-soft);
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.editor-panel textarea {
+  min-height: 280px;
+  margin-top: 12px;
+}
+
+.eyebrow,
+.tips {
+  color: var(--text-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-shell,
+  .grid-panels,
+  .action-row {
+    grid-template-columns: 1fr;
+  }
+}

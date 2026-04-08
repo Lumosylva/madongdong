@@ -1,3 +1,5 @@
+import type { ArticlePageResponse, HomeResponse, SearchResponse } from './types'
+
 const API_BASE = 'http://127.0.0.1:8000/api/v1'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
