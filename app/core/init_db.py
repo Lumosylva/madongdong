@@ -50,6 +50,7 @@ async def _seed_defaults(session: AsyncSession) -> None:
     roles = await _ensure_roles(session)
     await _bind_role_permissions(session, roles, permissions)
     await _ensure_admin_user(session, roles["admin"])
+    await _ensure_default_site(session)
     await session.commit()
 
 
@@ -86,8 +87,15 @@ async def _bind_role_permissions(
     roles: dict[str, Role],
     permissions: dict[str, Permission],
 ) -> None:
+    role_permissions = {
+        role.id: [permission.id for permission in role.permissions]
+        for role in roles.values()
+    }
     for role_name, permission_codes in ROLE_PERMISSION_MAP.items():
         role = roles[role_name]
+        target_permission_ids = [permissions[code].id for code in permission_codes]
+        if role_permissions.get(role.id) == target_permission_ids:
+            continue
         role.permissions = [permissions[code] for code in permission_codes]
         session.add(role)
     await session.flush()
@@ -108,3 +116,30 @@ async def _ensure_admin_user(session: AsyncSession, admin_role: Role) -> None:
         )
         session.add(admin_user)
         await session.flush()
+
+
+async def _ensure_default_site(session: AsyncSession) -> None:
+    statement = select(SiteSetting).limit(1)
+    result = await session.execute(statement)
+    site_setting = result.scalar_one_or_none()
+    if site_setting is None:
+        session.add(
+            SiteSetting(
+                site_title="MaDongDong Blog",
+                site_subtitle="记录技术、生活与长期主义",
+                icp_beian="备案信息待配置",
+                copyright_text="© MaDongDong Blog",
+                homepage_page_size=10,
+                comment_requires_review=True,
+            )
+        )
+
+    nav_result = await session.execute(select(NavItem))
+    nav_items = list(nav_result.scalars().all())
+    if not nav_items:
+        session.add_all(
+            [
+                NavItem(title="首页", path="/", sort_order=1, is_visible=True),
+                NavItem(title="搜索", path="/search", sort_order=2, is_visible=True),
+            ]
+        )
