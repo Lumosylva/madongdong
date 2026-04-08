@@ -34,7 +34,12 @@ class Comment(TimestampMixin, Base):
     guest_nickname: Mapped[str | None] = mapped_column(String(100), nullable=True)
     guest_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     content: Mapped[str] = mapped_column(Text)
-    status: Mapped[CommentStatus] = mapped_column(String(20), default=CommentStatus.PENDING, index=True)
+    status: Mapped[CommentStatus] = mapped_column(
+        String(20),
+        default=CommentStatus.PENDING,
+        nullable=False,
+        index=True,
+    )
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
 
     article: Mapped["Article"] = relationship(lazy="selectin")
