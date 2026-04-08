@@ -9,6 +9,7 @@ from app.models.auth import Permission, Role, User
 from app.models.article import Article, Category, Tag
 from app.models.comment import Comment
 from app.models.media import MediaFile, MediaFolder
+from app.models.site import NavItem, SiteSetting
 
 DEFAULT_ROLES = {
     "admin": "系统管理员",

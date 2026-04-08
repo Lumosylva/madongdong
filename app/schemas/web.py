@@ -2,7 +2,7 @@
 
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from pydantic.generics import GenericModel
 
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse, CategoryResponse, TagResponse
@@ -14,6 +14,8 @@ T = TypeVar("T")
 
 class PaginatedResponse(GenericModel, Generic[T]):
     """分页响应。"""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     items: list[T]
     total: int

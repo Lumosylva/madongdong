@@ -1,3 +1,33 @@
+当前执行清单进度：
+
+- [x] 13. 建立站点配置与导航模型及后台管理接口。
+
+- [x] 14. 实现前台首页、文章详情、搜索、评论列表与评论提交等公开接口。
+
+- [ ] 15. 初始化 web 前台 Vue 项目并实现首页、文章详情、搜索与评论页面。
+
+- [ ] 16. 初始化 admin 后台 Vue 项目并实现登录、仪表盘、文章管理、文章编辑、媒体库、用户管理、评论管理、站点设置页面。
+
+- [ ] 17. 补充 pyproject.toml 依赖、项目说明与启动部署文档。
+
+- [ ] 18. 补充基础测试并完成关键流程验证。
+
+任务进度更新：
+
+[2026-04-08 当前会话]
+
+\- 已修改：app/models/site.py app/schemas/site.py app/schemas/web.py app/services/site.py app/services/web.py app/api/admin/site.py app/api/web.py app/core/security.py app/main.py app/core/init_db.py app/services/article.py
+
+\- 更改：完成站点配置与导航模型、后台站点接口、前台首页/详情/搜索/评论公开接口，并将站点与前台路由接入主应用
+
+\- 原因：落实已批准计划的第 13-14 项，为 Vue 前台与后台页面接入提供稳定 API 基础
+
+\- 阻碍因素：前台分页泛型响应触发 Pydantic 对 SQLAlchemy 模型的 schema 生成错误，已修正
+
+\- 状态：成功
+
+---
+
 本阶段已完成的执行清单：
 
 - [x] 10. 建立媒体目录树与媒体文件模型。

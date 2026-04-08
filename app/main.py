@@ -45,6 +45,8 @@ app.include_router(admin_auth_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_article_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_media_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_comment_router, prefix=settings.api_v1_prefix)
+app.include_router(admin_site_router, prefix=settings.api_v1_prefix)
+app.include_router(web_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/", summary="应用根路径")
