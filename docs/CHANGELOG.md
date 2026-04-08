@@ -1,3 +1,27 @@
+本阶段已完成的执行清单：
+
+- [x] 10. 建立媒体目录树与媒体文件模型。
+
+- [x] 11. 实现媒体上传、目录管理、图片缩略图占位、批量管理接口。
+
+- [x] 12. 建立评论模型并实现匿名评论、登录评论、评论审核接口中的后台部分。
+
+任务进度更新：
+
+[2026-04-08 当前会话]
+
+\- 已修改：app/models/media.py app/models/comment.py app/schemas/media.py app/schemas/comment.py app/services/media.py app/services/comment.py app/api/admin/media.py app/api/admin/comment.py app/core/config.py app/main.py app/core/init_db.py
+
+\- 更改：完成媒体树形目录、媒体文件上传与批量管理、评论模型、匿名/登录评论业务基础、后台评论审核接口，并接入静态上传访问
+
+\- 原因：落实已批准计划的第 10-12 项，为后续前台公开接口和 Vue 前后台接入提供媒体与评论基础能力
+
+\- 阻碍因素：媒体模型前向引用导致 SQLAlchemy 注解解析失败，已修正
+
+\- 状态：成功
+
+---
+
 完成了：
 
 - 本阶段新增与修改文件的静态诊断，当前无 linter 错误；
