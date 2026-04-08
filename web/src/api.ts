@@ -20,14 +20,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const webApi = {
-  getHome(page = 1) {
-    return request('/web/home?page=' + page)
+  getHome(page = 1): Promise<HomeResponse> {
+    return request<HomeResponse>('/web/home?page=' + page)
   },
-  getArticle(articleId: string | number) {
-    return request(`/web/articles/${articleId}`)
+  getArticle(articleId: string | number): Promise<ArticlePageResponse> {
+    return request<ArticlePageResponse>(`/web/articles/${articleId}`)
   },
-  search(keyword: string, page = 1) {
-    return request(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}`)
+  search(keyword: string, page = 1): Promise<SearchResponse> {
+    return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}`)
   },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {
