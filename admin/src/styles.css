@@ -126,6 +126,8 @@ button:disabled {
   width: min(1400px, calc(100% - 24px));
   margin: 0 auto;
   padding: 24px 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -163,7 +165,10 @@ button:disabled {
 
 .sidebar {
   padding: 24px;
-  height: fit-content;
+  height: 100%;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
 }
 
 .sidebar nav {
@@ -174,11 +179,26 @@ button:disabled {
 .sidebar a {
   color: var(--text-soft);
   text-decoration: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sidebar a:hover {
+  background-color: rgba(14, 165, 164, 0.1);
+}
+.sidebar a.active {
+  background-color: rgba(14, 165, 164, 0.2);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .dashboard-main {
   display: grid;
   gap: 24px;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 12px;
 }
 
 .hero-panel,
@@ -222,6 +242,75 @@ button:disabled {
 
 .error-message {
   color: #fda4af;
+}
+
+/* 评论审核样式 */
+.comments-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+.comment-item {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+.comment-content {
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 12px;
+}
+.comment-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-pending {
+  background-color: rgba(255, 193, 7, 0.2);
+  color: #ff9800;
+}
+.status-approved {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+.status-rejected {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+.comment-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-approve {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-reject {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-approve:hover, .btn-reject:hover {
+  opacity: 0.8;
 }
 
 @media (max-width: 1024px) {

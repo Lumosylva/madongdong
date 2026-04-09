@@ -71,4 +71,14 @@ export const adminApi = {
       body: JSON.stringify(payload),
     })
   },
+  approveComment(commentId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/comments/${commentId}/approve`, {
+      method: 'POST',
+    })
+  },
+  rejectComment(commentId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/comments/${commentId}/reject`, {
+      method: 'POST',
+    })
+  },
 }
