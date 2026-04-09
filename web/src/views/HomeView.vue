@@ -60,8 +60,10 @@
     </main>
 
     <footer class="footer">
-      <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
-      <span>{{ data.site.copyright_text || '© 程序人生' }}</span>
+      <div class="footer-content">
+        <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
+        <span>{{ data.site.copyright_text || '© 程序人生' }}</span>
+      </div>
     </footer>
   </div>
 </template>

@@ -284,8 +284,7 @@ a {
 .card-meta,
 .card-footer,
 .article-meta,
-.search-meta,
-.footer {
+.search-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -337,8 +336,18 @@ a {
 }
 
 .footer {
-  justify-content: space-between;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 22px 6px 0;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  color: var(--text-soft);
 }
 
 .search-header {
