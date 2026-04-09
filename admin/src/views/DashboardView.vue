@@ -38,7 +38,7 @@
         <div class="panel">
           <h3>文章列表</h3>
           <ul>
-            <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status }}</li>
+            <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : item.status === 'pending' ? '待审核' : item.status }}</li>
           </ul>
         </div>
         <div class="panel">
