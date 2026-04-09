@@ -61,7 +61,7 @@
 
     <footer class="footer">
       <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
-      <span>{{ data.site.copyright_text || '© madongdong' }}</span>
+      <span>{{ data.site.copyright_text || '© 程序人生' }}</span>
     </footer>
   </div>
 </template>
