@@ -344,7 +344,7 @@ a {
 }
 
 .article-body {
-  color: #dbeafe;
+  color: var(--text);
   line-height: 1.9;
 }
 
