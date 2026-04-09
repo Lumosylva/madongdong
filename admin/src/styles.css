@@ -114,6 +114,8 @@ body {
 .user-menu {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
 }
 
 .user-profile {

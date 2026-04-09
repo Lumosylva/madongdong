@@ -9,6 +9,9 @@
         </div>
       </div>
       <div class="user-menu">
+        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+          <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+        </button>
         <button class="user-profile" @click="logout">
           <span class="user-name">管理员</span>
           <span class="user-avatar">👤</span>
@@ -20,9 +23,6 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           <h2>控制台</h2>
-          <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-            <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
-          </button>
         </div>
         <nav>
           <a href="javascript:void(0)" :class="{ active: currentView === 'overview' }" @click.prevent="setView('overview')">概览</a>
