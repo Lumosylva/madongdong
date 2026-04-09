@@ -32,6 +32,12 @@ ROLE_PERMISSION_MAP = {
     "reader": [],
 }
 
+DEFAULT_CATEGORY = {
+    "name": "未分类",
+    "slug": "uncategorized",
+    "description": "系统默认分类"
+}
+
 
 async def init_db() -> None:
     """初始化数据库结构和默认数据。"""
@@ -51,6 +57,7 @@ async def _seed_defaults(session: AsyncSession) -> None:
     await _bind_role_permissions(session, roles, permissions)
     await _ensure_admin_user(session, roles["admin"])
     await _ensure_default_site(session)
+    await _ensure_default_categories(session)
     await session.commit()
 
 
@@ -153,3 +160,18 @@ async def _ensure_default_site(session: AsyncSession) -> None:
                 NavItem(title="搜索", path="/search", sort_order=2, is_visible=True),
             ]
         )
+
+
+async def _ensure_default_categories(session: AsyncSession) -> None:
+    """确保存在默认分类。"""
+    
+    result = await session.execute(select(Category))
+    categories = list(result.scalars().all())
+    if not categories:
+        category = Category(
+            name=DEFAULT_CATEGORY["name"],
+            slug=DEFAULT_CATEGORY["slug"],
+            description=DEFAULT_CATEGORY["description"]
+        )
+        session.add(category)
+        await session.flush()

@@ -9,5 +9,6 @@ wheels/
 .venv
 # Cursor rules
 .cursor/rules/
+.codebuddy/
 .mypy_cache/
 .git
