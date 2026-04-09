@@ -82,6 +82,14 @@
         </div>
       </section>
 
+      <!-- 文章列表视图 -->
+      <section class="panel" v-show="currentView === 'articles'">
+        <h3>文章列表</h3>
+        <ul>
+          <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : item.status === 'pending' ? '待审核' : item.status }}</li>
+        </ul>
+      </section>
+
       <section class="editor-panel" id="articles" v-show="currentView === 'articles'">
         <h3>快速创建文章</h3>
         <input v-model="title" placeholder="标题" />
@@ -98,15 +106,6 @@
           </select>
           <button @click="createArticle">提交</button>
         </div>
-      </section>
-
-      <!-- 文章列表视图 -->
-      <section class="panel" v-show="currentView === 'articles'">
-        <h3>文章列表</h3>
-        <button @click="loadAll">刷新数据</button>
-        <ul>
-          <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status }}</li>
-        </ul>
       </section>
 
       <!-- 媒体库视图 -->
