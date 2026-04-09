@@ -113,21 +113,32 @@
 
       <section class="comment-panel">
         <h2>评论</h2>
-        <form class="comment-form" @submit.prevent="submitComment">
+        <div v-if="submitSuccess" class="submit-success">
+          <p>✅ 评论已提交成功！等待管理员审核通过后显示。</p>
+        </div>
+        <div v-if="submitError" class="submit-error">
+          <p>❌ {{ submitError }}</p>
+        </div>
+        <form class="comment-form" @submit.prevent="submitTopLevelComment">
           <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
           <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
           <textarea v-model="commentContent" placeholder="写下你的看法"></textarea>
-          <button type="submit">提交评论</button>
+          <button type="submit" :disabled="submitting">
+            {{ submitting ? '提交中...' : '提交评论' }}
+          </button>
         </form>
         <div class="comment-list">
-          <div v-if="data.comments.length === 0" class="empty-comments">
+          <div v-if="commentTree.length === 0" class="empty-comments">
             <p>暂无评论，快来发表第一条评论吧！</p>
           </div>
-          <div v-for="comment in data.comments" :key="comment.id" class="comment-item">
-            <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
-            <span>{{ formatDate(comment.created_at) }}</span>
-            <p>{{ comment.content }}</p>
-          </div>
+          <CommentTreeNode
+            v-for="comment in commentTree"
+            :key="comment.id"
+            :comment="comment"
+            :replying-to="replyingTo"
+            @reply="handleReply"
+            @submit-reply="handleSubmitReply"
+          />
         </div>
       </section>
     </div>
@@ -135,12 +146,109 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, nextTick } from 'vue'
+import { onMounted, ref, watch, nextTick, computed, defineComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useIntersectionObserver, useClipboard } from '@vueuse/core'
 
 import { webApi } from '../api'
-import type { ArticlePageResponse } from '../types'
+import type { ArticlePageResponse, Comment } from '../types'
+
+// 嵌套评论相关接口
+interface CommentNode extends Comment {
+  children: CommentNode[]
+}
+
+// 扁平评论列表转换为树形结构
+function buildCommentTree(comments: Comment[]): CommentNode[] {
+  const map = new Map<number, CommentNode>()
+  const roots: CommentNode[] = []
+  
+  // 第一遍：创建所有节点
+  comments.forEach(comment => {
+    map.set(comment.id, { ...comment, children: [] })
+  })
+  
+  // 第二遍：构建父子关系
+  comments.forEach(comment => {
+    const node = map.get(comment.id)!
+    if (comment.parent_id && map.has(comment.parent_id)) {
+      const parent = map.get(comment.parent_id)!
+      parent.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  })
+  
+  return roots
+}
+
+// 递归评论组件
+const CommentTreeNode = defineComponent({
+  name: 'CommentTreeNode',
+  props: {
+    comment: {
+      type: Object as () => CommentNode,
+      required: true
+    },
+    replyingTo: {
+      type: Number as () => number | null,
+      default: null
+    },
+    depth: {
+      type: Number,
+      default: 0
+    }
+  },
+  emits: ['reply', 'submit-reply'],
+  setup(props, { emit }) {
+    const localReplyContent = ref('')
+    
+    const handleLocalReply = () => {
+      emit('reply', props.comment.id)
+    }
+    
+    const handleLocalSubmitReply = () => {
+      emit('submit-reply', props.comment.id, localReplyContent.value)
+    }
+    
+    return {
+      localReplyContent,
+      handleLocalReply,
+      handleLocalSubmitReply
+    }
+  },
+  template: `
+    <div class="comment-item" :style="{ marginLeft: depth * 32 + 'px' }">
+      <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
+      <span>{{ comment.created_at ? new Date(comment.created_at).toLocaleString('zh-CN') : '' }}</span>
+      <p>{{ comment.content }}</p>
+      
+      <button class="reply-btn" @click="handleLocalReply">回复</button>
+      
+      <!-- 回复表单（仅当正在回复此评论时显示） -->
+      <div v-if="replyingTo === comment.id" class="inline-reply-form">
+        <textarea v-model="localReplyContent" :placeholder="'回复 @' + (comment.user?.nickname || comment.guest_nickname || '匿名访客')"></textarea>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button @click="handleLocalSubmitReply" class="submit-reply-btn">提交回复</button>
+          <button @click="$emit('reply', null)" class="cancel-reply-btn">取消</button>
+        </div>
+      </div>
+      
+      <!-- 递归渲染子评论 -->
+      <div v-if="comment.children.length > 0" class="children">
+        <CommentTreeNode
+          v-for="child in comment.children"
+          :key="child.id"
+          :comment="child"
+          :replying-to="replyingTo"
+          :depth="depth + 1"
+          @reply="(commentId) => $emit('reply', commentId)"
+          @submit-reply="(commentId, content) => $emit('submit-reply', commentId, content)"
+        />
+      </div>
+    </div>
+  `
+})
 
 const route = useRoute()
 const data = ref<ArticlePageResponse | null>(null)
@@ -149,6 +257,14 @@ const error = ref<string | null>(null)
 const commentContent = ref('')
 const guestNickname = ref('')
 const guestEmail = ref('')
+const submitting = ref(false)
+const submitError = ref<string | null>(null)
+const submitSuccess = ref(false)
+
+// 嵌套评论相关状态
+const commentTree = computed(() => buildCommentTree(data.value?.comments || []))
+const replyingTo = ref<number | null>(null)
+const replyContent = ref('')
 
 // 封面图片懒加载相关
 const coverContainer = ref<HTMLElement | null>(null)
@@ -347,16 +463,70 @@ const retryLoad = () => {
   loadData()
 }
 
-const submitComment = async () => {
-  if (!data.value || !commentContent.value.trim()) return
-  await webApi.submitComment({
-    article_id: data.value.article.id,
-    content: commentContent.value,
-    guest_nickname: guestNickname.value || null,
-    guest_email: guestEmail.value || null,
-  })
-  commentContent.value = ''
-  await loadData()
+const submitComment = async (parentId: number | null = null) => {
+  const content = parentId ? replyContent.value : commentContent.value
+  if (!data.value || !content.trim()) return
+  
+  // 验证匿名评论必须提供昵称和邮箱
+  if (!guestNickname.value.trim() || !guestEmail.value.trim()) {
+    submitError.value = '匿名评论必须提供昵称和邮箱'
+    return
+  }
+  
+  submitting.value = true
+  submitError.value = null
+  submitSuccess.value = false
+  
+  console.log('Submitting comment:', { parentId, content, articleId: data.value.article.id, guestNickname: guestNickname.value, guestEmail: guestEmail.value })
+  
+  try {
+    await webApi.submitComment({
+      article_id: data.value.article.id,
+      content,
+      guest_nickname: guestNickname.value,
+      guest_email: guestEmail.value,
+      parent_id: parentId || null,
+    })
+    
+    console.log('Comment submitted successfully')
+    
+    // 显示成功消息
+    submitSuccess.value = true
+    // 5秒后自动隐藏成功消息
+    setTimeout(() => {
+      submitSuccess.value = false
+    }, 5000)
+    
+    if (parentId) {
+      replyContent.value = ''
+      replyingTo.value = null
+    } else {
+      commentContent.value = ''
+      guestNickname.value = ''
+      guestEmail.value = ''
+    }
+    
+    await loadData()
+  } catch (err) {
+    submitError.value = err instanceof Error ? err.message : '提交评论失败，请重试'
+    console.error('提交评论失败:', err)
+  } finally {
+    submitting.value = false
+  }
+}
+
+const submitTopLevelComment = () => submitComment(null)
+
+const handleReply = (commentId: number) => {
+  replyingTo.value = commentId
+  replyContent.value = ''
+  // 滚动到回复表单可见区域（由模板处理）
+}
+
+const handleSubmitReply = (commentId: number, content: string) => {
+  replyContent.value = content
+  replyingTo.value = commentId
+  submitComment(commentId)
 }
 
 const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')

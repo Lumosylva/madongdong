@@ -809,3 +809,100 @@ a {
   top: 8px;
   right: 8px;
 }
+
+/* 嵌套评论样式 */
+.comment-item {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.comment-item .children {
+  margin-left: 32px;
+  padding-left: 16px;
+  border-left: 2px solid var(--line);
+}
+
+/* 回复按钮样式 */
+.reply-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 8px;
+  margin-top: 8px;
+}
+
+.reply-btn:hover {
+  color: var(--accent);
+}
+
+/* 内联回复表单样式 */
+.inline-reply-form {
+  margin: 12px 0 12px 32px;
+  padding: 12px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+}
+
+.inline-reply-form textarea {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  color: var(--text);
+  padding: 8px;
+  font-family: inherit;
+}
+
+.submit-reply-btn,
+.cancel-reply-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.submit-reply-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.cancel-reply-btn {
+  background: transparent;
+  color: var(--text-soft);
+  border: 1px solid var(--line);
+}
+
+/* 提交错误提示样式 */
+.submit-error {
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: var(--text-error);
+}
+
+.submit-error p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 提交成功提示样式 */
+.submit-success {
+  background: rgba(100, 255, 100, 0.1);
+  border: 1px solid rgba(100, 255, 100, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: var(--text-success, #2e7d32);
+}
+
+.submit-success p {
+  margin: 0;
+  font-size: 14px;
+}
