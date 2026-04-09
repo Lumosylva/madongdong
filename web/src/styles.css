@@ -210,17 +210,27 @@ a {
   flex-wrap: wrap;
 }
 
+.comment-form {
+  align-items: flex-start;
+}
+
+.comment-form input {
+  width: calc(50% - 4px);
+}
+
+.comment-form button {
+  width: 100%;
+}
+
 .search-box {
   align-items: center;
   justify-content: flex-end;
   flex-wrap: nowrap;
 }
 
-.search-box input,
-.comment-form input,
-.comment-form textarea {
+.search-box input {
   flex: 1;
-  min-width: 160px;
+  min-width: 0;
   border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--bg-soft);
@@ -228,9 +238,16 @@ a {
   padding: 8px 12px;
 }
 
-.search-box input {
-  min-width: 0;
+.comment-form input,
+.comment-form textarea {
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  padding: 4px 12px;
 }
+
+
 
 .comment-form textarea {
   min-height: 120px;
