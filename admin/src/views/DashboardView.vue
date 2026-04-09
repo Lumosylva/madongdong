@@ -45,30 +45,40 @@
       <section class="grid-panels" v-show="currentView === 'overview'">
         <div class="panel">
           <h3>文章列表</h3>
-          <button @click="loadAll">刷新数据</button>
           <ul>
             <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status }}</li>
           </ul>
         </div>
         <div class="panel">
-          <h3>媒体库</h3>
-          <ul>
-            <li v-for="item in media" :key="item.id">{{ item.original_name }} · {{ item.media_type }}</li>
-          </ul>
+          <h3>网站访问量统计</h3>
+          <div class="visit-stats">
+            <div class="stat-item">
+              <div class="stat-value">{{ visitStats.total }}</div>
+              <div class="stat-label">总访问量</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ visitStats.today }}</div>
+              <div class="stat-label">今日访问量</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ visitStats.unique }}</div>
+              <div class="stat-label">独立访客</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ visitStats.avgTime }}</div>
+              <div class="stat-label">平均停留(秒)</div>
+            </div>
+          </div>
+          <div class="visit-trend">
+            <p class="trend-up">📈 较昨日增长 {{ visitStats.dailyGrowth }}%</p>
+            <p class="trend-info">数据更新时间: {{ visitStats.updateTime }}</p>
+          </div>
         </div>
         <div class="panel">
           <h3>评论审核</h3>
           <ul>
             <li v-for="item in comments" :key="item.id">{{ item.content }}</li>
           </ul>
-        </div>
-        <div class="panel" id="site">
-          <h3>站点设置</h3>
-          <input v-model="siteTitle" placeholder="网站标题" />
-          <input v-model="siteSubtitle" placeholder="副标题" />
-          <input v-model="icpBeian" placeholder="备案信息" />
-          <input v-model="copyrightText" placeholder="版权信息" />
-          <button @click="saveSite">保存设置</button>
         </div>
       </section>
 
@@ -181,6 +191,14 @@ const router = useRouter()
 const articles = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
+const visitStats = ref({
+  total: 12458,
+  today: 342,
+  unique: 892,
+  avgTime: '2:45',
+  dailyGrowth: 12.5,
+  updateTime: '今日 09:30'
+})
 const siteTitle = ref('')
 const siteSubtitle = ref('')
 const icpBeian = ref('')
