@@ -290,7 +290,7 @@ const loadAll = async () => {
       adminApi.getComments(),
       adminApi.getSiteSettings(),
     ])
-    articles.value = articleRes.data.filter((article: any) => !article.is_deleted)
+    articles.value = articleRes.data
     deletedArticles.value = deletedArticleRes.data
     media.value = mediaRes.data
     comments.value = commentRes.data

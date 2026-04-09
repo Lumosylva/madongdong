@@ -81,9 +81,9 @@ async def update_tag(session: AsyncSession, tag_id: int, name: str, slug: str) -
 
 
 async def list_articles(session: AsyncSession, current_user: User) -> list[Article]:
-    """查询文章列表。"""
+    """查询文章列表（不包含已删除的）。"""
 
-    statement: Select[tuple[Article]] = select(Article).order_by(Article.created_at.desc())
+    statement: Select[tuple[Article]] = select(Article).where(Article.is_deleted == False).order_by(Article.created_at.desc())  # type: ignore
     if not _is_admin(current_user):
         statement = statement.where(Article.author_id == current_user.id)
     result = await session.execute(statement)
