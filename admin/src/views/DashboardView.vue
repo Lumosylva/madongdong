@@ -1,7 +1,12 @@
 <template>
   <div class="dashboard-shell">
     <aside class="sidebar">
-      <h1>控制台</h1>
+      <div class="sidebar-header">
+        <h1>控制台</h1>
+        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+          <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+        </button>
+      </div>
       <nav>
         <a href="#overview">概览</a>
         <a href="#articles">文章</a>
@@ -72,10 +77,27 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
+
+type ThemeMode = 'light' | 'dark'
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (value: ThemeMode) => {
+  theme.value = value
+  document.documentElement.dataset.theme = value
+  localStorage.setItem('md-admin-theme', value)
+}
+
+const toggleTheme = () => {
+  applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const themeToggleLabel = computed(() =>
+  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
+)
 
 const router = useRouter()
 const articles = ref<any[]>([])
@@ -160,5 +182,9 @@ const createArticle = async () => {
   await loadAll()
 }
 
-onMounted(loadAll)
+onMounted(() => {
+  const storedTheme = localStorage.getItem('md-admin-theme')
+  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  loadAll()
+})
 </script>

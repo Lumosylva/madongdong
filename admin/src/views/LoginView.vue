@@ -1,7 +1,12 @@
 <template>
   <section class="login-wrap">
     <form class="login-card" @submit.prevent="submit">
-      <p class="eyebrow">MaDongDong Admin</p>
+      <div class="login-header">
+        <p class="eyebrow">MaDongDong Admin</p>
+        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+          <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+        </button>
+      </div>
       <h1>后台登录</h1>
       <input v-model="username" placeholder="用户名" />
       <input v-model="password" type="password" placeholder="密码" />
@@ -13,10 +18,27 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
+
+type ThemeMode = 'light' | 'dark'
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (value: ThemeMode) => {
+  theme.value = value
+  document.documentElement.dataset.theme = value
+  localStorage.setItem('md-admin-theme', value)
+}
+
+const toggleTheme = () => {
+  applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const themeToggleLabel = computed(() =>
+  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
+)
 
 const router = useRouter()
 const username = ref('admin')
@@ -39,6 +61,9 @@ const submit = async () => {
 }
 
 onMounted(async () => {
+  const storedTheme = localStorage.getItem('md-admin-theme')
+  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  
   const token = localStorage.getItem('blog_admin_token')
   if (!token) {
     return
