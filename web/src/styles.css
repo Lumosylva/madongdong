@@ -69,7 +69,7 @@ a {
 .shell,
 .article-page,
 .search-page {
-  width: min(1320px, calc(100% - 16px));
+  width: min(1320px, calc(100% - 8px));
   margin: 0 auto;
   padding: 16px 0 48px;
   overflow-x: hidden;
@@ -107,7 +107,7 @@ a {
   gap: 12px;
   padding: 10px 0;
   margin: 0 calc(50% - 50vw) 18px;
-  padding-inline: max(12px, calc((100vw - min(1320px, calc(100% - 16px))) / 2));
+  padding-inline: max(12px, calc((100vw - min(1320px, calc(100% - 8px))) / 2));
   border-radius: 10px;
 }
 
