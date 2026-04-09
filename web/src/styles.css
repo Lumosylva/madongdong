@@ -69,7 +69,7 @@ a {
 .shell,
 .article-page,
 .search-page {
-  width: min(1320px, calc(100% - 24px));
+  width: min(1320px, calc(100% - 16px));
   margin: 0 auto;
   padding: 16px 0 48px;
   overflow-x: hidden;
@@ -107,7 +107,7 @@ a {
   gap: 12px;
   padding: 10px 0;
   margin: 0 calc(50% - 50vw) 18px;
-  padding-inline: max(12px, calc((100vw - min(1320px, calc(100% - 24px))) / 2));
+  padding-inline: max(12px, calc((100vw - min(1320px, calc(100% - 16px))) / 2));
   border-radius: 10px;
 }
 
@@ -269,7 +269,7 @@ a {
 
 .layout {
   display: grid;
-  grid-template-columns: 1.7fr 0.9fr;
+  grid-template-columns: 2fr 0.75fr;
   gap: 24px;
 }
 
@@ -383,6 +383,6 @@ a {
   .shell,
   .article-page,
   .search-page {
-    width: min(100%, calc(100% - 16px));
+    width: min(100%, calc(100% - 12px));
   }
 }
