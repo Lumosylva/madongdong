@@ -51,6 +51,16 @@ async def get_articles(
     return success_response(data)
 
 
+@router.get("/articles/deleted", summary="查询已删除文章列表（垃圾箱）")
+async def get_deleted_articles(
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    articles = await list_deleted_articles(session, current_user)
+    data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
+    return success_response(data)
+
+
 @router.get("/articles/{article_id}", summary="获取文章详情")
 async def get_article_detail(
     article_id: int,
@@ -195,16 +205,6 @@ async def delete_article_endpoint(
 ) -> dict[str, object]:
     result = await delete_article(session, article_id, current_user)
     return success_response(result)
-
-
-@router.get("/articles/deleted", summary="查询已删除文章列表（垃圾箱）")
-async def get_deleted_articles(
-    session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
-) -> dict[str, object]:
-    articles = await list_deleted_articles(session, current_user)
-    data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
-    return success_response(data)
 
 
 @router.post("/articles/{article_id}/restore", summary="恢复已删除文章")
