@@ -1,29 +1,46 @@
 <template>
   <div class="dashboard-shell">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1>控制台</h1>
-        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-          <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+    <header class="topbar">
+      <div class="brand-block">
+        <span class="brand-mark">MDD</span>
+        <div class="brand-info">
+          <h1>博客运营后台</h1>
+          <p class="brand-subtitle">统一管理文章审核、媒体资源、评论审核与站点设置。</p>
+        </div>
+      </div>
+      <div class="user-menu">
+        <button class="user-profile" @click="logout">
+          <span class="user-name">管理员</span>
+          <span class="user-avatar">👤</span>
         </button>
       </div>
-      <nav>
-        <a href="javascript:void(0)" :class="{ active: currentView === 'overview' }" @click.prevent="setView('overview')">概览</a>
-        <a href="javascript:void(0)" :class="{ active: currentView === 'articles' }" @click.prevent="setView('articles')">文章</a>
-        <a href="javascript:void(0)" :class="{ active: currentView === 'media' }" @click.prevent="setView('media')">媒体</a>
-        <a href="javascript:void(0)" :class="{ active: currentView === 'comments' }" @click.prevent="setView('comments')">评论</a>
-        <a href="javascript:void(0)" :class="{ active: currentView === 'site' }" @click.prevent="setView('site')">站点</a>
-      </nav>
-    </aside>
+    </header>
+    
+    <div class="dashboard-content">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>控制台</h2>
+          <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+            <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+          </button>
+        </div>
+        <nav>
+          <a href="javascript:void(0)" :class="{ active: currentView === 'overview' }" @click.prevent="setView('overview')">概览</a>
+          <a href="javascript:void(0)" :class="{ active: currentView === 'articles' }" @click.prevent="setView('articles')">文章</a>
+          <a href="javascript:void(0)" :class="{ active: currentView === 'media' }" @click.prevent="setView('media')">媒体</a>
+          <a href="javascript:void(0)" :class="{ active: currentView === 'comments' }" @click.prevent="setView('comments')">评论</a>
+          <a href="javascript:void(0)" :class="{ active: currentView === 'site' }" @click.prevent="setView('site')">站点</a>
+        </nav>
+      </aside>
 
-    <main class="dashboard-main">
-      <section class="hero-panel" id="overview" v-show="currentView === 'overview'">
-        <p class="eyebrow">Admin Console</p>
-        <h2>博客运营后台</h2>
-        <p>统一管理文章审核、媒体资源、评论审核与站点设置。</p>
-        <p v-if="loading" class="tips">正在同步后台数据...</p>
-        <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      </section>
+      <main class="dashboard-main">
+        <section class="hero-panel" id="overview" v-show="currentView === 'overview'">
+          <p class="eyebrow">Admin Console</p>
+          <h2>博客运营后台</h2>
+          <p>统一管理文章审核、媒体资源、评论审核与站点设置。</p>
+          <p v-if="loading" class="tips">正在同步后台数据...</p>
+          <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        </section>
 
       <section class="grid-panels" v-show="currentView === 'overview'">
         <div class="panel">
@@ -126,7 +143,8 @@
         <button @click="saveSite">保存设置</button>
       </section>
 
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -260,6 +278,11 @@ const createArticle = async () => {
   contentMarkdown.value = ''
   tagIdsText.value = ''
   await loadAll()
+}
+
+const logout = async () => {
+  localStorage.removeItem('blog_admin_token')
+  await router.push('/login')
 }
 
 onMounted(() => {
