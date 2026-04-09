@@ -34,14 +34,6 @@
       </aside>
 
       <main class="dashboard-main">
-        <section class="hero-panel" id="overview" v-show="currentView === 'overview'">
-          <p class="eyebrow">Admin Console</p>
-          <h2>博客运营后台</h2>
-          <p>统一管理文章审核、媒体资源、评论审核与站点设置。</p>
-          <p v-if="loading" class="tips">正在同步后台数据...</p>
-          <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-        </section>
-
       <section class="grid-panels" v-show="currentView === 'overview'">
         <div class="panel">
           <h3>文章列表</h3>
