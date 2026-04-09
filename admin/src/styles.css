@@ -121,11 +121,11 @@ button:disabled {
 
 .dashboard-shell {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 12px;
   width: calc(100% - 40px);
   margin: 0 auto;
-  padding: 12px 0 48px;
+  padding: 0;
   height: 100vh;
   overflow: hidden;
 }
@@ -164,7 +164,7 @@ button:disabled {
 }
 
 .sidebar {
-  padding: 24px;
+  padding: 20px;
   height: 100%;
   position: sticky;
   top: 0;
@@ -195,15 +195,16 @@ button:disabled {
 
 .dashboard-main {
   display: grid;
-  gap: 24px;
+  gap: 12px;
   height: 100%;
   overflow-y: auto;
-  padding-right: 12px;
+  margin-top: 12px;
+  margin-bottom: 48px;
 }
 
 .hero-panel,
 .editor-panel {
-  padding: 24px;
+  padding: 20px;
 }
 
 .grid-panels {
@@ -213,7 +214,7 @@ button:disabled {
 }
 
 .panel {
-  padding: 24px;
+  padding: 20px;
 }
 
 .panel ul {
@@ -311,6 +312,51 @@ button:disabled {
 }
 .btn-approve:hover, .btn-reject:hover {
   opacity: 0.8;
+}
+
+/* 自定义滚动条样式 - 美化右侧滚动条 */
+.dashboard-main::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dashboard-main::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 164, 0.4);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 164, 0.6);
+}
+
+.dashboard-main::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox 滚动条样式 */
+.dashboard-main {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(14, 165, 164, 0.4) transparent;
+}
+
+/* 暗色主题下的滚动条样式 */
+:root[data-theme='dark'] .dashboard-main::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.4);
+}
+
+:root[data-theme='dark'] .dashboard-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.6);
+}
+
+:root[data-theme='dark'] .dashboard-main {
+  scrollbar-color: rgba(167, 139, 250, 0.4) transparent;
 }
 
 @media (max-width: 1024px) {
