@@ -558,6 +558,14 @@ button:disabled {
   opacity: 0.8;
 }
 
+.no-pending-comments {
+  text-align: center;
+  color: var(--text-soft);
+  font-style: italic;
+  padding: 20px;
+  margin-top: 10px;
+}
+
 @media (max-width: 1024px) {
   .dashboard-content {
     grid-template-columns: 1fr;

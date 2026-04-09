@@ -69,7 +69,7 @@
         <div class="panel">
           <h3>评论审核</h3>
           <ul>
-            <li v-for="item in comments" :key="item.id">
+            <li v-for="item in comments.filter(c => c.status === 'pending')" :key="item.id">
               <div class="comment-content">{{ item.content }}</div>
               <div class="comment-meta-overview">
                 <span class="comment-author">{{ item.guest_nickname || item.user?.nickname || '匿名' }}</span>
@@ -78,6 +78,7 @@
               </div>
             </li>
           </ul>
+          <p v-if="comments.filter(c => c.status === 'pending').length === 0" class="no-pending-comments">暂无待审核评论</p>
         </div>
       </section>
 
