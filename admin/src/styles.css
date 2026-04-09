@@ -535,6 +535,29 @@ button:disabled {
   margin: 0;
 }
 
+/* 概览页面评论信息样式 */
+.comment-meta-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.comment-email {
+  font-style: italic;
+}
+
+.comment-date {
+  opacity: 0.8;
+}
+
 @media (max-width: 1024px) {
   .dashboard-content {
     grid-template-columns: 1fr;

@@ -69,7 +69,14 @@
         <div class="panel">
           <h3>评论审核</h3>
           <ul>
-            <li v-for="item in comments" :key="item.id">{{ item.content }}</li>
+            <li v-for="item in comments" :key="item.id">
+              <div class="comment-content">{{ item.content }}</div>
+              <div class="comment-meta-overview">
+                <span class="comment-author">{{ item.guest_nickname || item.user?.nickname || '匿名' }}</span>
+                <span class="comment-email" v-if="item.guest_email">{{ item.guest_email }}</span>
+                <span class="comment-date">{{ new Date(item.created_at).toLocaleDateString() }}</span>
+              </div>
+            </li>
           </ul>
         </div>
       </section>
