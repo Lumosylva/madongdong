@@ -54,7 +54,32 @@
           <span>{{ data.article.comment_count }} 评论</span>
         </div>
         <p class="article-summary">{{ data.article.summary }}</p>
-        <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
+        <!-- 封面图片懒加载 -->
+        <div v-if="data.article.cover_url" class="cover-container" ref="coverContainer">
+          <!-- 加载中占位符 -->
+          <div v-if="!coverLoaded && !coverError" class="cover-placeholder">
+            <div class="cover-skeleton"></div>
+          </div>
+          <!-- 错误状态 -->
+          <div v-if="coverError" class="cover-error">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <p>图片加载失败</p>
+            <button @click="coverError = false; coverLoaded = false;" class="retry-btn small">重试</button>
+          </div>
+          <!-- 实际图片（仅在进入视口且未出错时渲染） -->
+          <img
+            v-if="isCoverVisible && !coverError"
+            :src="data.article.cover_url"
+            class="cover"
+            alt="文章封面"
+            @load="coverLoaded = true"
+            @error="coverError = true"
+          />
+        </div>
         <div class="article-body" v-html="data.article.content_html"></div>
       </article>
 
@@ -82,8 +107,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useIntersectionObserver } from '@vueuse/core'
 
 import { webApi } from '../api'
 import type { ArticlePageResponse } from '../types'
@@ -96,9 +122,36 @@ const commentContent = ref('')
 const guestNickname = ref('')
 const guestEmail = ref('')
 
+// 封面图片懒加载相关
+const coverContainer = ref<HTMLElement | null>(null)
+const coverLoaded = ref(false)
+const coverError = ref(false)
+const isCoverVisible = ref(false)
+
+// 观察封面容器是否进入视口
+useIntersectionObserver(
+  coverContainer,
+  ([entry]) => {
+    isCoverVisible.value = entry.isIntersecting
+  },
+  { threshold: 0.1 }
+)
+
+// 当封面进入视口且未加载时，重置状态（实际加载由 img 标签的 src 触发）
+watch(isCoverVisible, (visible) => {
+  if (visible && data.value?.article.cover_url) {
+    // 可以在这里触发加载，但 img 的 src 已经绑定，浏览器会自动加载
+    // 我们只需要确保状态正确
+    coverError.value = false
+  }
+})
+
 const loadData = async () => {
   loading.value = true
   error.value = null
+  coverLoaded.value = false
+  coverError.value = false
+  isCoverVisible.value = false
   try {
     data.value = await webApi.getArticle(String(route.params.id))
   } catch (err) {
