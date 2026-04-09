@@ -1,4 +1,4 @@
-# MaDongDong Blog
+# MaDongDong博客系统
 
 基于 `FastAPI + Vue 3 + SQLite` 的前后端分离个人博客系统，面向 `2核2G Linux` 轻量部署环境。
 

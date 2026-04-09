@@ -2,7 +2,7 @@
   <div class="shell" v-if="data">
     <header class="topbar">
       <div class="brand-block">
-        <span class="brand-mark">MD</span>
+        <span class="brand-mark">MDD</span>
         <h1>{{ data.site.site_title }}</h1>
       </div>
       <nav class="nav">
@@ -11,7 +11,7 @@
       <form class="search-box" @submit.prevent="goSearch">
         <input v-model="keyword" placeholder="搜索文章、摘要与内容" />
         <button type="submit" aria-label="搜索">
-          <span aria-hidden="true">⌕</span>
+          <span aria-hidden="true">🔎</span>
         </button>
         <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
           <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>

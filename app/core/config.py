@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """项目运行配置。"""
 
-    app_name: str = "MaDongDong Blog"
+    app_name: str = "程序人生"
     api_v1_prefix: str = "/api/v1"
     debug: bool = False
 

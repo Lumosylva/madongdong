@@ -142,10 +142,10 @@ async def _ensure_default_site(session: AsyncSession) -> None:
     if site_setting is None:
         session.add(
             SiteSetting(
-                site_title="MaDongDong Blog",
+                site_title="程序人生",
                 site_subtitle="记录技术、生活与长期主义",
                 icp_beian="备案信息待配置",
-                copyright_text="© MaDongDong Blog",
+                copyright_text="© MaDongDong",
                 homepage_page_size=10,
                 comment_requires_review=True,
             )
