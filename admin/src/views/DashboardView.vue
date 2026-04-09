@@ -85,7 +85,10 @@
       <!-- 文章列表视图 -->
       <section class="panel" v-show="currentView === 'articles'">
         <h3>文章列表</h3>
-        <ul>
+        <p v-if="loading" class="loading">加载中...</p>
+        <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p v-else-if="articles.length === 0" class="no-articles">暂无文章</p>
+        <ul v-else>
           <li v-for="item in articles" :key="item.id" class="article-item">
             <div class="article-info">
               {{ item.title }} · {{ item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : item.status === 'pending' ? '待审核' : item.status }}
