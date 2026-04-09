@@ -71,7 +71,7 @@ a {
 .search-page {
   width: calc(100% - 40px);
   margin: 0 auto;
-  padding: 16px 0 48px;
+  padding: 12px 0 48px;
   overflow-x: hidden;
 }
 
@@ -106,7 +106,7 @@ a {
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  margin: 0 calc(50% - 50vw) 18px;
+  margin: 0 calc(50% - 50vw) 14px;
   padding-inline: max(12px, calc((100vw - calc(100% - 40px)) / 2));
   border-radius: 10px;
 }
@@ -270,7 +270,7 @@ a {
 .layout {
   display: grid;
   grid-template-columns: 2fr 0.75fr;
-  gap: 20px;
+  gap: 12px;
 }
 
 .content-panel,
@@ -298,7 +298,7 @@ a {
 .comment-item,
 .hot-link {
   display: block;
-  padding: 18px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -366,7 +366,7 @@ a {
   }
 
   .topbar {
-    margin: 0 calc(50% - 50vw) 18px;
+    margin: 0 calc(50% - 50vw) 14px;
     padding: 10px 20px;
     padding-inline: 20px;
   }
