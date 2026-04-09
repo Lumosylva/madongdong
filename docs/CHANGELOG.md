@@ -1,4 +1,14 @@
+[2026-04-09 23:05]
+- 已修改：e:/Project/madongdong/web/src/styles.css
+- 更改：调整评论表单布局CSS：输入框高度降低、并排显示；文本域和按钮独占行。
+- 原因：满足用户对评论表单布局的需求。
+- 阻碍因素：无。
+- 状态：成功。
+
+---
+
 [2026-04-08 当前会话]
+
 - 已修改：app/api/admin/article.py app/api/admin/comment.py app/api/admin/media.py app/api/admin/site.py app/api/admin/auth.py
 - 更改：统一修复后台管理接口返回类型注解过窄的问题，将统一响应接口改为兼容 success(bool) + data(any) 的结构
 - 原因：避免 FastAPI 响应校验将 success=True 错判为类型不匹配，导致 500 Internal Server Error
