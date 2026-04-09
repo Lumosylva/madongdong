@@ -588,3 +588,205 @@ button:disabled {
     padding-inline: 20px;
   }
 }
+
+/* 文章列表项样式 */
+.article-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.article-item:last-child {
+  border-bottom: none;
+}
+
+.article-info {
+  flex: 1;
+  font-size: 14px;
+}
+
+.article-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.article-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-edit:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.btn-restore {
+  background: #10b981;
+  color: white;
+}
+
+.btn-restore:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-permanent-delete {
+  background: #7f1d1d;
+  color: white;
+}
+
+.btn-permanent-delete:hover {
+  background: #450a0a;
+  transform: translateY(-1px);
+}
+
+.btn-clear-all {
+  background: #7f1d1d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 16px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-all:hover {
+  background: #450a0a;
+}
+
+.deleted-item .article-info {
+  color: var(--text-soft);
+  font-style: italic;
+}
+
+.empty-trash {
+  text-align: center;
+  color: var(--text-soft);
+  font-style: italic;
+  padding: 20px;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body input,
+.modal-body textarea,
+.modal-body select {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.modal-body textarea {
+  resize: vertical;
+  min-height: 200px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.modal-footer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.modal-footer button:first-child {
+  background: var(--bg-soft);
+  color: var(--text);
+}
+
+.modal-footer button:first-child:hover {
+  background: var(--line);
+}
+
+.modal-footer button:last-child {
+  background: var(--accent);
+  color: white;
+}
+
+.modal-footer button:last-child:hover {
+  background: #2563eb;
+}

@@ -86,7 +86,15 @@
       <section class="panel" v-show="currentView === 'articles'">
         <h3>文章列表</h3>
         <ul>
-          <li v-for="item in articles" :key="item.id">{{ item.title }} · {{ item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : item.status === 'pending' ? '待审核' : item.status }}</li>
+          <li v-for="item in articles" :key="item.id" class="article-item">
+            <div class="article-info">
+              {{ item.title }} · {{ item.status === 'published' ? '已发布' : item.status === 'draft' ? '草稿' : item.status === 'pending' ? '待审核' : item.status }}
+            </div>
+            <div class="article-actions">
+              <button class="btn-edit" @click="editArticle(item)">编辑</button>
+              <button class="btn-delete" @click="deleteArticle(item.id)">删除</button>
+            </div>
+          </li>
         </ul>
       </section>
 
@@ -106,6 +114,24 @@
           </select>
           <button @click="createArticle">提交</button>
         </div>
+      </section>
+
+      <!-- 垃圾箱视图 -->
+      <section class="panel" v-show="currentView === 'articles'">
+        <h3>垃圾箱</h3>
+        <div v-if="deletedArticles.length === 0" class="empty-trash">垃圾箱为空</div>
+        <ul v-else>
+          <li v-for="item in deletedArticles" :key="item.id" class="article-item deleted-item">
+            <div class="article-info">
+              {{ item.title }} · 已删除于 {{ new Date(item.deleted_at).toLocaleDateString() }}
+            </div>
+            <div class="article-actions">
+              <button class="btn-restore" @click="restoreArticle(item.id)">恢复</button>
+              <button class="btn-permanent-delete" @click="permanentlyDeleteArticle(item.id)">永久删除</button>
+            </div>
+          </li>
+        </ul>
+        <button v-if="deletedArticles.length > 0" class="btn-clear-all" @click="clearAllTrash">清空垃圾箱</button>
       </section>
 
       <!-- 媒体库视图 -->
@@ -152,6 +178,35 @@
         <button @click="saveSite">保存设置</button>
       </section>
 
+      <!-- 编辑文章模态框 -->
+      <div v-if="isEditModalOpen" class="modal-overlay" @click="isEditModalOpen = false">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>编辑文章</h3>
+            <button class="modal-close" @click="isEditModalOpen = false">&times;</button>
+          </div>
+          <div class="modal-body">
+            <input v-model="editTitle" placeholder="标题" />
+            <input v-model="editSummary" placeholder="摘要" />
+            <input v-model="editCoverUrl" placeholder="封面图 URL" />
+            <textarea v-model="editContentMarkdown" placeholder="Markdown 正文" rows="10"></textarea>
+            <div class="action-row">
+              <input v-model.number="editCategoryId" type="number" placeholder="分类 ID" />
+              <input v-model="editTagIdsText" placeholder="标签 ID，逗号分隔" />
+              <select v-model="editAction">
+                <option value="draft">保存草稿</option>
+                <option value="submit">提交审核</option>
+                <option value="publish">直接发布</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button @click="isEditModalOpen = false">取消</button>
+            <button @click="updateArticle">保存</button>
+          </div>
+        </div>
+      </div>
+
       </main>
     </div>
   </div>
@@ -188,6 +243,7 @@ const setView = (view: ViewType) => {
 
 const router = useRouter()
 const articles = ref<any[]>([])
+const deletedArticles = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
 const visitStats = ref({
@@ -213,17 +269,29 @@ const categoryId = ref(1)
 const tagIdsText = ref('')
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
 
+const editingArticle = ref<any | null>(null)
+const isEditModalOpen = ref(false)
+const editTitle = ref('')
+const editSummary = ref('')
+const editCoverUrl = ref('')
+const editContentMarkdown = ref('')
+const editCategoryId = ref(1)
+const editTagIdsText = ref('')
+const editAction = ref<'draft' | 'submit' | 'publish'>('draft')
+
 const loadAll = async () => {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [articleRes, mediaRes, commentRes, siteRes] = await Promise.all([
+    const [articleRes, deletedArticleRes, mediaRes, commentRes, siteRes] = await Promise.all([
       adminApi.getArticles(),
+      adminApi.getDeletedArticles(),
       adminApi.getMedia(),
       adminApi.getComments(),
       adminApi.getSiteSettings(),
     ])
-    articles.value = articleRes.data
+    articles.value = articleRes.data.filter((article: any) => !article.is_deleted)
+    deletedArticles.value = deletedArticleRes.data
     media.value = mediaRes.data
     comments.value = commentRes.data
     siteTitle.value = siteRes.data.site_title
@@ -237,6 +305,111 @@ const loadAll = async () => {
       await router.push('/login')
       return
     }
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
+}
+
+const editArticle = (article: any) => {
+  editingArticle.value = article
+  editTitle.value = article.title
+  editSummary.value = article.summary
+  editCoverUrl.value = article.cover_url || ''
+  editContentMarkdown.value = article.content_markdown
+  editCategoryId.value = article.category_id
+  editTagIdsText.value = article.tags.map((tag: any) => tag.id).join(',')
+  editAction.value = article.status
+  isEditModalOpen.value = true
+}
+
+const updateArticle = async () => {
+  if (!editingArticle.value) return
+  
+  try {
+    loading.value = true
+    const tagIds = editTagIdsText.value
+      .split(',')
+      .map((item: string) => Number(item.trim()))
+      .filter((item: number) => !Number.isNaN(item))
+    
+    await adminApi.updateArticle(editingArticle.value.id, {
+      title: editTitle.value,
+      summary: editSummary.value,
+      content_markdown: editContentMarkdown.value,
+      cover_url: editCoverUrl.value || null,
+      category_id: editCategoryId.value,
+      tag_ids: tagIds,
+      action: editAction.value,
+    })
+    
+    isEditModalOpen.value = false
+    editingArticle.value = null
+    await loadAll()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '更新文章失败'
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteArticle = async (articleId: number) => {
+  if (!confirm('确定要删除这篇文章吗？删除后将移入垃圾箱。')) return
+  
+  try {
+    loading.value = true
+    await adminApi.deleteArticle(articleId)
+    await loadAll()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除文章失败'
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
+}
+
+const restoreArticle = async (articleId: number) => {
+  if (!confirm('确定要恢复这篇文章吗？')) return
+  
+  try {
+    loading.value = true
+    await adminApi.restoreArticle(articleId)
+    await loadAll()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '恢复文章失败'
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
+}
+
+const permanentlyDeleteArticle = async (articleId: number) => {
+  if (!confirm('确定要永久删除这篇文章吗？此操作无法撤销！')) return
+  
+  try {
+    loading.value = true
+    await adminApi.permanentlyDeleteArticle(articleId)
+    await loadAll()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '永久删除文章失败'
+    errorMessage.value = message
+  } finally {
+    loading.value = false
+  }
+}
+
+const clearAllTrash = async () => {
+  if (!confirm(`确定要清空垃圾箱吗？将永久删除 ${deletedArticles.value.length} 篇文章，此操作无法撤销！`)) return
+  
+  try {
+    loading.value = true
+    for (const article of deletedArticles.value) {
+      await adminApi.permanentlyDeleteArticle(article.id)
+    }
+    await loadAll()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '清空垃圾箱失败'
     errorMessage.value = message
   } finally {
     loading.value = false

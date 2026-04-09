@@ -44,6 +44,30 @@ export const adminApi = {
   getArticles(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/articles')
   },
+  updateArticle(articleId: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteArticle(articleId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}`, {
+      method: 'DELETE',
+    })
+  },
+  getDeletedArticles(): Promise<WrappedResponse<any[]>> {
+    return request<WrappedResponse<any[]>>('/admin/articles/deleted')
+  },
+  restoreArticle(articleId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}/restore`, {
+      method: 'POST',
+    })
+  },
+  permanentlyDeleteArticle(articleId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}/permanent`, {
+      method: 'DELETE',
+    })
+  },
   getCategories(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/categories')
   },
