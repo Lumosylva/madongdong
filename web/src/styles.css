@@ -1,3 +1,5 @@
+@import '../../shared/topbar.tokens.css';
+
 :root {
   --bg: #f4f7fb;
   --bg-panel: rgba(255, 255, 255, 0.82);
@@ -105,9 +107,9 @@ a {
   grid-template-columns: minmax(220px, auto) 1fr minmax(220px, 280px);
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
-  margin: 0 calc(50% - 50vw) 14px;
-  padding-inline: max(8px, calc((100vw - min(1500px, calc(100% - 12px))) / 2));
+  padding: var(--app-topbar-padding-block) 0;
+  margin: 0 calc(50% - 50vw) var(--app-topbar-margin-bottom);
+  padding-inline: var(--app-topbar-padding-inline);
   border-radius: 0;
 }
 
@@ -251,6 +253,7 @@ a {
   place-items: center;
   padding: 0;
   font-size: 14px;
+  cursor: pointer;
 }
 
 .search-box.compact {
@@ -261,10 +264,13 @@ a {
   justify-content: flex-end;
 }
 
-.search-trigger {
+.search-trigger,
+.search-submit-inside,
+.theme-toggle {
   border: 1px solid var(--line) !important;
   background: var(--bg-soft) !important;
   color: var(--text) !important;
+  border-radius: 999px;
 }
 
 .search-fade-slide-enter-active,
@@ -299,10 +305,8 @@ a {
   width: 100%;
 }
 
-.search-box button,
 .comment-form button,
-.pager button,
-.theme-toggle {
+.pager button {
   border: none;
   border-radius: 999px;
   padding: 8px 12px;
@@ -312,7 +316,8 @@ a {
   font-weight: 700;
 }
 
-.search-box button,
+.search-trigger,
+.search-submit-inside,
 .theme-toggle {
   width: 36px;
   min-width: 36px;
@@ -321,12 +326,6 @@ a {
   place-items: center;
   padding: 0;
   font-size: 16px;
-}
-
-.theme-toggle {
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  color: var(--text);
 }
 
 .layout {
@@ -547,9 +546,9 @@ a {
   }
 
   .topbar {
-    margin: 0 calc(50% - 50vw) 14px;
-    padding: 10px 8px;
-    padding-inline: 8px;
+    margin: 0 calc(50% - 50vw) var(--app-topbar-margin-bottom);
+    padding: var(--app-topbar-padding-block) var(--app-topbar-padding-inline-mobile);
+    padding-inline: var(--app-topbar-padding-inline-mobile);
     grid-template-columns: 1fr auto auto;
     align-items: center;
   }
