@@ -95,6 +95,12 @@ export const adminApi = {
   getMedia(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/media')
   },
+  deleteMediaFiles(mediaIds: number[]): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/media/delete', {
+      method: 'POST',
+      body: JSON.stringify({ media_ids: mediaIds }),
+    })
+  },
   getComments(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/comments')
   },

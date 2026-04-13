@@ -118,6 +118,9 @@ const logoUploading = ref(false)
 const logoUploadMessage = ref('')
 const logoUploadStatus = ref<'success' | 'error' | ''>('')
 const logoCropApplied = ref(false)
+const mediaUploading = ref(false)
+const mediaToastMessage = ref('')
+const mediaToastStatus = ref<'success' | 'error' | ''>('')
 
 const mainMenus: MainMenuItem[] = [
   { key: 'overview', label: '概览' },
@@ -256,6 +259,9 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'media':
       return {
         media: media.value,
+        uploading: mediaUploading.value,
+        toastMessage: mediaToastMessage.value,
+        toastStatus: mediaToastStatus.value,
       }
     case 'comments':
       return {
@@ -311,6 +317,11 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
           action.value = value
         },
         submit: createArticle,
+      }
+    case 'media':
+      return {
+        upload: uploadMedia,
+        'delete-media': deleteMedia,
       }
     case 'comments':
       return {
@@ -487,6 +498,42 @@ const deleteCategory = async (categoryIdValue: number) => {
   if (!confirm('确认删除该分类吗？')) return
   await adminApi.deleteCategory(categoryIdValue)
   await loadAll()
+}
+
+const uploadMedia = async (file: File) => {
+  if (mediaUploading.value) return
+  mediaUploading.value = true
+  mediaToastStatus.value = ''
+  mediaToastMessage.value = ''
+
+  try {
+    await adminApi.uploadMediaFile(file)
+    mediaToastStatus.value = 'success'
+    mediaToastMessage.value = '媒体上传成功'
+    await loadAll()
+  } catch (error) {
+    mediaToastStatus.value = 'error'
+    mediaToastMessage.value = error instanceof Error ? error.message : '媒体上传失败'
+  } finally {
+    mediaUploading.value = false
+    setTimeout(() => {
+      mediaToastMessage.value = ''
+      mediaToastStatus.value = ''
+    }, 2400)
+  }
+}
+
+const deleteMedia = async (mediaId: number) => {
+  if (!confirm('确认删除该媒体吗？删除后不可恢复。')) return
+  try {
+    await adminApi.deleteMedia([mediaId])
+    mediaToastStatus.value = 'success'
+    mediaToastMessage.value = '媒体已删除'
+    await loadAll()
+  } catch (error) {
+    mediaToastStatus.value = 'error'
+    mediaToastMessage.value = error instanceof Error ? error.message : '删除媒体失败'
+  }
 }
 
 const cropImageTo64 = async (file: File): Promise<File> => {
