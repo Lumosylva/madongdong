@@ -48,8 +48,13 @@
         </div>
       </form>
 
-      <div class="comment-list">
-        <div v-for="comment in data.comments" :key="comment.id" class="comment-item">
+      <div class="comment-list" ref="commentListRef">
+        <div
+          v-for="comment in data.comments"
+          :key="comment.id"
+          class="comment-item"
+          :class="{ 'comment-item-new': highlightedCommentId === comment.id }"
+        >
           <div class="comment-item-head">
             <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
             <span>{{ formatRelativeTime(comment.created_at) }}</span>
