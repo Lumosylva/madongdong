@@ -108,6 +108,43 @@ async def list_approved_comments_by_article(session: AsyncSession, article_id: i
     return list(result.scalars().unique().all())
 
 
+async def get_prev_next_published_articles(session: AsyncSession, article: Article) -> tuple[Article | None, Article | None]:
+    """获取当前文章的上一篇与下一篇（按发布时间倒序）。"""
+
+    published_at = article.published_at
+    article_id = article.id
+
+    prev_statement = (
+        select(Article)
+        .where(
+            Article.status == ArticleStatus.PUBLISHED,
+            or_(
+                Article.published_at > published_at,
+                (Article.published_at == published_at) & (Article.id > article_id),
+            ),
+        )
+        .order_by(Article.published_at.asc(), Article.id.asc())
+        .limit(1)
+    )
+
+    next_statement = (
+        select(Article)
+        .where(
+            Article.status == ArticleStatus.PUBLISHED,
+            or_(
+                Article.published_at < published_at,
+                (Article.published_at == published_at) & (Article.id < article_id),
+            ),
+        )
+        .order_by(Article.published_at.desc(), Article.id.desc())
+        .limit(1)
+    )
+
+    prev_result = await session.execute(prev_statement)
+    next_result = await session.execute(next_statement)
+    return prev_result.scalar_one_or_none(), next_result.scalar_one_or_none()
+
+
 async def get_search_page_data(session: AsyncSession, keyword: str, page: int) -> dict:
     """获取搜索页数据。"""
 

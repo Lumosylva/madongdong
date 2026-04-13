@@ -39,6 +39,8 @@ class ArticlePageResponse(BaseModel):
     site: SiteSettingResponse
     nav_items: list[NavItemResponse]
     article: ArticleDetailResponse
+    previous_article: ArticleSummaryResponse | None = None
+    next_article: ArticleSummaryResponse | None = None
     comments: list[CommentResponse]
 
 

@@ -12,6 +12,7 @@ from app.schemas.web import ArticlePageResponse, HomeResponse, SearchResponse
 from app.services.comment import create_comment
 from app.services.web import (
     get_homepage_data,
+    get_prev_next_published_articles,
     get_published_article_detail,
     get_search_page_data,
     list_approved_comments_by_article,
@@ -39,10 +40,13 @@ async def article_detail(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     data = await get_homepage_data(session, page=1)
     comments = await list_approved_comments_by_article(session, article_id)
+    previous_article, next_article = await get_prev_next_published_articles(session, article)
     return ArticlePageResponse(
         site=SiteSettingResponse.model_validate(data["site"]),
         nav_items=[NavItemResponse.model_validate(item) for item in data["nav_items"]],
         article=article,
+        previous_article=previous_article,
+        next_article=next_article,
         comments=[CommentResponse.model_validate(item) for item in comments],
     )
 
