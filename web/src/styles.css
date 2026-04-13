@@ -356,6 +356,30 @@ a {
   padding: 20px;
 }
 
+.sidebar-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+  max-height: 520px;
+}
+
+.hot-list {
+  margin-top: 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  flex: 1;
+}
+
+.hot-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hot-list::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
 .section-head,
 .card-meta,
 .card-footer,
@@ -570,5 +594,10 @@ a {
   .comment-panel,
   .search-result-panel {
     padding: 16px;
+  }
+
+  .sidebar-card {
+    min-height: 360px;
+    max-height: 420px;
   }
 }

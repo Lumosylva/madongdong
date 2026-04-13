@@ -44,11 +44,13 @@
       <aside class="sidebar">
         <div class="sidebar-card">
           <h3>热门文章</h3>
-          <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
-            <strong>{{ item.title }}</strong>
-            <span class="hot-meta">热度 {{ item.view_count }}</span>
-            <span class="hot-meta">评论 {{ item.comment_count }}</span>
-          </RouterLink>
+          <div class="hot-list">
+            <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
+              <strong>{{ item.title }}</strong>
+              <span class="hot-meta">热度 {{ item.view_count }}</span>
+              <span class="hot-meta">评论 {{ item.comment_count }}</span>
+            </RouterLink>
+          </div>
         </div>
       </aside>
     </main>
