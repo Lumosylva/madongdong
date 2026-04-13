@@ -454,6 +454,26 @@ const rejectComment = async (commentId: number) => {
   await loadAll()
 }
 
+const createCategory = async (payload: { name: string; slug: string; description: string | null }) => {
+  await adminApi.createCategory(payload)
+  await loadAll()
+}
+
+const updateCategory = async (payload: { id: number; name: string; slug: string; description: string | null }) => {
+  await adminApi.updateCategory(payload.id, {
+    name: payload.name,
+    slug: payload.slug,
+    description: payload.description,
+  })
+  await loadAll()
+}
+
+const deleteCategory = async (categoryIdValue: number) => {
+  if (!confirm('确认删除该分类吗？')) return
+  await adminApi.deleteCategory(categoryIdValue)
+  await loadAll()
+}
+
 const cropImageTo64 = async (file: File): Promise<File> => {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()

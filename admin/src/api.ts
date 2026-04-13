@@ -66,6 +66,23 @@ export const adminApi = {
   getCategories(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/categories')
   },
+  createCategory(payload: { name: string; slug: string; description: string | null }): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/categories', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+  updateCategory(categoryId: number, payload: { name: string; slug: string; description: string | null }): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/categories/${categoryId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteCategory(categoryId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/categories/${categoryId}`, {
+      method: 'DELETE',
+    })
+  },
   getTags(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/tags')
   },
