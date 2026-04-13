@@ -420,6 +420,24 @@ a {
   font-weight: 700;
 }
 
+.hot-link strong {
+  display: block;
+  line-height: 1.5;
+}
+
+.hot-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.hot-meta {
+  display: inline-flex;
+  align-items: center;
+}
+
 .cover {
   width: 100%;
   max-height: 420px;

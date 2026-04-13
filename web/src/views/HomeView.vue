@@ -45,8 +45,10 @@
           <div class="hot-list">
             <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
               <strong>{{ item.title }}</strong>
-              <span class="hot-meta">热度 {{ item.view_count }}</span>
-              <span class="hot-meta">评论 {{ item.comment_count }}</span>
+              <div class="hot-stats">
+                <span class="hot-meta">浏览 {{ item.view_count }}</span>
+                <span class="hot-meta">评论 {{ item.comment_count }}</span>
+              </div>
             </RouterLink>
           </div>
         </div>
