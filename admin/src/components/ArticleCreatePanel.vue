@@ -2,7 +2,7 @@
   <section class="editor-panel">
     <h3>创建文章</h3>
     <input :value="title" placeholder="标题" @input="$emit('update:title', ($event.target as HTMLInputElement).value)" />
-    <input :value="summary" placeholder="摘要" @input="$emit('update:summary', ($event.target as HTMLInputElement).value)" />
+    <p class="tips">摘要将自动提取正文开头 120 个字符</p>
     <input :value="coverUrl" placeholder="封面图 URL" @input="$emit('update:coverUrl', ($event.target as HTMLInputElement).value)" />
     <textarea
       :value="contentMarkdown"
@@ -35,7 +35,6 @@
 defineProps<{
   isAdmin: boolean
   title: string
-  summary: string
   coverUrl: string
   contentMarkdown: string
   categoryId: number
@@ -45,7 +44,6 @@ defineProps<{
 
 defineEmits<{
   'update:title': [value: string]
-  'update:summary': [value: string]
   'update:coverUrl': [value: string]
   'update:contentMarkdown': [value: string]
   'update:categoryId': [value: number]

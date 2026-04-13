@@ -16,10 +16,12 @@
 
     <article class="article-panel">
       <div class="article-head">
-        <p class="article-category">{{ data.article.category?.name || '未分类' }}</p>
+        <p class="article-breadcrumb">首页 / {{ data.article.category?.name || '未分类' }} / 正文</p>
+        <div class="article-head-divider"></div>
         <h1>{{ data.article.title }}</h1>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
+          <span>{{ data.article.category?.name || '未分类' }}</span>
           <span>{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
           <span>{{ data.article.view_count }} 浏览</span>
           <span>{{ data.article.comment_count }} 评论</span>

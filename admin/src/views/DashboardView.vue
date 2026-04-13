@@ -102,7 +102,6 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 const title = ref('')
-const summary = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
 const categoryId = ref(1)
@@ -237,7 +236,6 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
       return {
         isAdmin: isAdmin.value,
         title: title.value,
-        summary: summary.value,
         coverUrl: coverUrl.value,
         contentMarkdown: contentMarkdown.value,
         categoryId: categoryId.value,
@@ -285,9 +283,6 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
       return {
         'update:title': (value: string) => {
           title.value = value
-        },
-        'update:summary': (value: string) => {
-          summary.value = value
         },
         'update:coverUrl': (value: string) => {
           coverUrl.value = value
@@ -531,9 +526,15 @@ const createArticle = async () => {
     ? (action.value === 'publish' ? 'publish' : 'draft')
     : (action.value === 'submit' ? 'submit' : 'draft')
 
+  const autoSummary = contentMarkdown.value
+    .replace(/[#>*`\[\]\(\)\-!]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120)
+
   await adminApi.createArticle({
     title: title.value,
-    summary: summary.value,
+    summary: autoSummary,
     content_markdown: contentMarkdown.value,
     cover_url: coverUrl.value || null,
     category_id: categoryId.value,
@@ -544,7 +545,6 @@ const createArticle = async () => {
     action: finalAction,
   })
   title.value = ''
-  summary.value = ''
   coverUrl.value = ''
   contentMarkdown.value = ''
   tagIdsText.value = ''

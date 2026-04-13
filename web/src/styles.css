@@ -469,6 +469,17 @@ a {
   font-size: 13px;
 }
 
+.article-breadcrumb {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.article-head-divider {
+  margin: 10px 0 14px;
+  border-top: 1px solid var(--line);
+}
+
 .article-body {
   color: var(--text);
   line-height: 1.9;
