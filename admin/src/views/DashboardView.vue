@@ -51,7 +51,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { adminApi } from '../api'
+import { adminApi, API_ORIGIN } from '../api'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
@@ -115,6 +115,7 @@ const userMenuRef = ref<HTMLElement | null>(null)
 const logoUploading = ref(false)
 const logoUploadMessage = ref('')
 const logoUploadStatus = ref<'success' | 'error' | ''>('')
+const logoCropApplied = ref(false)
 
 const mainMenus: MainMenuItem[] = [
   { key: 'overview', label: '概览' },
@@ -259,6 +260,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         logoUploading: logoUploading.value,
         logoUploadMessage: logoUploadMessage.value,
         logoUploadStatus: logoUploadStatus.value,
+        logoCropApplied: logoCropApplied.value,
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
       }
@@ -333,6 +335,13 @@ const formatArticleStatus = (status: string) => {
   return status
 }
 
+const normalizeAssetUrl = (url: string | null | undefined) => {
+  const value = String(url || '').trim()
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value)) return value
+  return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
+}
+
 const toggleUserMenu = () => {
   isUserMenuOpen.value = !isUserMenuOpen.value
 }
@@ -370,7 +379,7 @@ const loadAll = async () => {
     comments.value = commentRes.data
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
-    siteLogo.value = siteRes.data.site_logo || ''
+    siteLogo.value = normalizeAssetUrl(siteRes.data.site_logo || '')
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
   } catch (error) {
@@ -451,17 +460,19 @@ const handleSiteLogoSelect = async (file: File) => {
   logoUploading.value = true
   logoUploadStatus.value = ''
   logoUploadMessage.value = ''
+  logoCropApplied.value = false
 
   try {
     let uploadFile = file
     if (file.type !== 'image/svg+xml') {
       uploadFile = await cropImageTo64(file)
+      logoCropApplied.value = true
     }
 
     const uploaded = await adminApi.uploadMediaFile(uploadFile)
-    siteLogo.value = String(uploaded.data?.url || '')
+    siteLogo.value = normalizeAssetUrl(String(uploaded.data?.url || ''))
     logoUploadStatus.value = 'success'
-    logoUploadMessage.value = 'Logo 上传成功'
+    logoUploadMessage.value = logoCropApplied.value ? 'Logo 上传成功（已裁剪 64×64）' : 'Logo 上传成功'
   } catch (error) {
     logoUploadStatus.value = 'error'
     logoUploadMessage.value = error instanceof Error ? error.message : 'Logo 上传失败'

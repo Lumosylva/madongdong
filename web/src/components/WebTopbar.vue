@@ -1,7 +1,8 @@
 <template>
   <header class="topbar">
     <div class="brand-block">
-      <span class="brand-mark">MD</span>
+      <img v-if="logoUrl" :src="logoUrl" class="brand-logo" alt="site logo" />
+      <span v-else class="brand-mark">MD</span>
       <div>
         <h1>{{ title }}</h1>
         <p v-if="subtitle" class="brand-subtitle">{{ subtitle }}</p>
@@ -102,6 +103,7 @@ const props = withDefaults(
     navItems: NavItem[]
     theme: ThemeMode
     subtitle?: string
+    logoUrl?: string
     searchKeyword?: string
     currentPath?: string
     currentFullPath?: string
@@ -109,6 +111,7 @@ const props = withDefaults(
   }>(),
   {
     subtitle: '',
+    logoUrl: '',
     searchKeyword: '',
     currentPath: '/',
     currentFullPath: '/',

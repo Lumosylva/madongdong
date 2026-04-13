@@ -3,6 +3,7 @@
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
+      :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
       :current-path="route.path"
@@ -60,7 +61,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { webApi } from '../api'
+import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import type { HomeResponse } from '../types'
@@ -83,8 +84,23 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
+const applySiteMeta = (siteTitle: string, siteLogo: string | null) => {
+  document.title = siteTitle || 'MaDongDong'
+  const iconUrl = toAbsoluteAssetUrl(siteLogo)
+  if (!iconUrl) return
+
+  let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
+  if (!iconLink) {
+    iconLink = document.createElement('link')
+    iconLink.rel = 'icon'
+    document.head.appendChild(iconLink)
+  }
+  iconLink.href = iconUrl
+}
+
 const loadData = async () => {
   data.value = await webApi.getHome(page.value)
+  applySiteMeta(data.value.site.site_title, data.value.site.site_logo)
 }
 
 const changePage = async (value: number) => {

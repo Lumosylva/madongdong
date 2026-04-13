@@ -59,6 +59,7 @@ defineProps<{
   logoUploading?: boolean
   logoUploadMessage?: string
   logoUploadStatus?: 'success' | 'error' | ''
+  logoCropApplied?: boolean
 }>()
 
 const emit = defineEmits<{

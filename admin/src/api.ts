@@ -1,6 +1,7 @@
 import type { AdminUser, LoginResponse } from './types'
 
 const API_BASE = 'http://127.0.0.1:8000/api/v1'
+export const API_ORIGIN = new URL(API_BASE).origin
 
 type WrappedResponse<T> = {
   success: boolean

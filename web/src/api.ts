@@ -1,6 +1,14 @@
 import type { ArticlePageResponse, HomeResponse, SearchResponse } from './types'
 
 const API_BASE = 'http://127.0.0.1:8000/api/v1'
+const API_ORIGIN = new URL(API_BASE).origin
+
+export const toAbsoluteAssetUrl = (url: string | null | undefined) => {
+  const value = String(url || '').trim()
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value)) return value
+  return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
