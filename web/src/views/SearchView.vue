@@ -66,8 +66,11 @@ const goSearch = () => {
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
 }
 
-const applySiteMeta = (siteTitle: string, siteLogo: string | null) => {
-  document.title = siteTitle || 'MaDongDong'
+const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
+  const title = String(siteTitle || '').trim()
+  const subtitle = String(siteSubtitle || '').trim()
+  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || 'MaDongDong')
+
   const iconUrl = toAbsoluteAssetUrl(siteLogo)
   if (!iconUrl) return
 
@@ -85,7 +88,7 @@ const loadData = async () => {
   keyword.value = queryKeyword
   if (!queryKeyword) return
   data.value = await webApi.search(queryKeyword)
-  applySiteMeta(data.value.site.site_title, data.value.site.site_logo)
+  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
 watch(() => route.query.keyword, loadData)

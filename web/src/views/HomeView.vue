@@ -84,8 +84,11 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
-const applySiteMeta = (siteTitle: string, siteLogo: string | null) => {
-  document.title = siteTitle || 'MaDongDong'
+const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
+  const title = String(siteTitle || '').trim()
+  const subtitle = String(siteSubtitle || '').trim()
+  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || 'MaDongDong')
+
   const iconUrl = toAbsoluteAssetUrl(siteLogo)
   if (!iconUrl) return
 
@@ -100,7 +103,7 @@ const applySiteMeta = (siteTitle: string, siteLogo: string | null) => {
 
 const loadData = async () => {
   data.value = await webApi.getHome(page.value)
-  applySiteMeta(data.value.site.site_title, data.value.site.site_logo)
+  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
 const changePage = async (value: number) => {
