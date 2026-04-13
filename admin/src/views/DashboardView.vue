@@ -41,72 +41,7 @@
       </aside>
 
       <main class="dashboard-main">
-        <OverviewPanel
-          v-if="currentContentView === 'overview'"
-          :articles="articles"
-          :deleted-articles="deletedArticles"
-          :comments="comments"
-          :loading="loading"
-          :error-message="errorMessage"
-          :format-article-status="formatArticleStatus"
-        />
-
-        <ArticleManagePanel
-          v-if="currentContentView === 'articles-manage'"
-          :articles="articles"
-          :format-article-status="formatArticleStatus"
-          @move-to-trash="moveToTrash"
-        />
-
-        <ArticleTrashPanel
-          v-if="currentContentView === 'articles-trash'"
-          :deleted-articles="deletedArticles"
-          @restore="restoreFromTrash"
-          @remove-permanently="removePermanently"
-        />
-
-        <ArticleCreatePanel
-          v-if="currentContentView === 'articles-create'"
-          :is-admin="isAdmin"
-          :title="title"
-          :summary="summary"
-          :cover-url="coverUrl"
-          :content-markdown="contentMarkdown"
-          :category-id="categoryId"
-          :tag-ids-text="tagIdsText"
-          :action="action"
-          @update:title="title = $event"
-          @update:summary="summary = $event"
-          @update:cover-url="coverUrl = $event"
-          @update:content-markdown="contentMarkdown = $event"
-          @update:category-id="categoryId = $event"
-          @update:tag-ids-text="tagIdsText = $event"
-          @update:action="action = $event"
-          @submit="createArticle"
-        />
-
-        <MediaPanel
-          v-if="currentContentView === 'media'"
-          :media="media"
-        />
-
-        <CommentsPanel
-          v-if="currentContentView === 'comments'"
-          :comments="comments"
-        />
-
-        <SiteSettingsPanel
-          v-if="currentContentView === 'site'"
-          :site-title="siteTitle"
-          :site-subtitle="siteSubtitle"
-          :icp-beian="icpBeian"
-          :copyright-text="copyrightText"
-          @update:site-title="siteTitle = $event"
-          @update:site-subtitle="siteSubtitle = $event"
-          @update:icp-beian="icpBeian = $event"
-          @update:copyright-text="copyrightText = $event"
-          @save="saveSite"
-        />
+        <component :is="activePanelComponent" v-bind="activePanelProps" v-on="activePanelListeners" />
       </main>
     </div>
   </div>
@@ -248,6 +183,126 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (articleSubView.value === 'trash') return 'articles-trash'
   if (articleSubView.value === 'create') return 'articles-create'
   return 'articles-manage'
+})
+
+const panelComponentMap: Record<ContentViewKey, unknown> = {
+  overview: OverviewPanel,
+  'articles-manage': ArticleManagePanel,
+  'articles-trash': ArticleTrashPanel,
+  'articles-create': ArticleCreatePanel,
+  media: MediaPanel,
+  comments: CommentsPanel,
+  site: SiteSettingsPanel,
+}
+
+const activePanelComponent = computed(() => panelComponentMap[currentContentView.value])
+
+const activePanelProps = computed<Record<string, unknown>>(() => {
+  switch (currentContentView.value) {
+    case 'overview':
+      return {
+        articles: articles.value,
+        deletedArticles: deletedArticles.value,
+        comments: comments.value,
+        loading: loading.value,
+        errorMessage: errorMessage.value,
+        formatArticleStatus,
+      }
+    case 'articles-manage':
+      return {
+        articles: articles.value,
+        formatArticleStatus,
+      }
+    case 'articles-trash':
+      return {
+        deletedArticles: deletedArticles.value,
+      }
+    case 'articles-create':
+      return {
+        isAdmin: isAdmin.value,
+        title: title.value,
+        summary: summary.value,
+        coverUrl: coverUrl.value,
+        contentMarkdown: contentMarkdown.value,
+        categoryId: categoryId.value,
+        tagIdsText: tagIdsText.value,
+        action: action.value,
+      }
+    case 'media':
+      return {
+        media: media.value,
+      }
+    case 'comments':
+      return {
+        comments: comments.value,
+      }
+    case 'site':
+      return {
+        siteTitle: siteTitle.value,
+        siteSubtitle: siteSubtitle.value,
+        icpBeian: icpBeian.value,
+        copyrightText: copyrightText.value,
+      }
+    default:
+      return {}
+  }
+})
+
+const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(() => {
+  switch (currentContentView.value) {
+    case 'articles-manage':
+      return {
+        moveToTrash,
+      }
+    case 'articles-trash':
+      return {
+        restore: restoreFromTrash,
+        removePermanently,
+      }
+    case 'articles-create':
+      return {
+        'update:title': (value: string) => {
+          title.value = value
+        },
+        'update:summary': (value: string) => {
+          summary.value = value
+        },
+        'update:coverUrl': (value: string) => {
+          coverUrl.value = value
+        },
+        'update:contentMarkdown': (value: string) => {
+          contentMarkdown.value = value
+        },
+        'update:categoryId': (value: number) => {
+          categoryId.value = value
+        },
+        'update:tagIdsText': (value: string) => {
+          tagIdsText.value = value
+        },
+        'update:action': (value: 'draft' | 'submit' | 'publish') => {
+          action.value = value
+        },
+        submit: createArticle,
+      }
+    case 'site':
+      return {
+        'update:siteTitle': (value: string) => {
+          siteTitle.value = value
+        },
+        'update:siteSubtitle': (value: string) => {
+          siteSubtitle.value = value
+        },
+        'update:icpBeian': (value: string) => {
+          icpBeian.value = value
+        },
+        'update:copyrightText': (value: string) => {
+          copyrightText.value = value
+        },
+        save: saveSite,
+      }
+    default:
+      return {}
+  }
 })
 
 const formatArticleStatus = (status: string) => {
