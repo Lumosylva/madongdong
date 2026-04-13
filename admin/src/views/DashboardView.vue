@@ -526,7 +526,7 @@ const uploadMedia = async (file: File) => {
 const deleteMedia = async (mediaId: number) => {
   if (!confirm('确认删除该媒体吗？删除后不可恢复。')) return
   try {
-    await adminApi.deleteMedia([mediaId])
+    await adminApi.deleteMediaFiles([mediaId])
     mediaToastStatus.value = 'success'
     mediaToastMessage.value = '媒体已删除'
     await loadAll()

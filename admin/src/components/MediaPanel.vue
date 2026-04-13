@@ -2,14 +2,15 @@
   <section class="panel">
     <h3>媒体管理</h3>
 
+    <p v-if="toastMessage" class="tips" :class="toastStatus === 'error' ? 'error-message' : 'success-message'">
+      {{ toastMessage }}
+    </p>
+    <p v-if="copyMessage" class="tips success-message">{{ copyMessage }}</p>
+
     <div class="action-row" style="margin-bottom: 12px;">
       <input ref="fileInputRef" type="file" accept="image/*,audio/*,video/*" @change="onSelectFile" />
       <button :disabled="uploading" @click="triggerUpload">{{ uploading ? '上传中...' : '上传媒体' }}</button>
     </div>
-
-    <p v-if="toastMessage" class="tips" :class="toastStatus === 'error' ? 'error-message' : 'success-message'">
-      {{ toastMessage }}
-    </p>
 
     <div class="panel" style="margin-top: 10px;">
       <h4>图片</h4>
@@ -19,7 +20,7 @@
             <p>{{ item.original_name }}</p>
             <small>
               {{ item.mime_type }} ｜
-              <a href="javascript:void(0)" @click="copyUrl(item.url)">{{ fullUrl(item.url) }}</a>
+              <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>
           <button class="danger-btn" @click="$emit('delete-media', item.id)">删除</button>
@@ -36,7 +37,7 @@
             <p>{{ item.original_name }}</p>
             <small>
               {{ item.mime_type }} ｜
-              <a href="javascript:void(0)" @click="copyUrl(item.url)">{{ fullUrl(item.url) }}</a>
+              <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>
           <button class="danger-btn" @click="$emit('delete-media', item.id)">删除</button>
@@ -53,7 +54,7 @@
             <p>{{ item.original_name }}</p>
             <small>
               {{ item.mime_type }} ｜
-              <a href="javascript:void(0)" @click="copyUrl(item.url)">{{ fullUrl(item.url) }}</a>
+              <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>
           <button class="danger-btn" @click="$emit('delete-media', item.id)">删除</button>
@@ -81,6 +82,7 @@ const emit = defineEmits<{
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const copyMessage = ref('')
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -95,7 +97,11 @@ const onSelectFile = (event: Event) => {
 }
 
 const grouped = computed(() => {
-  const image = props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'IMAGE')
+  const image = props.media.filter((item) => {
+    const mediaType = String(item.media_type || '').toUpperCase()
+    const mime = String(item.mime_type || '').toLowerCase()
+    return mediaType === 'IMAGE' || mime === 'image/svg+xml'
+  })
   const audio = props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'AUDIO')
   const video = props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'VIDEO')
   return { image, audio, video }
@@ -108,7 +114,11 @@ const fullUrl = (url: string) => {
   return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
 }
 
-const copyUrl = async (url: string) => {
+const copyUrl = async (url: string, fileName: string) => {
   await navigator.clipboard.writeText(fullUrl(url))
+  copyMessage.value = `已复制 URL：${fileName}`
+  setTimeout(() => {
+    copyMessage.value = ''
+  }, 1800)
 }
 </script>

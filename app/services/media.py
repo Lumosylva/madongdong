@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.models.auth import User
 from app.models.media import MediaFile, MediaFolder, MediaType
 
-IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}
 AUDIO_MIME_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg"}
 VIDEO_MIME_TYPES = {"video/mp4", "video/webm", "video/ogg"}
 
