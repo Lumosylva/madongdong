@@ -278,6 +278,24 @@ undefined
   background: linear-gradient(135deg, var(--accent), #38bdf8);
 }
 
+.sidebar-subnav {
+  display: grid;
+  gap: 6px;
+  padding-left: 14px;
+}
+
+.sidebar-subnav a {
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+.sidebar-subnav a.active {
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--bg-soft);
+  border-color: var(--line);
+}
+
 .dashboard-main {
   display: grid;
   gap: 18px;

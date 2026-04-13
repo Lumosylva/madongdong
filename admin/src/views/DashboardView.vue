@@ -27,6 +27,11 @@
         <nav class="sidebar-nav">
           <a href="javascript:void(0)" :class="{ active: currentView === 'overview' }" @click="setView('overview')">概览</a>
           <a href="javascript:void(0)" :class="{ active: currentView === 'articles' }" @click="setView('articles')">文章</a>
+          <div v-if="currentView === 'articles'" class="sidebar-subnav">
+            <a href="javascript:void(0)" :class="{ active: articleSubView === 'manage' }" @click="articleSubView = 'manage'">文章管理</a>
+            <a href="javascript:void(0)" :class="{ active: articleSubView === 'trash' }" @click="articleSubView = 'trash'">垃圾箱</a>
+            <a href="javascript:void(0)" :class="{ active: articleSubView === 'create' }" @click="articleSubView = 'create'">创建文章</a>
+          </div>
           <a
             v-if="isAdmin"
             href="javascript:void(0)"
@@ -68,49 +73,47 @@
           </div>
         </section>
 
-        <template v-if="currentView === 'articles'">
-          <section class="panel">
-            <h3>文章管理</h3>
-            <ul>
-              <li v-for="item in articles" :key="item.id" class="article-row">
-                <span>{{ item.title }} · {{ formatArticleStatus(item.status) }}</span>
-                <button class="danger-btn" @click="moveToTrash(item.id)">删除</button>
-              </li>
-            </ul>
-          </section>
+        <section class="panel" v-if="currentView === 'articles' && articleSubView === 'manage'">
+          <h3>文章管理</h3>
+          <ul>
+            <li v-for="item in articles" :key="item.id" class="article-row">
+              <span>{{ item.title }} · {{ formatArticleStatus(item.status) }}</span>
+              <button class="danger-btn" @click="moveToTrash(item.id)">删除</button>
+            </li>
+          </ul>
+        </section>
 
-          <section class="panel">
-            <h3>垃圾箱</h3>
-            <p class="tips" v-if="deletedArticles.length === 0">垃圾箱为空</p>
-            <ul v-else>
-              <li v-for="item in deletedArticles" :key="item.id" class="article-row">
-                <span>{{ item.title }}</span>
-                <div class="row-actions">
-                  <button @click="restoreFromTrash(item.id)">恢复</button>
-                  <button class="danger-btn" @click="removePermanently(item.id)">彻底删除</button>
-                </div>
-              </li>
-            </ul>
-          </section>
+        <section class="panel" v-if="currentView === 'articles' && articleSubView === 'trash'">
+          <h3>垃圾箱</h3>
+          <p class="tips" v-if="deletedArticles.length === 0">垃圾箱为空</p>
+          <ul v-else>
+            <li v-for="item in deletedArticles" :key="item.id" class="article-row">
+              <span>{{ item.title }}</span>
+              <div class="row-actions">
+                <button @click="restoreFromTrash(item.id)">恢复</button>
+                <button class="danger-btn" @click="removePermanently(item.id)">彻底删除</button>
+              </div>
+            </li>
+          </ul>
+        </section>
 
-          <section class="editor-panel">
-            <h3>快速创建文章</h3>
-            <input v-model="title" placeholder="标题" />
-            <input v-model="summary" placeholder="摘要" />
-            <input v-model="coverUrl" placeholder="封面图 URL" />
-            <textarea v-model="contentMarkdown" placeholder="Markdown 正文"></textarea>
-            <div class="action-row">
-              <input v-model.number="categoryId" type="number" placeholder="分类 ID" />
-              <input v-model="tagIdsText" placeholder="标签 ID，逗号分隔" />
-              <select v-model="action">
-                <option value="draft">保存草稿</option>
-                <option v-if="!isAdmin" value="submit">提交审核</option>
-                <option v-if="isAdmin" value="publish">直接发布</option>
-              </select>
-              <button @click="createArticle">提交</button>
-            </div>
-          </section>
-        </template>
+        <section class="editor-panel" v-if="currentView === 'articles' && articleSubView === 'create'">
+          <h3>创建文章</h3>
+          <input v-model="title" placeholder="标题" />
+          <input v-model="summary" placeholder="摘要" />
+          <input v-model="coverUrl" placeholder="封面图 URL" />
+          <textarea v-model="contentMarkdown" placeholder="Markdown 正文"></textarea>
+          <div class="action-row">
+            <input v-model.number="categoryId" type="number" placeholder="分类 ID" />
+            <input v-model="tagIdsText" placeholder="标签 ID，逗号分隔" />
+            <select v-model="action">
+              <option value="draft">保存草稿</option>
+              <option v-if="!isAdmin" value="submit">提交审核</option>
+              <option v-if="isAdmin" value="publish">直接发布</option>
+            </select>
+            <button @click="createArticle">提交</button>
+          </div>
+        </section>
 
         <section class="panel" v-if="currentView === 'media'">
           <h3>媒体管理</h3>
@@ -148,9 +151,11 @@ import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site'
+type ArticleSubView = 'manage' | 'trash' | 'create'
 
 const router = useRouter()
 const currentView = ref<ViewType>('overview')
+const articleSubView = ref<ArticleSubView>('manage')
 const currentUser = ref<AdminUser | null>(null)
 const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
@@ -177,6 +182,9 @@ const userMenuRef = ref<HTMLElement | null>(null)
 
 const setView = (view: ViewType) => {
   currentView.value = view
+  if (view === 'articles' && !articleSubView.value) {
+    articleSubView.value = 'manage'
+  }
 }
 
 const applyTheme = (value: ThemeMode) => {
