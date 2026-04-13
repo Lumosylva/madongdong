@@ -622,6 +622,51 @@ const saveSite = async () => {
   await loadAll()
 }
 
+const tagSlugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'tag'
+
+const resolveTagIdsByNames = async (rawInput: string) => {
+  const names = rawInput
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (!names.length) return [] as number[]
+
+  const dedupNames = Array.from(new Set(names))
+  const tagsRes = await adminApi.getTags()
+  const existingTags = tagsRes.data || []
+  const existingMap = new Map<string, any>()
+  for (const tag of existingTags) {
+    const key = String(tag.name || '').trim().toLowerCase()
+    if (key) existingMap.set(key, tag)
+  }
+
+  const resolvedIds: number[] = []
+  for (const name of dedupNames) {
+    const key = name.toLowerCase()
+    if (existingMap.has(key)) {
+      resolvedIds.push(existingMap.get(key).id)
+      continue
+    }
+
+    const created = await adminApi.createTag({
+      name,
+      slug: tagSlugify(name),
+    })
+    resolvedIds.push(created.data.id)
+    existingMap.set(key, created.data)
+  }
+
+  return resolvedIds
+}
+
 const createArticle = async () => {
   const finalAction = isAdmin.value
     ? (action.value === 'publish' ? 'publish' : 'draft')
@@ -633,16 +678,15 @@ const createArticle = async () => {
     .trim()
     .slice(0, 120)
 
+  const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
+
   await adminApi.createArticle({
     title: title.value,
     summary: autoSummary || '暂无摘要',
     content_markdown: contentMarkdown.value,
     cover_url: coverUrl.value || null,
     category_id: categoryId.value,
-    tag_ids: tagIdsText.value
-      .split(',')
-      .map((item) => Number(item.trim()))
-      .filter((item) => !Number.isNaN(item)),
+    tag_ids: resolvedTagIds,
     action: finalAction,
   })
   title.value = ''

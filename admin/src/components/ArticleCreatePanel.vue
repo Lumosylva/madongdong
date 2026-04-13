@@ -15,7 +15,7 @@
       </select>
       <input
         :value="tagIdsText"
-        placeholder="标签 ID，逗号分隔"
+        placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
         @input="$emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
       />
       <select :value="action" @change="$emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">

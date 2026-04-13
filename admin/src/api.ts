@@ -86,6 +86,12 @@ export const adminApi = {
   getTags(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/tags')
   },
+  createTag(payload: { name: string; slug: string }): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/tags', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
   createArticle(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/articles', {
       method: 'POST',
