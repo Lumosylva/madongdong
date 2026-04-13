@@ -29,6 +29,41 @@
       </div>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
       <div class="article-body" v-html="data.article.content_html"></div>
+
+      <section class="article-extra">
+        <div class="article-tags">
+          <span class="meta-label">标签</span>
+          <div class="tag-list">
+            <span v-if="!data.article.tags?.length" class="tag-item muted">无标签</span>
+            <RouterLink
+              v-for="tag in data.article.tags"
+              :key="tag.id"
+              :to="`/search?keyword=${encodeURIComponent(tag.name)}`"
+              class="tag-item"
+            >
+              # {{ tag.name }}
+            </RouterLink>
+          </div>
+        </div>
+
+        <div class="article-nav-links">
+          <div class="nav-row">
+            <span class="meta-label">上一篇</span>
+            <RouterLink v-if="data.previous_article" :to="`/article/${data.previous_article.id}`" class="adjacent-link">
+              {{ truncateText(data.previous_article.title, 50) }}
+            </RouterLink>
+            <span v-else class="adjacent-empty">没有了</span>
+          </div>
+
+          <div class="nav-row">
+            <span class="meta-label">下一篇</span>
+            <RouterLink v-if="data.next_article" :to="`/article/${data.next_article.id}`" class="adjacent-link">
+              {{ truncateText(data.next_article.title, 50) }}
+            </RouterLink>
+            <span v-else class="adjacent-empty">没有了</span>
+          </div>
+        </div>
+      </section>
     </article>
 
     <section class="comment-panel">
@@ -185,6 +220,12 @@ const submitComment = async () => {
 }
 
 const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')
+
+const truncateText = (value: string | null | undefined, maxLength: number) => {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
+}
 
 const formatRelativeTime = (value: string) => {
   const date = new Date(value)

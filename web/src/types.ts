@@ -93,6 +93,8 @@ export type ArticlePageResponse = {
   site: SiteSetting
   nav_items: NavItem[]
   article: Article
+  previous_article: Article | null
+  next_article: Article | null
   comments: Comment[]
 }
 
