@@ -267,10 +267,16 @@ a {
 .search-trigger,
 .search-submit-inside,
 .theme-toggle {
-  border: 1px solid var(--line) !important;
-  background: var(--bg-soft) !important;
+  border: none !important;
+  background: transparent !important;
   color: var(--text) !important;
   border-radius: 999px;
+}
+
+.search-trigger:hover,
+.search-submit-inside:hover,
+.theme-toggle:hover {
+  color: var(--accent);
 }
 
 .search-fade-slide-enter-active,
