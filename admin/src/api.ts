@@ -81,6 +81,16 @@ export const adminApi = {
   getComments(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/comments')
   },
+  approveComment(commentId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/comments/${commentId}/approve`, {
+      method: 'POST',
+    })
+  },
+  rejectComment(commentId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/comments/${commentId}/reject`, {
+      method: 'POST',
+    })
+  },
   getSiteSettings(): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/site/settings')
   },

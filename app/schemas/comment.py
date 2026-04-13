@@ -24,6 +24,15 @@ class CommentReviewRequest(BaseModel):
     comment: str | None = Field(default=None, max_length=255)
 
 
+class CommentArticleResponse(BaseModel):
+    """评论所属文章摘要。"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+
+
 class CommentResponse(BaseModel):
     """评论响应。"""
 
@@ -40,3 +49,4 @@ class CommentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     user: CurrentUserResponse | None = None
+    article: CommentArticleResponse | None = None

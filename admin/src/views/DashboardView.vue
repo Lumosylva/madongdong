@@ -121,7 +121,7 @@ const mainMenus: MainMenuItem[] = [
   { key: 'overview', label: '概览' },
   { key: 'articles', label: '文章' },
   { key: 'media', label: '媒体', adminOnly: true },
-  { key: 'comments', label: '评论', adminOnly: true },
+  { key: 'comments', label: '评论' },
   { key: 'site', label: '站点', adminOnly: true },
 ]
 
@@ -251,6 +251,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'comments':
       return {
         comments: comments.value,
+        formatCommentStatus,
       }
     case 'site':
       return {
@@ -305,6 +306,11 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
         },
         submit: createArticle,
       }
+    case 'comments':
+      return {
+        approve: approveComment,
+        reject: rejectComment,
+      }
     case 'site':
       return {
         'update:siteTitle': (value: string) => {
@@ -332,6 +338,13 @@ const formatArticleStatus = (status: string) => {
   if (status === 'DRAFT' || status === 'draft') return '草稿'
   if (status === 'PENDING_REVIEW' || status === 'pending_review' || status === 'pending') return '待审核'
   if (status === 'REJECTED' || status === 'rejected') return '已驳回'
+  return status
+}
+
+const formatCommentStatus = (status: string) => {
+  if (status === 'PENDING' || status === 'pending') return '待审核'
+  if (status === 'APPROVED' || status === 'approved') return '已通过'
+  if (status === 'REJECTED' || status === 'rejected') return '已拒绝'
   return status
 }
 
@@ -409,6 +422,21 @@ const restoreFromTrash = async (articleId: number) => {
 const removePermanently = async (articleId: number) => {
   if (!confirm('确认彻底删除？该操作不可恢复。')) return
   await adminApi.permanentlyDeleteArticle(articleId)
+  await loadAll()
+}
+
+const approveComment = async (commentId: number) => {
+  const target = comments.value.find((item) => item.id === commentId)
+  if (!target || String(target.status).toUpperCase() === 'APPROVED') return
+  await adminApi.approveComment(commentId)
+  await loadAll()
+}
+
+const rejectComment = async (commentId: number) => {
+  const target = comments.value.find((item) => item.id === commentId)
+  if (!target || String(target.status).toUpperCase() === 'REJECTED') return
+  if (!confirm('确认拒绝该评论吗？')) return
+  await adminApi.rejectComment(commentId)
   await loadAll()
 }
 

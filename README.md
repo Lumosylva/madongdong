@@ -127,6 +127,17 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 
 默认地址：`http://127.0.0.1:5174`（或 Vite 自动分配端口）
 
+### 4) Admin 环境变量（可选）
+
+为保证 admin 中“评论所属文章标题”跳转到正确的 web 地址，可在 `admin/.env` 中配置：
+
+```env
+VITE_WEB_BASE_URL=http://127.0.0.1:5173
+```
+
+- 开发环境可保持默认值。
+- 生产环境请替换为实际 web 域名，例如：`https://your-site.com`。
+
 ---
 
 ## 默认管理员账号

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import require_role
+from app.core.security import require_any_role
 from app.models.auth import User
 from app.schemas.comment import CommentResponse
 from app.services.comment import approve_comment, list_comments, reject_comment
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/admin/comments", tags=["admin-comments"])
 @router.get("", summary="查询评论列表")
 async def get_comments(
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     comments = await list_comments(session)
     return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
@@ -26,7 +26,7 @@ async def get_comments(
 async def approve_comment_endpoint(
     comment_id: int,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     comment = await approve_comment(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())
@@ -36,7 +36,7 @@ async def approve_comment_endpoint(
 async def reject_comment_endpoint(
     comment_id: int,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     comment = await reject_comment(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())

@@ -106,3 +106,18 @@ def require_role(role_name: str) -> Callable:
         return current_user
 
     return checker
+
+
+def require_any_role(role_names: list[str]) -> Callable:
+    """校验用户拥有任一角色。"""
+
+    async def checker(current_user: User = Depends(get_current_user)) -> User:
+        current_role_names = {role.name for role in current_user.roles}
+        if not any(role in current_role_names for role in role_names):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="权限不足",
+            )
+        return current_user
+
+    return checker
