@@ -41,10 +41,17 @@
           <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
           <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
         </div>
-        <textarea v-model="commentContent" placeholder="写下你的看法（支持友好交流）"></textarea>
+        <textarea
+          v-model="commentContent"
+          placeholder="写下你的看法（支持友好交流）"
+          @focus="commentFieldFocused = true"
+          @blur="commentFieldFocused = false"
+        ></textarea>
         <div class="comment-actions">
           <span class="comment-tip">提交后将按站点设置进行审核或直接展示</span>
-          <button type="submit">提交评论</button>
+          <button type="submit" :disabled="commentSubmitting || !commentContent.trim()">
+            {{ commentSubmitting ? '提交中...' : (!commentContent.trim() ? '请输入评论内容' : '提交评论') }}
+          </button>
         </div>
       </form>
 
