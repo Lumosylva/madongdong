@@ -5,6 +5,7 @@
       :nav-items="data.nav_items"
       :theme="theme"
       :current-path="route.path"
+      :current-full-path="route.fullPath"
       :search-keyword="keyword"
       :collapsible-search="true"
       @update:search-keyword="keyword = $event"

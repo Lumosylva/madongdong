@@ -5,6 +5,16 @@
       <h1>{{ title }}</h1>
     </div>
 
+    <button
+      type="button"
+      class="hamburger-btn"
+      :aria-label="mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'"
+      :aria-expanded="mobileMenuOpen"
+      @click="mobileMenuOpen = !mobileMenuOpen"
+    >
+      <span aria-hidden="true">☰</span>
+    </button>
+
     <nav class="nav">
       <RouterLink
         v-for="item in navItems"
@@ -21,28 +31,61 @@
         v-if="collapsibleSearch"
         type="button"
         class="search-trigger"
-        aria-label="展开搜索"
+        :aria-label="searchOpen ? '收起搜索' : '展开搜索'"
+        :aria-expanded="searchOpen"
         @click="toggleSearch"
       >
         <span aria-hidden="true">⌕</span>
       </button>
 
-      <input
-        v-show="!collapsibleSearch || searchOpen"
-        :value="searchKeyword"
-        placeholder="搜索文章、摘要与内容"
-        @input="onKeywordInput"
-      />
+      <transition name="search-fade-slide">
+        <input
+          v-if="!collapsibleSearch || searchOpen"
+          :value="searchKeyword"
+          placeholder="搜索文章、摘要与内容"
+          @input="onKeywordInput"
+        />
+      </transition>
 
-      <button v-show="!collapsibleSearch || searchOpen" type="submit" aria-label="搜索">
-        <span aria-hidden="true">⌕</span>
-      </button>
+      <transition name="search-fade-slide">
+        <button v-if="!collapsibleSearch || searchOpen" type="submit" aria-label="搜索">
+          <span aria-hidden="true">⌕</span>
+        </button>
+      </transition>
 
       <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="$emit('toggle-theme')">
         <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
       </button>
     </form>
   </header>
+
+  <transition name="drawer-fade">
+    <div v-if="mobileMenuOpen" class="drawer-mask" @click="mobileMenuOpen = false"></div>
+  </transition>
+
+  <transition name="drawer-slide">
+    <aside v-if="mobileMenuOpen" class="drawer-panel">
+      <div class="drawer-header">
+        <span class="brand-mark">MD</span>
+        <div>
+          <p class="drawer-title">{{ title }}</p>
+          <p class="drawer-subtitle">快速导航</p>
+        </div>
+        <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
+      </div>
+      <nav class="drawer-nav">
+        <RouterLink
+          v-for="item in navItems"
+          :key="item.id"
+          :to="item.path"
+          :class="{ active: isActive(item.path) }"
+          @click="mobileMenuOpen = false"
+        >
+          {{ item.title }}
+        </RouterLink>
+      </nav>
+    </aside>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -59,11 +102,13 @@ const props = withDefaults(
     theme: ThemeMode
     searchKeyword?: string
     currentPath?: string
+    currentFullPath?: string
     collapsibleSearch?: boolean
   }>(),
   {
     searchKeyword: '',
     currentPath: '/',
+    currentFullPath: '/',
     collapsibleSearch: false,
   },
 )
@@ -75,6 +120,7 @@ const emit = defineEmits<{
 }>()
 
 const searchOpen = ref(!props.collapsibleSearch || !!props.searchKeyword)
+const mobileMenuOpen = ref(false)
 
 watch(
   () => props.searchKeyword,
@@ -85,18 +131,34 @@ watch(
   },
 )
 
+watch(
+  () => props.currentFullPath,
+  () => {
+    mobileMenuOpen.value = false
+  },
+)
+
 const themeToggleLabel = computed(() =>
   props.theme === 'light' ? '切换为暗色主题' : '切换为白天主题',
 )
 
-const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
+const splitPathAndQuery = (value: string) => {
+  const [pathPart = '/', queryPart = ''] = value.split('?')
+  const normalizedPath = pathPart.replace(/\/$/, '') || '/'
+  const normalizedQuery = queryPart.trim()
+  return { path: normalizedPath, query: normalizedQuery }
+}
 
-const isActive = (path: string) => {
-  const current = normalizePath(props.currentPath)
-  const target = normalizePath(path)
+const isActive = (navTarget: string) => {
+  const current = splitPathAndQuery(props.currentFullPath || props.currentPath)
+  const target = splitPathAndQuery(navTarget)
 
-  if (target === '/') return current === '/'
-  return current === target || current.startsWith(`${target}/`)
+  if (target.query) {
+    return current.path === target.path && current.query === target.query
+  }
+
+  if (target.path === '/') return current.path === '/'
+  return current.path === target.path || current.path.startsWith(`${target.path}/`)
 }
 
 const onKeywordInput = (event: Event) => {
