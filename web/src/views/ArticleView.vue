@@ -83,8 +83,26 @@ const goSearch = () => {
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
 }
 
+const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
+  const title = String(siteTitle || '').trim()
+  const subtitle = String(siteSubtitle || '').trim()
+  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || 'MaDongDong')
+
+  const iconUrl = toAbsoluteAssetUrl(siteLogo)
+  if (!iconUrl) return
+
+  let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
+  if (!iconLink) {
+    iconLink = document.createElement('link')
+    iconLink.rel = 'icon'
+    document.head.appendChild(iconLink)
+  }
+  iconLink.href = iconUrl
+}
+
 const loadData = async () => {
   data.value = await webApi.getArticle(String(route.params.id))
+  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
 const submitComment = async () => {
