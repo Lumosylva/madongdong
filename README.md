@@ -1,45 +1,74 @@
 # MaDongDong Blog
 
-基于 `FastAPI + Vue 3 + SQLite` 的前后端分离个人博客系统，面向轻量部署场景。
+基于 `FastAPI + Vue 3 + SQLite` 的前后端分离博客系统，支持前台展示与后台管理。
 
-## 当前版本说明（已简化）
+## 当前版本状态（已同步）
 
-当前代码已调整为“可运行的简化版”，重点是保留主流程，去除部分复杂交互。
+当前仓库已从“极简演示”升级为“可持续迭代版本”，重点包括：
 
-### 已实现功能
+- 前台（`web`）统一导航/页脚组件化、主题切换、移动端抽屉菜单
+- 后台（`admin`）菜单体系升级（主菜单 + 文章二级菜单）、角色差异化能力、垃圾箱流程
+- 后台右侧内容区完成组件化与动态组件映射（`menuKey -> component`）
 
-- 后端
-  - FastAPI 应用与健康检查
-  - SQLite 数据模型与启动初始化
-  - JWT 登录认证与基础角色校验
-  - 文章基础流程：列表 / 创建 / 更新 / 审核通过 / 驳回
-  - 分类与标签：列表 / 创建 / 更新
-  - 媒体库：列表、目录树、建目录、改目录、上传、批量移动、批量删除
-  - 评论：前台提交、后台列表、后台通过/拒绝
-  - 站点设置与导航项：读取与更新
-  - 前台公开接口：首页、文章详情、搜索、提交评论
+---
 
-- 前台（`web`）
-  - 首页
-  - 文章详情页（简化展示）
-  - 搜索页
-  - 匿名评论提交
+## 主要功能
 
-- 后台（`admin`）
-  - 登录页
-  - 控制台简化面板（文章/媒体/评论/站点设置概览）
-  - 快速创建文章
-  - 站点设置编辑
+### 后端（FastAPI）
 
-## 本次简化后的边界
+- 健康检查、应用生命周期初始化
+- JWT 登录认证与角色鉴权
+- 文章能力：创建 / 更新 / 审核通过 / 审核驳回
+- 文章垃圾箱：
+  - 删除文章 -> 软删除（进入垃圾箱）
+  - 恢复文章
+  - 垃圾箱彻底删除
+- 分类与标签管理
+- 媒体库管理
+- 评论管理与审核
+- 站点配置与导航项管理
+- 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交
 
-以下能力在当前版本中已移除或暂不提供：
+### 前台（web）
 
-- 文章“软删除/垃圾箱/恢复/永久删除”流程
-- 后台文章编辑弹窗与对应前端入口
-- 后台评论审核按钮在当前简化 UI 中未提供（后端接口仍保留）
-- 前台文章页的增强交互（目录自动生成、代码块复制、分享按钮、封面懒加载、嵌套回复等）
-- 管理端主题切换等视觉增强逻辑
+- 首页、文章详情页、搜索页
+- 全站白天/黑夜主题切换（持久化）
+- 顶部导航与底部页脚组件化复用：
+  - `WebTopbar.vue`
+  - `WebFooter.vue`
+- 移动端 `hamburger` 抽屉菜单
+- 菜单高亮（支持带 query 的精确匹配）
+- 非首页折叠搜索（展开/收起动画）
+- 首页布局优化：
+  - 内容区域更宽，左右留白减少
+  - 热门文章固定高度 + 超出滚动
+  - 热度/评论分行显示
+  - 分页按钮居中，首页不显示“上一页”、末页不显示“下一页”
+- Footer 内容横向居中展示（版权优先于备案）
+
+### 后台（admin）
+
+- 登录页 + 控制台
+- 顶部栏：主题切换、用户昵称、角色标记、下拉退出登录
+- 角色显示：系统管理员 / 内容作者
+- 左侧菜单：
+  - 主菜单（概览、文章、媒体、评论、站点）
+  - 文章二级菜单（文章管理、垃圾箱、创建文章）
+- 角色差异化文章发布策略：
+  - 系统管理员：可“直接发布”，不显示“提交审核”
+  - 内容作者：可“提交审核”，不显示“直接发布”
+- 文章垃圾箱完整流程（UI 与 API 对齐）
+- 文章状态中文展示（已发布/草稿/待审核/已驳回）
+- 右侧内容区组件化 + 动态映射渲染（可扩展）：
+  - `OverviewPanel`
+  - `ArticleManagePanel`
+  - `ArticleTrashPanel`
+  - `ArticleCreatePanel`
+  - `MediaPanel`
+  - `CommentsPanel`
+  - `SiteSettingsPanel`
+
+---
 
 ## 技术栈
 
@@ -60,6 +89,8 @@
 - Vite
 - TypeScript
 
+---
+
 ## 项目结构
 
 ```text
@@ -68,11 +99,11 @@ web/        前台 Vue 应用
 admin/      后台 Vue 应用
 ```
 
+---
+
 ## 本地开发启动
 
 ### 1) 启动后端
-
-在项目根目录执行：
 
 ```powershell
 .\.venv\Scripts\activate; uv sync; uvicorn app.main:app --reload
@@ -96,12 +127,16 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 
 默认地址：`http://127.0.0.1:5174`（或 Vite 自动分配端口）
 
+---
+
 ## 默认管理员账号
 
-首次启动会自动初始化默认管理员：
+首次启动自动初始化默认管理员：
 
 - 用户名：`admin`
 - 密码：`admin123456`
+
+---
 
 ## 主要接口（当前版本）
 
@@ -113,9 +148,13 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 ### 后台文章
 
 - `GET /api/v1/admin/articles`
+- `GET /api/v1/admin/articles/deleted`
 - `GET /api/v1/admin/articles/{article_id}`
 - `POST /api/v1/admin/articles`
 - `PUT /api/v1/admin/articles/{article_id}`
+- `DELETE /api/v1/admin/articles/{article_id}`
+- `POST /api/v1/admin/articles/{article_id}/restore`
+- `DELETE /api/v1/admin/articles/{article_id}/permanent`
 - `POST /api/v1/admin/articles/{article_id}/approve`
 - `POST /api/v1/admin/articles/{article_id}/reject`
 
@@ -158,6 +197,8 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 - `GET /api/v1/web/articles/{article_id}`
 - `GET /api/v1/web/search`
 - `POST /api/v1/web/comments`
+
+---
 
 ## 部署建议
 

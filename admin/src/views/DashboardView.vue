@@ -82,6 +82,7 @@ type MainMenuItem = {
 type ArticleSubMenuItem = {
   key: ArticleSubView
   label: string
+  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create'>
 }
 
 const router = useRouter()
@@ -120,9 +121,9 @@ const mainMenus: MainMenuItem[] = [
 ]
 
 const articleSubMenus: ArticleSubMenuItem[] = [
-  { key: 'manage', label: '文章管理' },
-  { key: 'trash', label: '垃圾箱' },
-  { key: 'create', label: '创建文章' },
+  { key: 'manage', label: '文章管理', contentKey: 'articles-manage' },
+  { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
+  { key: 'create', label: '创建文章', contentKey: 'articles-create' },
 ]
 
 const setView = (view: ViewType) => {
@@ -174,15 +175,25 @@ const visibleMainMenus = computed(() =>
   mainMenus.filter((item) => !item.adminOnly || isAdmin.value),
 )
 
+const articleSubViewToContentKey = articleSubMenus.reduce<Record<ArticleSubView, ContentViewKey>>(
+  (acc, item) => {
+    acc[item.key] = item.contentKey
+    return acc
+  },
+  {
+    manage: 'articles-manage',
+    trash: 'articles-trash',
+    create: 'articles-create',
+  },
+)
+
 const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'overview') return 'overview'
   if (currentView.value === 'media') return 'media'
   if (currentView.value === 'comments') return 'comments'
   if (currentView.value === 'site') return 'site'
 
-  if (articleSubView.value === 'trash') return 'articles-trash'
-  if (articleSubView.value === 'create') return 'articles-create'
-  return 'articles-manage'
+  return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
 })
 
 const panelComponentMap: Record<ContentViewKey, unknown> = {
