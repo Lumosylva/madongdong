@@ -85,28 +85,28 @@
           @submit="createArticle"
         />
 
-        <section class="panel" v-if="currentContentView === 'media'">
-          <h3>媒体管理</h3>
-          <ul>
-            <li v-for="item in media" :key="item.id">{{ item.original_name }} · {{ item.media_type }}</li>
-          </ul>
-        </section>
+        <MediaPanel
+          v-if="currentContentView === 'media'"
+          :media="media"
+        />
 
-        <section class="panel" v-if="currentContentView === 'comments'">
-          <h3>评论管理</h3>
-          <ul>
-            <li v-for="item in comments" :key="item.id">{{ item.content }}</li>
-          </ul>
-        </section>
+        <CommentsPanel
+          v-if="currentContentView === 'comments'"
+          :comments="comments"
+        />
 
-        <section class="panel" v-if="currentContentView === 'site'">
-          <h3>站点设置</h3>
-          <input v-model="siteTitle" placeholder="网站标题" />
-          <input v-model="siteSubtitle" placeholder="副标题" />
-          <input v-model="icpBeian" placeholder="备案信息" />
-          <input v-model="copyrightText" placeholder="版权信息" />
-          <button @click="saveSite">保存设置</button>
-        </section>
+        <SiteSettingsPanel
+          v-if="currentContentView === 'site'"
+          :site-title="siteTitle"
+          :site-subtitle="siteSubtitle"
+          :icp-beian="icpBeian"
+          :copyright-text="copyrightText"
+          @update:site-title="siteTitle = $event"
+          @update:site-subtitle="siteSubtitle = $event"
+          @update:icp-beian="icpBeian = $event"
+          @update:copyright-text="copyrightText = $event"
+          @save="saveSite"
+        />
       </main>
     </div>
   </div>
@@ -120,7 +120,10 @@ import { adminApi } from '../api'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
+import CommentsPanel from '../components/CommentsPanel.vue'
+import MediaPanel from '../components/MediaPanel.vue'
 import OverviewPanel from '../components/OverviewPanel.vue'
+import SiteSettingsPanel from '../components/SiteSettingsPanel.vue'
 import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
