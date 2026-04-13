@@ -1,5 +1,5 @@
 <template>
-  <section class="panel">
+  <section class="panel article-manage-panel">
     <h3>文章管理</h3>
 
     <div class="action-row" style="margin-bottom: 12px;">
@@ -22,7 +22,7 @@
       <li v-for="item in displayArticles" :key="item.id" class="article-row">
         <div>
           <p>
-            {{ item.title }}
+            <span v-html="highlightTitle(item.title)"></span>
             <span> · {{ formatArticleStatus(item.status) }}</span>
           </p>
           <small>
@@ -89,6 +89,26 @@ const resetFilters = () => {
   sortOrder.value = 'newest'
 }
 
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const highlightTitle = (value: string) => {
+  const raw = String(value || '')
+  const safe = escapeHtml(raw)
+  const key = keyword.value.trim()
+  if (!key) return safe
+
+  const pattern = new RegExp(`(${escapeRegExp(key)})`, 'ig')
+  return safe.replace(pattern, '<mark>$1</mark>')
+}
+
 const formatRelativeTime = (value: string) => {
   const date = new Date(value)
   const now = Date.now()
@@ -114,3 +134,19 @@ const formatRelativeTime = (value: string) => {
   return `${years} 年前`
 }
 </script>
+
+<style scoped>
+.article-manage-panel :deep(mark) {
+  background: rgba(14, 165, 164, 0.2);
+  color: var(--text);
+  border: 1px solid rgba(14, 165, 164, 0.42);
+  border-radius: 6px;
+  padding: 0 4px;
+}
+
+:global(:root[data-theme='dark']) .article-manage-panel :deep(mark) {
+  background: rgba(94, 234, 212, 0.24);
+  border-color: rgba(94, 234, 212, 0.5);
+  color: #e6fffb;
+}
+</style>
