@@ -55,6 +55,7 @@ import { adminApi, API_ORIGIN } from '../api'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
+import CategoryManagePanel from '../components/CategoryManagePanel.vue'
 import CommentsPanel from '../components/CommentsPanel.vue'
 import MediaPanel from '../components/MediaPanel.vue'
 import OverviewPanel from '../components/OverviewPanel.vue'
@@ -63,12 +64,13 @@ import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site'
-type ArticleSubView = 'manage' | 'trash' | 'create'
+type ArticleSubView = 'manage' | 'trash' | 'create' | 'category'
 type ContentViewKey =
   | 'overview'
   | 'articles-manage'
   | 'articles-trash'
   | 'articles-create'
+  | 'articles-category'
   | 'media'
   | 'comments'
   | 'site'
@@ -82,7 +84,7 @@ type MainMenuItem = {
 type ArticleSubMenuItem = {
   key: ArticleSubView
   label: string
-  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create'>
+  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create' | 'articles-category'>
 }
 
 const router = useRouter()
@@ -91,6 +93,7 @@ const articleSubView = ref<ArticleSubView>('manage')
 const currentUser = ref<AdminUser | null>(null)
 const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
+const categories = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
 const siteTitle = ref('')
@@ -128,6 +131,7 @@ const articleSubMenus: ArticleSubMenuItem[] = [
   { key: 'manage', label: '文章管理', contentKey: 'articles-manage' },
   { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
   { key: 'create', label: '创建文章', contentKey: 'articles-create' },
+  { key: 'category', label: '文章分类', contentKey: 'articles-category' },
 ]
 
 const setView = (view: ViewType) => {
@@ -188,6 +192,7 @@ const articleSubViewToContentKey = articleSubMenus.reduce<Record<ArticleSubView,
     manage: 'articles-manage',
     trash: 'articles-trash',
     create: 'articles-create',
+    category: 'articles-category',
   },
 )
 
@@ -205,6 +210,7 @@ const panelComponentMap: Record<ContentViewKey, unknown> = {
   'articles-manage': ArticleManagePanel,
   'articles-trash': ArticleTrashPanel,
   'articles-create': ArticleCreatePanel,
+  'articles-category': CategoryManagePanel,
   media: MediaPanel,
   comments: CommentsPanel,
   site: SiteSettingsPanel,
@@ -239,8 +245,13 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         coverUrl: coverUrl.value,
         contentMarkdown: contentMarkdown.value,
         categoryId: categoryId.value,
+        categories: categories.value,
         tagIdsText: tagIdsText.value,
         action: action.value,
+      }
+    case 'articles-category':
+      return {
+        categories: categories.value,
       }
     case 'media':
       return {
@@ -305,6 +316,12 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
       return {
         approve: approveComment,
         reject: rejectComment,
+      }
+    case 'articles-category':
+      return {
+        create: createCategory,
+        update: updateCategory,
+        delete: deleteCategory,
       }
     case 'site':
       return {
@@ -374,15 +391,17 @@ const loadAll = async () => {
   try {
     const meRes = await adminApi.getMe()
     currentUser.value = meRes.data
-    const [articleRes, deletedRes, mediaRes, commentRes, siteRes] = await Promise.all([
+    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, siteRes] = await Promise.all([
       adminApi.getArticles(),
       adminApi.getDeletedArticles(),
+      adminApi.getCategories(),
       adminApi.getMedia(),
       adminApi.getComments(),
       adminApi.getSiteSettings(),
     ])
     articles.value = articleRes.data
     deletedArticles.value = deletedRes.data
+    categories.value = categoryRes.data
     media.value = mediaRes.data
     comments.value = commentRes.data
     siteTitle.value = siteRes.data.site_title
@@ -534,7 +553,7 @@ const createArticle = async () => {
 
   await adminApi.createArticle({
     title: title.value,
-    summary: autoSummary,
+    summary: autoSummary || '暂无摘要',
     content_markdown: contentMarkdown.value,
     cover_url: coverUrl.value || null,
     category_id: categoryId.value,

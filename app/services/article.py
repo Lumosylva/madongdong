@@ -50,6 +50,19 @@ async def update_category(
     return category
 
 
+async def delete_category(session: AsyncSession, category_id: int) -> None:
+    """删除分类。"""
+
+    category = await get_category_or_404(session, category_id)
+
+    article_result = await session.execute(select(Article).where(Article.category_id == category_id).limit(1))
+    if article_result.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该分类下仍有文章，无法删除")
+
+    await session.delete(category)
+    await session.commit()
+
+
 async def list_tags(session: AsyncSession) -> list[Tag]:
     """查询标签列表。"""
 

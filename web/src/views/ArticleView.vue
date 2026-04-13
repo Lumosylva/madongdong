@@ -27,7 +27,6 @@
           <span>{{ data.article.comment_count }} 评论</span>
         </div>
       </div>
-      <p class="article-summary">{{ data.article.summary }}</p>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
       <div class="article-body" v-html="data.article.content_html"></div>
     </article>

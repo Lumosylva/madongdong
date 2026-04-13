@@ -10,12 +10,9 @@
       @input="$emit('update:contentMarkdown', ($event.target as HTMLTextAreaElement).value)"
     ></textarea>
     <div class="action-row">
-      <input
-        :value="categoryId"
-        type="number"
-        placeholder="分类 ID"
-        @input="$emit('update:categoryId', Number(($event.target as HTMLInputElement).value || 1))"
-      />
+      <select :value="categoryId" @change="$emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
+        <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
+      </select>
       <input
         :value="tagIdsText"
         placeholder="标签 ID，逗号分隔"
@@ -38,6 +35,7 @@ defineProps<{
   coverUrl: string
   contentMarkdown: string
   categoryId: number
+  categories: Array<{ id: number; name: string }>
   tagIdsText: string
   action: 'draft' | 'submit' | 'publish'
 }>()

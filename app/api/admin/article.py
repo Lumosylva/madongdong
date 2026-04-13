@@ -24,6 +24,7 @@ from app.services.article import (
     create_category,
     create_tag,
     delete_article,
+    delete_category,
     get_article_or_404,
     list_articles,
     list_categories,
@@ -165,6 +166,16 @@ async def update_category_endpoint(
 ) -> dict[str, object]:
     category = await update_category(session, category_id, payload.name, payload.slug, payload.description)
     return success_response(CategoryResponse.model_validate(category).model_dump())
+
+
+@router.delete("/categories/{category_id}", summary="删除分类")
+async def delete_category_endpoint(
+    category_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_role("admin")),
+) -> dict[str, object]:
+    await delete_category(session, category_id)
+    return success_response({"deleted": True, "id": category_id})
 
 
 @router.get("/tags", summary="查询标签列表")
