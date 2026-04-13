@@ -36,8 +36,8 @@
           </div>
         </article>
         <div class="pager">
-          <button :disabled="page <= 1" @click="changePage(page - 1)">上一页</button>
-          <button :disabled="page >= data.latest_articles.total_pages" @click="changePage(page + 1)">下一页</button>
+          <button v-if="page > 1" @click="changePage(page - 1)">上一页</button>
+          <button v-if="page < data.latest_articles.total_pages" @click="changePage(page + 1)">下一页</button>
         </div>
       </section>
 
@@ -46,7 +46,8 @@
           <h3>热门文章</h3>
           <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
             <strong>{{ item.title }}</strong>
-            <span>{{ item.view_count }} 热度 / {{ item.comment_count }} 评论</span>
+            <span class="hot-meta">热度 {{ item.view_count }}</span>
+            <span class="hot-meta">评论 {{ item.comment_count }}</span>
           </RouterLink>
         </div>
       </aside>

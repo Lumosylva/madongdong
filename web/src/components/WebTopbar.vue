@@ -39,18 +39,16 @@
       </button>
 
       <transition name="search-fade-slide">
-        <input
-          v-if="!collapsibleSearch || searchOpen"
-          :value="searchKeyword"
-          placeholder="搜索文章、摘要与内容"
-          @input="onKeywordInput"
-        />
-      </transition>
-
-      <transition name="search-fade-slide">
-        <button v-if="!collapsibleSearch || searchOpen" type="submit" aria-label="搜索">
-          <span aria-hidden="true">⌕</span>
-        </button>
+        <div v-if="!collapsibleSearch || searchOpen" class="search-input-wrap">
+          <input
+            :value="searchKeyword"
+            placeholder="输入关键词回车搜索"
+            @input="onKeywordInput"
+          />
+          <button type="submit" aria-label="搜索" class="search-submit-inside">
+            <span aria-hidden="true">⌕</span>
+          </button>
+        </div>
       </transition>
 
       <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="$emit('toggle-theme')">

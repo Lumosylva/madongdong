@@ -38,12 +38,14 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 button,
@@ -70,7 +72,7 @@ a {
 .search-page {
   width: min(1500px, calc(100% - 12px));
   margin: 0 auto;
-  padding: 12px 0 36px;
+  padding: 0 0 36px;
 }
 
 .topbar,
@@ -235,6 +237,34 @@ a {
   flex-wrap: nowrap;
 }
 
+.search-input-wrap {
+  position: relative;
+  width: min(360px, 100%);
+}
+
+.search-input-wrap input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.search-submit-inside {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 14px;
+}
+
 .search-box.compact {
   min-height: 36px;
 }
@@ -313,7 +343,7 @@ a {
 
 .layout {
   display: grid;
-  grid-template-columns: 1.75fr 0.85fr;
+  grid-template-columns: 1.95fr 0.65fr;
   gap: 16px;
 }
 
@@ -377,7 +407,7 @@ a {
 
 .pager {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 12px;
   margin-top: 24px;
 }
@@ -385,9 +415,9 @@ a {
 .footer {
   justify-content: center;
   align-items: center;
-  flex-direction: column;
+  flex-direction: row;
   text-align: center;
-  gap: 6px;
+  gap: 14px;
   padding: 18px 6px 0;
 }
 
@@ -518,11 +548,20 @@ a {
     flex-wrap: nowrap;
   }
 
+  .search-input-wrap {
+    width: min(260px, 100%);
+  }
+
   .shell,
   .article-page,
   .search-page {
     width: min(100%, calc(100% - 8px));
-    padding-top: 8px;
+    padding-top: 0;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 6px;
   }
 
   .content-panel,
