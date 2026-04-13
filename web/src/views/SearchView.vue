@@ -2,6 +2,7 @@
   <div class="search-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
       :current-path="route.path"
@@ -38,7 +39,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { webApi } from '../api'
+import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import type { SearchResponse } from '../types'
@@ -65,11 +66,26 @@ const goSearch = () => {
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
 }
 
+const applySiteMeta = (siteTitle: string, siteLogo: string | null) => {
+  document.title = siteTitle || 'MaDongDong'
+  const iconUrl = toAbsoluteAssetUrl(siteLogo)
+  if (!iconUrl) return
+
+  let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
+  if (!iconLink) {
+    iconLink = document.createElement('link')
+    iconLink.rel = 'icon'
+    document.head.appendChild(iconLink)
+  }
+  iconLink.href = iconUrl
+}
+
 const loadData = async () => {
   const queryKeyword = String(route.query.keyword || '')
   keyword.value = queryKeyword
   if (!queryKeyword) return
   data.value = await webApi.search(queryKeyword)
+  applySiteMeta(data.value.site.site_title, data.value.site.site_logo)
 }
 
 watch(() => route.query.keyword, loadData)

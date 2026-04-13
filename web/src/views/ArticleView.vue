@@ -2,6 +2,7 @@
   <div class="article-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
       :current-path="route.path"
@@ -52,7 +53,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { webApi } from '../api'
+import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import type { ArticlePageResponse } from '../types'
