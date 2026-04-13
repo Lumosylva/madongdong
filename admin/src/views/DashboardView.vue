@@ -41,7 +41,7 @@
       </aside>
 
       <main class="dashboard-main">
-        <section class="grid-panels" v-if="currentView === 'overview'">
+        <section class="grid-panels" v-if="currentContentView === 'overview'">
           <div class="panel">
             <h3>文章概览</h3>
             <p class="tips">共 {{ articles.length }} 篇文章，垃圾箱 {{ deletedArticles.length }} 篇</p>
@@ -60,7 +60,7 @@
           </div>
         </section>
 
-        <section class="panel" v-if="currentView === 'articles' && articleSubView === 'manage'">
+        <section class="panel" v-if="currentContentView === 'articles-manage'">
           <h3>文章管理</h3>
           <ul>
             <li v-for="item in articles" :key="item.id" class="article-row">
@@ -70,7 +70,7 @@
           </ul>
         </section>
 
-        <section class="panel" v-if="currentView === 'articles' && articleSubView === 'trash'">
+        <section class="panel" v-if="currentContentView === 'articles-trash'">
           <h3>垃圾箱</h3>
           <p class="tips" v-if="deletedArticles.length === 0">垃圾箱为空</p>
           <ul v-else>
@@ -84,7 +84,7 @@
           </ul>
         </section>
 
-        <section class="editor-panel" v-if="currentView === 'articles' && articleSubView === 'create'">
+        <section class="editor-panel" v-if="currentContentView === 'articles-create'">
           <h3>创建文章</h3>
           <input v-model="title" placeholder="标题" />
           <input v-model="summary" placeholder="摘要" />
@@ -102,21 +102,21 @@
           </div>
         </section>
 
-        <section class="panel" v-if="currentView === 'media'">
+        <section class="panel" v-if="currentContentView === 'media'">
           <h3>媒体管理</h3>
           <ul>
             <li v-for="item in media" :key="item.id">{{ item.original_name }} · {{ item.media_type }}</li>
           </ul>
         </section>
 
-        <section class="panel" v-if="currentView === 'comments'">
+        <section class="panel" v-if="currentContentView === 'comments'">
           <h3>评论管理</h3>
           <ul>
             <li v-for="item in comments" :key="item.id">{{ item.content }}</li>
           </ul>
         </section>
 
-        <section class="panel" v-if="currentView === 'site'">
+        <section class="panel" v-if="currentContentView === 'site'">
           <h3>站点设置</h3>
           <input v-model="siteTitle" placeholder="网站标题" />
           <input v-model="siteSubtitle" placeholder="副标题" />
@@ -139,6 +139,14 @@ import type { AdminUser } from '../types'
 type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create'
+type ContentViewKey =
+  | 'overview'
+  | 'articles-manage'
+  | 'articles-trash'
+  | 'articles-create'
+  | 'media'
+  | 'comments'
+  | 'site'
 
 type MainMenuItem = {
   key: ViewType
@@ -240,6 +248,17 @@ const roleLabel = computed(() => {
 const visibleMainMenus = computed(() =>
   mainMenus.filter((item) => !item.adminOnly || isAdmin.value),
 )
+
+const currentContentView = computed<ContentViewKey>(() => {
+  if (currentView.value === 'overview') return 'overview'
+  if (currentView.value === 'media') return 'media'
+  if (currentView.value === 'comments') return 'comments'
+  if (currentView.value === 'site') return 'site'
+
+  if (articleSubView.value === 'trash') return 'articles-trash'
+  if (articleSubView.value === 'create') return 'articles-create'
+  return 'articles-manage'
+})
 
 const formatArticleStatus = (status: string) => {
   if (status === 'PUBLISHED' || status === 'published') return '已发布'
