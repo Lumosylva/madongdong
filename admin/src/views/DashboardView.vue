@@ -2,7 +2,8 @@
   <div class="admin-page">
     <header class="topbar">
       <div class="brand-block">
-        <span class="brand-mark">MD</span>
+        <img v-if="siteLogo" :src="siteLogo" class="brand-logo" alt="site logo" />
+        <span v-else class="brand-mark">MD</span>
         <h1>仪表盘</h1>
       </div>
       <div class="topbar-actions">
@@ -366,6 +367,20 @@ const normalizeAssetUrl = (url: string | null | undefined) => {
   return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
 }
 
+const applyAdminMeta = () => {
+  const titleText = String(siteTitle.value || '').trim() || 'MaDongDong'
+  document.title = `${titleText} - 仪表盘`
+
+  if (!siteLogo.value) return
+  let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
+  if (!iconLink) {
+    iconLink = document.createElement('link')
+    iconLink.rel = 'icon'
+    document.head.appendChild(iconLink)
+  }
+  iconLink.href = siteLogo.value
+}
+
 const toggleUserMenu = () => {
   isUserMenuOpen.value = !isUserMenuOpen.value
 }
@@ -406,6 +421,7 @@ const loadAll = async () => {
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
     siteLogo.value = normalizeAssetUrl(siteRes.data.site_logo || '')
+    applyAdminMeta()
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
   } catch (error) {

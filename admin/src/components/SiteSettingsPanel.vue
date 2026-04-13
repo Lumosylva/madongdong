@@ -1,45 +1,57 @@
 <template>
-  <section class="panel">
+  <section class="panel settings-panel">
     <h3>站点设置</h3>
 
-    <div class="logo-uploader">
-      <p class="tips">站点 Logo（支持 png/jpg/svg；png/jpg 将裁剪为 64x64）</p>
+    <div class="settings-grid">
+      <section class="settings-card">
+        <h4>品牌信息</h4>
+        <div class="logo-uploader">
+          <p class="tips">站点 Logo（支持 png/jpg/svg；png/jpg 将裁剪为 64x64）</p>
 
-      <div
-        class="logo-dropzone"
-        :class="{ dragging: isDragging }"
-        @dragover.prevent="onDragOver"
-        @dragleave.prevent="onDragLeave"
-        @drop.prevent="onDrop"
-      >
-        <div class="logo-preview-wrap">
-          <img v-if="previewLogo" :src="previewLogo" alt="site logo" class="logo-preview" />
-          <div v-else class="logo-placeholder">64 × 64</div>
+          <div
+            class="logo-dropzone"
+            :class="{ dragging: isDragging }"
+            @dragover.prevent="onDragOver"
+            @dragleave.prevent="onDragLeave"
+            @drop.prevent="onDrop"
+          >
+            <div class="logo-preview-wrap">
+              <img v-if="previewLogo" :src="previewLogo" alt="site logo" class="logo-preview" />
+              <div v-else class="logo-placeholder">64 × 64</div>
+            </div>
+
+            <p class="tips">拖拽图片到此处，或点击下方按钮选择文件</p>
+            <p v-if="sourceSizeText" class="tips">原图尺寸：{{ sourceSizeText }}</p>
+            <p v-if="logoUploadMessage" class="tips" :class="logoUploadStatus === 'error' ? 'error-message' : 'success-message'">
+              {{ logoUploadMessage }}
+            </p>
+          </div>
+
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml"
+            :disabled="logoUploading"
+            @change="onSelectLogo"
+          />
         </div>
 
-        <p class="tips">拖拽图片到此处，或点击下方按钮选择文件</p>
-        <p v-if="sourceSizeText" class="tips">原图尺寸：{{ sourceSizeText }}</p>
-        <p v-if="logoUploadMessage" class="tips" :class="logoUploadStatus === 'error' ? 'error-message' : 'success-message'">
-          {{ logoUploadMessage }}
-        </p>
-      </div>
+        <input :value="siteTitle" placeholder="网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
+        <input :value="siteSubtitle" placeholder="副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
+      </section>
 
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept="image/png,image/jpeg,image/svg+xml"
-        :disabled="logoUploading"
-        @change="onSelectLogo"
-      />
+      <section class="settings-card">
+        <h4>站点信息</h4>
+        <input :value="icpBeian" placeholder="备案信息" @input="$emit('update:icpBeian', ($event.target as HTMLInputElement).value)" />
+        <input :value="copyrightText" placeholder="版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
+
+        <div class="save-row">
+          <button :disabled="logoUploading" @click="$emit('save')">
+            {{ logoUploading ? 'Logo 上传中...' : '保存设置' }}
+          </button>
+        </div>
+      </section>
     </div>
-
-    <input :value="siteTitle" placeholder="网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
-    <input :value="siteSubtitle" placeholder="副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
-    <input :value="icpBeian" placeholder="备案信息" @input="$emit('update:icpBeian', ($event.target as HTMLInputElement).value)" />
-    <input :value="copyrightText" placeholder="版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
-    <button :disabled="logoUploading" @click="$emit('save')">
-      {{ logoUploading ? 'Logo 上传中...' : '保存设置' }}
-    </button>
   </section>
 </template>
 
@@ -115,3 +127,34 @@ const onDrop = (event: DragEvent) => {
   emitFile(file)
 }
 </script>
+
+<style scoped>
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.settings-card {
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.settings-card h4 {
+  margin: 0;
+}
+
+.save-row {
+  margin-top: 8px;
+}
+
+@media (max-width: 960px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

@@ -121,10 +121,14 @@ a {
   min-width: 0;
 }
 
-.brand-mark {
-  width: 36px;
-  height: 36px;
+.brand-mark,
+.brand-logo {
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
+}
+
+.brand-mark {
   display: grid;
   place-items: center;
   font-size: 11px;
@@ -132,6 +136,10 @@ a {
   letter-spacing: 0.12em;
   color: #05131d;
   background: linear-gradient(135deg, var(--accent), #93c5fd);
+}
+
+.brand-logo {
+  object-fit: cover;
 }
 
 .brand-block h1,
