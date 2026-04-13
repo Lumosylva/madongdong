@@ -92,6 +92,7 @@ const commentListRef = ref<HTMLElement | null>(null)
 const highlightedCommentId = ref<number | null>(null)
 const commentToastMessage = ref('')
 const commentToastStatus = ref<'success' | 'error' | ''>('')
+const commentSubmitting = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 

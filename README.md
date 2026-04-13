@@ -302,3 +302,8 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 - `Nginx` 反向代理 `/api` 到 FastAPI
 - 上传目录需做持久化
 - 生产环境请通过 `.env` 覆盖 `secret_key` 等敏感配置
+
+## 后续
+
+欢迎提交 [Issues](https://github.com/Lumosylva/madongdong/issues) 以便项目变得更好
+
