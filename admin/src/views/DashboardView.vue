@@ -25,31 +25,18 @@
       <aside class="sidebar">
         <h2>控制台</h2>
         <nav class="sidebar-nav">
-          <a href="javascript:void(0)" :class="{ active: currentView === 'overview' }" @click="setView('overview')">概览</a>
-          <a href="javascript:void(0)" :class="{ active: currentView === 'articles' }" @click="setView('articles')">文章</a>
-          <div v-if="currentView === 'articles'" class="sidebar-subnav">
-            <a href="javascript:void(0)" :class="{ active: articleSubView === 'manage' }" @click="articleSubView = 'manage'">文章管理</a>
-            <a href="javascript:void(0)" :class="{ active: articleSubView === 'trash' }" @click="articleSubView = 'trash'">垃圾箱</a>
-            <a href="javascript:void(0)" :class="{ active: articleSubView === 'create' }" @click="articleSubView = 'create'">创建文章</a>
-          </div>
-          <a
-            v-if="isAdmin"
-            href="javascript:void(0)"
-            :class="{ active: currentView === 'media' }"
-            @click="setView('media')"
-          >媒体</a>
-          <a
-            v-if="isAdmin"
-            href="javascript:void(0)"
-            :class="{ active: currentView === 'comments' }"
-            @click="setView('comments')"
-          >评论</a>
-          <a
-            v-if="isAdmin"
-            href="javascript:void(0)"
-            :class="{ active: currentView === 'site' }"
-            @click="setView('site')"
-          >站点</a>
+          <template v-for="item in visibleMainMenus" :key="item.key">
+            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" @click="setView(item.key)">{{ item.label }}</a>
+            <div v-if="item.key === 'articles' && currentView === 'articles'" class="sidebar-subnav">
+              <a
+                v-for="sub in articleSubMenus"
+                :key="sub.key"
+                href="javascript:void(0)"
+                :class="{ active: articleSubView === sub.key }"
+                @click="setArticleSubView(sub.key)"
+              >{{ sub.label }}</a>
+            </div>
+          </template>
         </nav>
       </aside>
 
@@ -153,6 +140,17 @@ type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create'
 
+type MainMenuItem = {
+  key: ViewType
+  label: string
+  adminOnly?: boolean
+}
+
+type ArticleSubMenuItem = {
+  key: ArticleSubView
+  label: string
+}
+
 const router = useRouter()
 const currentView = ref<ViewType>('overview')
 const articleSubView = ref<ArticleSubView>('manage')
@@ -180,11 +178,33 @@ const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
 
+const mainMenus: MainMenuItem[] = [
+  { key: 'overview', label: '概览' },
+  { key: 'articles', label: '文章' },
+  { key: 'media', label: '媒体', adminOnly: true },
+  { key: 'comments', label: '评论', adminOnly: true },
+  { key: 'site', label: '站点', adminOnly: true },
+]
+
+const articleSubMenus: ArticleSubMenuItem[] = [
+  { key: 'manage', label: '文章管理' },
+  { key: 'trash', label: '垃圾箱' },
+  { key: 'create', label: '创建文章' },
+]
+
 const setView = (view: ViewType) => {
-  currentView.value = view
-  if (view === 'articles' && !articleSubView.value) {
-    articleSubView.value = 'manage'
+  const targetMenu = mainMenus.find((item) => item.key === view)
+  if (targetMenu?.adminOnly && !isAdmin.value) {
+    return
   }
+  currentView.value = view
+  if (view === 'articles') {
+    articleSubView.value = articleSubView.value || 'manage'
+  }
+}
+
+const setArticleSubView = (subView: ArticleSubView) => {
+  articleSubView.value = subView
 }
 
 const applyTheme = (value: ThemeMode) => {
@@ -216,6 +236,10 @@ const roleLabel = computed(() => {
   if (isAuthor.value) return '内容作者'
   return '普通用户'
 })
+
+const visibleMainMenus = computed(() =>
+  mainMenus.filter((item) => !item.adminOnly || isAdmin.value),
+)
 
 const formatArticleStatus = (status: string) => {
   if (status === 'PUBLISHED' || status === 'published') return '已发布'
