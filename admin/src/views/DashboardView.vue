@@ -3,7 +3,7 @@
     <header class="topbar">
       <div class="brand-block">
         <span class="brand-mark">MD</span>
-        <h1>Admin</h1>
+        <h1>仪表盘</h1>
       </div>
       <div class="topbar-actions">
         <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
@@ -23,7 +23,6 @@
 
     <div class="dashboard-shell">
       <aside class="sidebar">
-        <h2>控制台</h2>
         <nav class="sidebar-nav">
           <template v-for="item in visibleMainMenus" :key="item.key">
             <a href="javascript:void(0)" :class="{ active: currentView === item.key }" @click="setView(item.key)">{{ item.label }}</a>
@@ -124,7 +123,7 @@ const mainMenus: MainMenuItem[] = [
   { key: 'articles', label: '文章' },
   { key: 'media', label: '媒体', adminOnly: true },
   { key: 'comments', label: '评论' },
-  { key: 'site', label: '站点', adminOnly: true },
+  { key: 'site', label: '设置', adminOnly: true },
 ]
 
 const articleSubMenus: ArticleSubMenuItem[] = [
