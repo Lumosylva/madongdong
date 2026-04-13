@@ -19,6 +19,9 @@
 
         <p class="tips">拖拽图片到此处，或点击下方按钮选择文件</p>
         <p v-if="sourceSizeText" class="tips">原图尺寸：{{ sourceSizeText }}</p>
+        <p v-if="logoUploadMessage" class="tips" :class="logoUploadStatus === 'error' ? 'error-message' : 'success-message'">
+          {{ logoUploadMessage }}
+        </p>
       </div>
 
       <input
@@ -54,6 +57,8 @@ defineProps<{
   copyrightText: string
   previewLogo: string
   logoUploading?: boolean
+  logoUploadMessage?: string
+  logoUploadStatus?: 'success' | 'error' | ''
 }>()
 
 const emit = defineEmits<{

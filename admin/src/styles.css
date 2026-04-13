@@ -427,6 +427,10 @@ button:disabled {
   color: var(--danger);
 }
 
+.success-message {
+  color: var(--accent);
+}
+
 .logo-uploader {
   display: grid;
   gap: 8px;

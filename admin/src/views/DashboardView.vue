@@ -113,6 +113,8 @@ const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
 const logoUploading = ref(false)
+const logoUploadMessage = ref('')
+const logoUploadStatus = ref<'success' | 'error' | ''>('')
 
 const mainMenus: MainMenuItem[] = [
   { key: 'overview', label: '概览' },
@@ -255,6 +257,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         siteSubtitle: siteSubtitle.value,
         previewLogo: siteLogo.value,
         logoUploading: logoUploading.value,
+        logoUploadMessage: logoUploadMessage.value,
+        logoUploadStatus: logoUploadStatus.value,
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
       }
@@ -438,12 +442,16 @@ const cropImageTo64 = async (file: File): Promise<File> => {
 const handleSiteLogoSelect = async (file: File) => {
   const supported = ['image/png', 'image/jpeg', 'image/svg+xml']
   if (!supported.includes(file.type)) {
-    alert('仅支持 PNG、JPG、SVG 格式')
+    logoUploadStatus.value = 'error'
+    logoUploadMessage.value = '仅支持 PNG、JPG、SVG 格式'
     return
   }
 
   if (logoUploading.value) return
   logoUploading.value = true
+  logoUploadStatus.value = ''
+  logoUploadMessage.value = ''
+
   try {
     let uploadFile = file
     if (file.type !== 'image/svg+xml') {
@@ -452,8 +460,17 @@ const handleSiteLogoSelect = async (file: File) => {
 
     const uploaded = await adminApi.uploadMediaFile(uploadFile)
     siteLogo.value = String(uploaded.data?.url || '')
+    logoUploadStatus.value = 'success'
+    logoUploadMessage.value = 'Logo 上传成功'
+  } catch (error) {
+    logoUploadStatus.value = 'error'
+    logoUploadMessage.value = error instanceof Error ? error.message : 'Logo 上传失败'
   } finally {
     logoUploading.value = false
+    setTimeout(() => {
+      logoUploadMessage.value = ''
+      logoUploadStatus.value = ''
+    }, 2400)
   }
 }
 
