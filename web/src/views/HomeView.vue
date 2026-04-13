@@ -16,20 +16,15 @@
 
     <main class="layout">
       <section class="content-panel">
-        <div class="section-head">
-          <h2>最新文章</h2>
-        </div>
         <article v-for="article in data.latest_articles.items" :key="article.id" class="article-card">
+          <RouterLink :to="`/article/${article.id}`" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
+          <p class="card-summary">{{ truncateText(article.summary, 120) }}</p>
           <div class="card-meta">
-            <span>{{ article.category.name }}</span>
-            <span>{{ article.author.nickname }}</span>
-            <span>{{ formatDate(article.published_at || article.created_at) }}</span>
-          </div>
-          <RouterLink :to="`/article/${article.id}`" class="card-title">{{ article.title }}</RouterLink>
-          <p class="card-summary">{{ article.summary }}</p>
-          <div class="card-footer">
-            <span>热度 {{ article.view_count }}</span>
-            <span>评论 {{ article.comment_count }}</span>
+            <span>{{ article.category?.name || '未分类' }}</span>
+            <span>{{ article.author?.nickname || 'admin' }}</span>
+            <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
+            <span>{{ article.view_count }} 浏览</span>
+            <span>{{ article.comment_count }} 评论</span>
           </div>
         </article>
         <div class="pager-meta">第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页</div>
@@ -119,7 +114,36 @@ const goSearch = () => {
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
 }
 
-const formatDate = (value: string) => new Date(value).toLocaleDateString('zh-CN')
+const truncateText = (value: string | null | undefined, maxLength: number) => {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
+}
+
+const formatRelativeTime = (value: string) => {
+  const date = new Date(value)
+  const now = Date.now()
+  const diffMs = Math.max(0, now - date.getTime())
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  const day = 24 * hour
+  const year = 365 * day
+
+  if (diffMs < hour) {
+    const minutes = Math.max(1, Math.floor(diffMs / minute))
+    return `${minutes} 分钟前`
+  }
+  if (diffMs < day) {
+    const hours = Math.floor(diffMs / hour)
+    return `${hours} 小时前`
+  }
+  if (diffMs < year) {
+    const days = Math.floor(diffMs / day)
+    return `${days} 天前`
+  }
+  const years = Math.floor(diffMs / year)
+  return `${years} 年前`
+}
 
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')

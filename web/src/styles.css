@@ -396,6 +396,17 @@ a {
   color: var(--text-soft);
 }
 
+.card-meta {
+  margin-top: 8px;
+  gap: 14px;
+  font-size: 13px;
+}
+
+.card-summary {
+  margin: 8px 0 0;
+  line-height: 1.7;
+}
+
 .article-card,
 .search-card,
 .comment-item,
