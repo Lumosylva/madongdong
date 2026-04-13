@@ -41,8 +41,9 @@
             <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
               <strong>{{ item.title }}</strong>
               <div class="hot-stats">
-                <span class="hot-meta">浏览 {{ item.view_count }}</span>
-                <span class="hot-meta">评论 {{ item.comment_count }}</span>
+                <span class="hot-meta">{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
+                <span class="hot-meta">{{ item.view_count }} 浏览</span>
+                <span class="hot-meta">{{ item.comment_count }} 评论</span>
               </div>
             </RouterLink>
           </div>

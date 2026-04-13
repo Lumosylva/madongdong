@@ -26,7 +26,9 @@
         <div class="search-meta">
           <span>{{ article.category.name }}</span>
           <span>{{ article.author.nickname }}</span>
-          <span>{{ article.view_count }} 热度</span>
+          <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
+          <span>{{ article.view_count }} 浏览</span>
+          <span>{{ article.comment_count }} 评论</span>
         </div>
       </article>
     </section>

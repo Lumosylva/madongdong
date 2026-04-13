@@ -19,8 +19,8 @@
       <h1>{{ data.article.title }}</h1>
       <div class="article-meta">
         <span>{{ data.article.author.nickname }}</span>
-        <span>{{ formatDate(data.article.published_at || data.article.created_at) }}</span>
-        <span>{{ data.article.view_count }} 阅读</span>
+        <span>{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
+        <span>{{ data.article.view_count }} 浏览</span>
         <span>{{ data.article.comment_count }} 评论</span>
       </div>
       <p class="article-summary">{{ data.article.summary }}</p>
@@ -118,6 +118,31 @@ const submitComment = async () => {
 }
 
 const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')
+
+const formatRelativeTime = (value: string) => {
+  const date = new Date(value)
+  const now = Date.now()
+  const diffMs = Math.max(0, now - date.getTime())
+  const minute = 60 * 1000
+  const hour = 60 * minute
+  const day = 24 * hour
+  const year = 365 * day
+
+  if (diffMs < hour) {
+    const minutes = Math.max(1, Math.floor(diffMs / minute))
+    return `${minutes} 分钟前`
+  }
+  if (diffMs < day) {
+    const hours = Math.max(1, Math.floor(diffMs / hour))
+    return `${hours} 小时前`
+  }
+  if (diffMs < year) {
+    const days = Math.max(1, Math.floor(diffMs / day))
+    return `${days} 天前`
+  }
+  const years = Math.max(1, Math.floor(diffMs / year))
+  return `${years} 年前`
+}
 
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
