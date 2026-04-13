@@ -15,13 +15,15 @@
     />
 
     <article class="article-panel">
-      <p class="article-category">{{ data.article.category.name }}</p>
-      <h1>{{ data.article.title }}</h1>
-      <div class="article-meta">
-        <span>{{ data.article.author.nickname }}</span>
-        <span>{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
-        <span>{{ data.article.view_count }} 浏览</span>
-        <span>{{ data.article.comment_count }} 评论</span>
+      <div class="article-head">
+        <p class="article-category">{{ data.article.category?.name || '未分类' }}</p>
+        <h1>{{ data.article.title }}</h1>
+        <div class="article-meta article-meta-top">
+          <span>{{ data.article.author?.nickname || 'admin' }}</span>
+          <span>{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
+          <span>{{ data.article.view_count }} 浏览</span>
+          <span>{{ data.article.comment_count }} 评论</span>
+        </div>
       </div>
       <p class="article-summary">{{ data.article.summary }}</p>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
@@ -29,17 +31,29 @@
     </article>
 
     <section class="comment-panel">
-      <h2>评论</h2>
+      <div class="comment-head">
+        <h2>评论</h2>
+        <span class="comment-count">共 {{ data.comments.length }} 条</span>
+      </div>
+
       <form class="comment-form" @submit.prevent="submitComment">
-        <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
-        <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
-        <textarea v-model="commentContent" placeholder="写下你的看法"></textarea>
-        <button type="submit">提交评论</button>
+        <div class="comment-inputs-row">
+          <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
+          <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
+        </div>
+        <textarea v-model="commentContent" placeholder="写下你的看法（支持友好交流）"></textarea>
+        <div class="comment-actions">
+          <span class="comment-tip">提交后将按站点设置进行审核或直接展示</span>
+          <button type="submit">提交评论</button>
+        </div>
       </form>
+
       <div class="comment-list">
         <div v-for="comment in data.comments" :key="comment.id" class="comment-item">
-          <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
-          <span>{{ formatDate(comment.created_at) }}</span>
+          <div class="comment-item-head">
+            <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
+            <span>{{ formatRelativeTime(comment.created_at) }}</span>
+          </div>
           <p>{{ comment.content }}</p>
         </div>
       </div>

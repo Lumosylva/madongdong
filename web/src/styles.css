@@ -457,9 +457,61 @@ a {
   margin: 20px 0;
 }
 
+.article-head {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.article-meta-top {
+  gap: 14px;
+  font-size: 13px;
+}
+
 .article-body {
   color: var(--text);
   line-height: 1.9;
+}
+
+.comment-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+
+.comment-count {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.comment-inputs-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.comment-tip {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.comment-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
 .pager-meta {
