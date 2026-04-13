@@ -217,6 +217,84 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 
 ---
 
+## 接口权限矩阵（简化版）
+
+> 说明：以下按“当前实现与当前 UI 约束”给出。`admin` 为系统管理员，`author` 为内容作者。
+
+### 认证接口
+
+| 接口 | admin | author | reader |
+|---|---|---|---|
+| `POST /api/v1/admin/auth/login` | ✅ | ✅ | ❌ |
+| `GET /api/v1/admin/auth/me` | ✅ | ✅ | ❌ |
+
+### 后台文章接口
+
+| 接口 | admin | author | 说明 |
+|---|---|---|---|
+| `GET /api/v1/admin/articles` | ✅ | ✅ | 作者仅可见本人文章 |
+| `GET /api/v1/admin/articles/deleted` | ✅ | ✅ | 作者仅可见本人垃圾箱文章 |
+| `GET /api/v1/admin/articles/{article_id}` | ✅ | ✅ | 作者仅可见本人 |
+| `POST /api/v1/admin/articles` | ✅ | ✅ | admin 可直发，author 提审 |
+| `PUT /api/v1/admin/articles/{article_id}` | ✅ | ✅ | 作者仅可编辑本人可编辑文章 |
+| `DELETE /api/v1/admin/articles/{article_id}` | ✅ | ✅ | 软删除进垃圾箱 |
+| `POST /api/v1/admin/articles/{article_id}/restore` | ✅ | ✅ | 从垃圾箱恢复 |
+| `DELETE /api/v1/admin/articles/{article_id}/permanent` | ✅ | ✅ | 彻底删除（需先在垃圾箱） |
+| `POST /api/v1/admin/articles/{article_id}/approve` | ✅ | ❌ | 审核通过 |
+| `POST /api/v1/admin/articles/{article_id}/reject` | ✅ | ❌ | 审核拒绝 |
+
+### 后台分类/标签接口
+
+| 接口 | admin | author |
+|---|---|---|
+| `GET /api/v1/admin/categories` | ✅ | ✅ |
+| `POST /api/v1/admin/categories` | ✅ | ❌ |
+| `PUT /api/v1/admin/categories/{category_id}` | ✅ | ❌ |
+| `GET /api/v1/admin/tags` | ✅ | ✅ |
+| `POST /api/v1/admin/tags` | ✅ | ❌ |
+| `PUT /api/v1/admin/tags/{tag_id}` | ✅ | ❌ |
+
+### 后台媒体接口
+
+| 接口 | admin | author |
+|---|---|---|
+| `GET /api/v1/admin/media` | ✅ | ❌（当前 UI 隐藏） |
+| `GET /api/v1/admin/media/folders` | ✅ | ❌（当前 UI 隐藏） |
+| `POST /api/v1/admin/media/folders` | ✅ | ❌ |
+| `PUT /api/v1/admin/media/folders/{folder_id}` | ✅ | ❌ |
+| `POST /api/v1/admin/media/upload` | ✅ | ❌ |
+| `POST /api/v1/admin/media/move` | ✅ | ❌ |
+| `POST /api/v1/admin/media/delete` | ✅ | ❌ |
+
+### 后台评论接口
+
+| 接口 | admin | author |
+|---|---|---|
+| `GET /api/v1/admin/comments` | ✅ | ❌（当前 UI 隐藏） |
+| `POST /api/v1/admin/comments/{comment_id}/approve` | ✅ | ❌ |
+| `POST /api/v1/admin/comments/{comment_id}/reject` | ✅ | ❌ |
+
+### 后台站点配置接口
+
+| 接口 | admin | author |
+|---|---|---|
+| `GET /api/v1/admin/site/settings` | ✅ | ❌（当前 UI 隐藏） |
+| `PUT /api/v1/admin/site/settings` | ✅ | ❌ |
+| `GET /api/v1/admin/site/nav-items` | ✅ | ❌ |
+| `POST /api/v1/admin/site/nav-items` | ✅ | ❌ |
+| `PUT /api/v1/admin/site/nav-items/{nav_id}` | ✅ | ❌ |
+
+### 前台公开接口
+
+| 接口 | admin | author | reader |
+|---|---|---|---|
+| `GET /api/v1/web/home` | ✅ | ✅ | ✅ |
+| `GET /api/v1/web/articles/{article_id}` | ✅ | ✅ | ✅ |
+| `GET /api/v1/web/search` | ✅ | ✅ | ✅ |
+| `POST /api/v1/web/comments` | ✅ | ✅ | ✅ |
+
+---
+
 ## 部署建议
 
 - 后端使用 `uvicorn`（生产建议配合进程守护）
