@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -251,6 +251,11 @@ const formatRelativeTime = (value: string) => {
   const years = Math.max(1, Math.floor(diffMs / year))
   return `${years} 年前`
 }
+
+watch(() => route.params.id, () => {
+  loadData()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
 
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
