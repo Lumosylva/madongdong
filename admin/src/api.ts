@@ -89,4 +89,28 @@ export const adminApi = {
       body: JSON.stringify(payload),
     })
   },
+  async uploadMediaFile(file: File, folderId?: number | null): Promise<WrappedResponse<any>> {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (folderId !== undefined && folderId !== null) {
+      formData.append('folder_id', String(folderId))
+    }
+
+    const response = await fetch(`${API_BASE}/admin/media/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: getToken() ? `Bearer ${getToken()}` : '',
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearToken()
+      }
+      throw new Error(await response.text())
+    }
+
+    return response.json() as Promise<WrappedResponse<any>>
+  },
 }

@@ -95,6 +95,7 @@ const media = ref<any[]>([])
 const comments = ref<any[]>([])
 const siteTitle = ref('')
 const siteSubtitle = ref('')
+const siteLogo = ref('')
 const icpBeian = ref('')
 const copyrightText = ref('')
 const loading = ref(false)
@@ -111,6 +112,7 @@ const action = ref<'draft' | 'submit' | 'publish'>('draft')
 const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+const logoUploading = ref(false)
 
 const mainMenus: MainMenuItem[] = [
   { key: 'overview', label: '概览' },
@@ -251,6 +253,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
       return {
         siteTitle: siteTitle.value,
         siteSubtitle: siteSubtitle.value,
+        previewLogo: siteLogo.value,
+        logoUploading: logoUploading.value,
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
       }
@@ -309,6 +313,7 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
         'update:copyrightText': (value: string) => {
           copyrightText.value = value
         },
+        'select-logo': handleSiteLogoSelect,
         save: saveSite,
       }
     default:
@@ -361,6 +366,7 @@ const loadAll = async () => {
     comments.value = commentRes.data
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
+    siteLogo.value = siteRes.data.site_logo || ''
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
   } catch (error) {
@@ -393,10 +399,68 @@ const removePermanently = async (articleId: number) => {
   await loadAll()
 }
 
+const cropImageTo64 = async (file: File): Promise<File> => {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(new Error('读取图片失败'))
+    reader.readAsDataURL(file)
+  })
+
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error('加载图片失败'))
+    img.src = dataUrl
+  })
+
+  const size = Math.min(image.width, image.height)
+  const sx = Math.floor((image.width - size) / 2)
+  const sy = Math.floor((image.height - size) / 2)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 64
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('无法处理图片')
+  ctx.drawImage(image, sx, sy, size, size, 0, 0, 64, 64)
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((value) => {
+      if (value) resolve(value)
+      else reject(new Error('导出图片失败'))
+    }, 'image/png')
+  })
+
+  return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}-64x64.png`, { type: 'image/png' })
+}
+
+const handleSiteLogoSelect = async (file: File) => {
+  const supported = ['image/png', 'image/jpeg', 'image/svg+xml']
+  if (!supported.includes(file.type)) {
+    alert('仅支持 PNG、JPG、SVG 格式')
+    return
+  }
+
+  if (logoUploading.value) return
+  logoUploading.value = true
+  try {
+    let uploadFile = file
+    if (file.type !== 'image/svg+xml') {
+      uploadFile = await cropImageTo64(file)
+    }
+
+    const uploaded = await adminApi.uploadMediaFile(uploadFile)
+    siteLogo.value = String(uploaded.data?.url || '')
+  } finally {
+    logoUploading.value = false
+  }
+}
+
 const saveSite = async () => {
   await adminApi.updateSiteSettings({
     site_title: siteTitle.value,
-    site_logo: null,
+    site_logo: siteLogo.value || null,
     site_subtitle: siteSubtitle.value,
     icp_beian: icpBeian.value,
     copyright_text: copyrightText.value,

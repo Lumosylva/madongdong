@@ -4,4 +4,5 @@
   --app-topbar-content-width: min(1500px, calc(100% - 12px));
   --app-topbar-padding-inline: max(8px, calc((100vw - var(--app-topbar-content-width)) / 2));
   --app-topbar-padding-inline-mobile: 8px;
+  --app-topbar-min-height: 56px;
 }
