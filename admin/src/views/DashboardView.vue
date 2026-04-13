@@ -41,66 +41,49 @@
       </aside>
 
       <main class="dashboard-main">
-        <section class="grid-panels" v-if="currentContentView === 'overview'">
-          <div class="panel">
-            <h3>文章概览</h3>
-            <p class="tips">共 {{ articles.length }} 篇文章，垃圾箱 {{ deletedArticles.length }} 篇</p>
-            <p v-if="loading" class="tips">正在同步后台数据...</p>
-            <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-            <ul>
-              <li v-for="item in articles.slice(0, 5)" :key="item.id">{{ item.title }} · {{ formatArticleStatus(item.status) }}</li>
-            </ul>
-          </div>
-          <div class="panel">
-            <h3>评论概览</h3>
-            <p class="tips">共 {{ comments.length }} 条评论</p>
-            <ul>
-              <li v-for="item in comments.slice(0, 5)" :key="item.id">{{ item.content }}</li>
-            </ul>
-          </div>
-        </section>
+        <OverviewPanel
+          v-if="currentContentView === 'overview'"
+          :articles="articles"
+          :deleted-articles="deletedArticles"
+          :comments="comments"
+          :loading="loading"
+          :error-message="errorMessage"
+          :format-article-status="formatArticleStatus"
+        />
 
-        <section class="panel" v-if="currentContentView === 'articles-manage'">
-          <h3>文章管理</h3>
-          <ul>
-            <li v-for="item in articles" :key="item.id" class="article-row">
-              <span>{{ item.title }} · {{ formatArticleStatus(item.status) }}</span>
-              <button class="danger-btn" @click="moveToTrash(item.id)">删除</button>
-            </li>
-          </ul>
-        </section>
+        <ArticleManagePanel
+          v-if="currentContentView === 'articles-manage'"
+          :articles="articles"
+          :format-article-status="formatArticleStatus"
+          @move-to-trash="moveToTrash"
+        />
 
-        <section class="panel" v-if="currentContentView === 'articles-trash'">
-          <h3>垃圾箱</h3>
-          <p class="tips" v-if="deletedArticles.length === 0">垃圾箱为空</p>
-          <ul v-else>
-            <li v-for="item in deletedArticles" :key="item.id" class="article-row">
-              <span>{{ item.title }}</span>
-              <div class="row-actions">
-                <button @click="restoreFromTrash(item.id)">恢复</button>
-                <button class="danger-btn" @click="removePermanently(item.id)">彻底删除</button>
-              </div>
-            </li>
-          </ul>
-        </section>
+        <ArticleTrashPanel
+          v-if="currentContentView === 'articles-trash'"
+          :deleted-articles="deletedArticles"
+          @restore="restoreFromTrash"
+          @remove-permanently="removePermanently"
+        />
 
-        <section class="editor-panel" v-if="currentContentView === 'articles-create'">
-          <h3>创建文章</h3>
-          <input v-model="title" placeholder="标题" />
-          <input v-model="summary" placeholder="摘要" />
-          <input v-model="coverUrl" placeholder="封面图 URL" />
-          <textarea v-model="contentMarkdown" placeholder="Markdown 正文"></textarea>
-          <div class="action-row">
-            <input v-model.number="categoryId" type="number" placeholder="分类 ID" />
-            <input v-model="tagIdsText" placeholder="标签 ID，逗号分隔" />
-            <select v-model="action">
-              <option value="draft">保存草稿</option>
-              <option v-if="!isAdmin" value="submit">提交审核</option>
-              <option v-if="isAdmin" value="publish">直接发布</option>
-            </select>
-            <button @click="createArticle">提交</button>
-          </div>
-        </section>
+        <ArticleCreatePanel
+          v-if="currentContentView === 'articles-create'"
+          :is-admin="isAdmin"
+          :title="title"
+          :summary="summary"
+          :cover-url="coverUrl"
+          :content-markdown="contentMarkdown"
+          :category-id="categoryId"
+          :tag-ids-text="tagIdsText"
+          :action="action"
+          @update:title="title = $event"
+          @update:summary="summary = $event"
+          @update:cover-url="coverUrl = $event"
+          @update:content-markdown="contentMarkdown = $event"
+          @update:category-id="categoryId = $event"
+          @update:tag-ids-text="tagIdsText = $event"
+          @update:action="action = $event"
+          @submit="createArticle"
+        />
 
         <section class="panel" v-if="currentContentView === 'media'">
           <h3>媒体管理</h3>
@@ -134,6 +117,10 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
+import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
+import ArticleManagePanel from '../components/ArticleManagePanel.vue'
+import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
+import OverviewPanel from '../components/OverviewPanel.vue'
 import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
