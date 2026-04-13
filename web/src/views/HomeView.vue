@@ -1,23 +1,15 @@
 <template>
   <div class="shell" v-if="data">
-    <header class="topbar">
-      <div class="brand-block">
-        <span class="brand-mark">MD</span>
-        <h1>{{ data.site.site_title }}</h1>
-      </div>
-      <nav class="nav">
-        <a v-for="item in data.nav_items" :key="item.id" :href="item.path">{{ item.title }}</a>
-      </nav>
-      <form class="search-box" @submit.prevent="goSearch">
-        <input v-model="keyword" placeholder="搜索文章、摘要与内容" />
-        <button type="submit" aria-label="搜索">
-          <span aria-hidden="true">⌕</span>
-        </button>
-        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
-        </button>
-      </form>
-    </header>
+    <WebTopbar
+      :title="data.site.site_title"
+      :nav-items="data.nav_items"
+      :theme="theme"
+      :current-path="route.path"
+      :search-keyword="keyword"
+      @update:search-keyword="keyword = $event"
+      @toggle-theme="toggleTheme"
+      @search="goSearch"
+    />
 
     <main class="layout">
       <section class="content-panel">
@@ -59,21 +51,21 @@
       </aside>
     </main>
 
-    <footer class="footer">
-      <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
-      <span>{{ data.site.copyright_text || '© MaDongDong Blog' }}</span>
-    </footer>
+    <WebFooter :icp-beian="data.site.icp_beian" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { webApi } from '../api'
+import WebFooter from '../components/WebFooter.vue'
+import WebTopbar from '../components/WebTopbar.vue'
 import type { HomeResponse } from '../types'
 
 const router = useRouter()
+const route = useRoute()
 const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
@@ -106,10 +98,6 @@ const goSearch = () => {
 }
 
 const formatDate = (value: string) => new Date(value).toLocaleDateString('zh-CN')
-
-const themeToggleLabel = computed(() =>
-  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
-)
 
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')

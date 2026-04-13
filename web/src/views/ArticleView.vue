@@ -1,11 +1,16 @@
 <template>
   <div class="article-page" v-if="data">
-    <header class="mini-topbar">
-      <RouterLink to="/" class="back-link">← 返回首页</RouterLink>
-      <div class="mini-nav">
-        <a v-for="item in data.nav_items" :key="item.id" :href="item.path">{{ item.title }}</a>
-      </div>
-    </header>
+    <WebTopbar
+      :title="data.site.site_title"
+      :nav-items="data.nav_items"
+      :theme="theme"
+      :current-path="route.path"
+      :search-keyword="keyword"
+      :collapsible-search="true"
+      @update:search-keyword="keyword = $event"
+      @toggle-theme="toggleTheme"
+      @search="goSearch"
+    />
 
     <article class="article-panel">
       <p class="article-category">{{ data.article.category.name }}</p>
@@ -37,21 +42,44 @@
         </div>
       </div>
     </section>
+
+    <WebFooter :icp-beian="data.site.icp_beian" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { webApi } from '../api'
+import WebFooter from '../components/WebFooter.vue'
+import WebTopbar from '../components/WebTopbar.vue'
 import type { ArticlePageResponse } from '../types'
 
 const route = useRoute()
+const router = useRouter()
 const data = ref<ArticlePageResponse | null>(null)
 const commentContent = ref('')
 const guestNickname = ref('')
 const guestEmail = ref('')
+const keyword = ref('')
+type ThemeMode = 'light' | 'dark'
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (value: ThemeMode) => {
+  theme.value = value
+  document.documentElement.dataset.theme = value
+  localStorage.setItem('md-theme', value)
+}
+
+const toggleTheme = () => {
+  applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const goSearch = () => {
+  if (!keyword.value.trim()) return
+  router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
+}
 
 const loadData = async () => {
   data.value = await webApi.getArticle(String(route.params.id))
@@ -71,5 +99,9 @@ const submitComment = async () => {
 
 const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')
 
-onMounted(loadData)
+onMounted(() => {
+  const storedTheme = localStorage.getItem('md-theme')
+  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  loadData()
+})
 </script>
