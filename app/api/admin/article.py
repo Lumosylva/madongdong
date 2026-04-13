@@ -23,15 +23,11 @@ from app.services.article import (
     create_article,
     create_category,
     create_tag,
-    delete_article,
     get_article_or_404,
     list_articles,
     list_categories,
-    list_deleted_articles,
     list_tags,
-    permanently_delete_article,
     reject_article,
-    restore_article,
     update_article,
     update_category,
     update_tag,
@@ -47,16 +43,6 @@ async def get_articles(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     articles = await list_articles(session, current_user)
-    data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
-    return success_response(data)
-
-
-@router.get("/articles/deleted", summary="查询已删除文章列表（垃圾箱）")
-async def get_deleted_articles(
-    session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
-) -> dict[str, object]:
-    articles = await list_deleted_articles(session, current_user)
     data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
     return success_response(data)
 
@@ -195,33 +181,3 @@ async def update_tag_endpoint(
 ) -> dict[str, object]:
     tag = await update_tag(session, tag_id, payload.name, payload.slug)
     return success_response(TagResponse.model_validate(tag).model_dump())
-
-
-@router.delete("/articles/{article_id}", summary="删除文章（软删除）")
-async def delete_article_endpoint(
-    article_id: int,
-    session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
-) -> dict[str, object]:
-    result = await delete_article(session, article_id, current_user)
-    return success_response(result)
-
-
-@router.post("/articles/{article_id}/restore", summary="恢复已删除文章")
-async def restore_article_endpoint(
-    article_id: int,
-    session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
-) -> dict[str, object]:
-    article = await restore_article(session, article_id, current_user)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
-
-
-@router.delete("/articles/{article_id}/permanent", summary="永久删除文章")
-async def permanently_delete_article_endpoint(
-    article_id: int,
-    session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
-) -> dict[str, object]:
-    result = await permanently_delete_article(session, article_id, current_user)
-    return success_response(result)

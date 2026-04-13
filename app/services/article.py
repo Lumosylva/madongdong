@@ -81,9 +81,9 @@ async def update_tag(session: AsyncSession, tag_id: int, name: str, slug: str) -
 
 
 async def list_articles(session: AsyncSession, current_user: User) -> list[Article]:
-    """查询文章列表（不包含已删除的）。"""
+    """查询文章列表。"""
 
-    statement: Select[tuple[Article]] = select(Article).where(Article.is_deleted == False).order_by(Article.created_at.desc())  # type: ignore
+    statement: Select[tuple[Article]] = select(Article).order_by(Article.created_at.desc())
     if not _is_admin(current_user):
         statement = statement.where(Article.author_id == current_user.id)
     result = await session.execute(statement)
@@ -331,63 +331,3 @@ def _is_admin(current_user: User) -> bool:
 def _ensure_admin(current_user: User) -> None:
     if not _is_admin(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅管理员可执行该操作")
-
-
-async def delete_article(
-    session: AsyncSession,
-    article_id: int,
-    current_user: User,
-) -> dict[str, str]:
-    """软删除文章（移入垃圾箱）。"""
-
-    article = await get_article_for_edit(session, article_id, current_user)
-    article.is_deleted = True
-    article.deleted_at = datetime.now(timezone.utc)
-    await session.commit()
-    return {"message": "文章已删除并移入垃圾箱"}
-
-
-async def list_deleted_articles(session: AsyncSession, current_user: User) -> list[Article]:
-    """查询已删除文章列表（垃圾箱）。"""
-
-    statement: Select[tuple[Article]] = select(Article).where(Article.is_deleted == True).order_by(Article.deleted_at.desc())  # type: ignore
-    if not _is_admin(current_user):
-        statement = statement.where(Article.author_id == current_user.id)
-    result = await session.execute(statement)
-    return list(result.scalars().unique().all())
-
-
-async def restore_article(
-    session: AsyncSession,
-    article_id: int,
-    current_user: User,
-) -> Article:
-    """恢复已删除文章。"""
-
-    article = await get_article_or_404(session, article_id)
-    if not article.is_deleted:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="文章未被删除")
-    if not _is_admin(current_user) and article.author_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权恢复该文章")
-    article.is_deleted = False
-    article.deleted_at = None
-    await session.commit()
-    await session.refresh(article)
-    return article
-
-
-async def permanently_delete_article(
-    session: AsyncSession,
-    article_id: int,
-    current_user: User,
-) -> dict[str, str]:
-    """永久删除文章（从垃圾箱清空）。"""
-
-    article = await get_article_or_404(session, article_id)
-    if not article.is_deleted:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="文章不在垃圾箱中")
-    if not _is_admin(current_user) and article.author_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权永久删除该文章")
-    await session.delete(article)
-    await session.commit()
-    return {"message": "文章已永久删除"}

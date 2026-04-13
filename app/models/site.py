@@ -13,7 +13,7 @@ class SiteSetting(TimestampMixin, Base):
     __tablename__ = "site_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    site_title: Mapped[str] = mapped_column(String(200), default="xx Blog", nullable=False)
+    site_title: Mapped[str] = mapped_column(String(200), default="MaDongDong Blog", nullable=False)
     site_logo: Mapped[str | None] = mapped_column(String(500), nullable=True)
     site_subtitle: Mapped[str | None] = mapped_column(String(255), nullable=True)
     icp_beian: Mapped[str | None] = mapped_column(String(255), nullable=True)

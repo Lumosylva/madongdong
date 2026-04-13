@@ -2,7 +2,7 @@
   <div class="shell" v-if="data">
     <header class="topbar">
       <div class="brand-block">
-        <span class="brand-mark">MDD</span>
+        <span class="brand-mark">MD</span>
         <h1>{{ data.site.site_title }}</h1>
       </div>
       <nav class="nav">
@@ -11,7 +11,7 @@
       <form class="search-box" @submit.prevent="goSearch">
         <input v-model="keyword" placeholder="搜索文章、摘要与内容" />
         <button type="submit" aria-label="搜索">
-          <span aria-hidden="true">🔎</span>
+          <span aria-hidden="true">⌕</span>
         </button>
         <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
           <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
@@ -60,10 +60,8 @@
     </main>
 
     <footer class="footer">
-      <div class="footer-content">
-        <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
-        <span>{{ data.site.copyright_text || '© 程序人生' }}</span>
-      </div>
+      <span>{{ data.site.icp_beian || '备案信息待配置' }}</span>
+      <span>{{ data.site.copyright_text || '© MaDongDong Blog' }}</span>
     </footer>
   </div>
 </template>

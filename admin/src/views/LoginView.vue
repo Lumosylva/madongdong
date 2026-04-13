@@ -1,13 +1,25 @@
 <template>
   <section class="login-wrap">
-    <form class="login-card" @submit.prevent="submit">
-      <div class="login-header">
-        <p class="eyebrow">MaDongDong Admin</p>
+    <header class="topbar topbar-login">
+      <div class="brand-block">
+        <span class="brand-mark">MD</span>
+        <h1>MaDongDong Admin</h1>
+      </div>
+      <nav class="nav">
+        <a href="javascript:void(0)">控制台</a>
+        <a href="javascript:void(0)">内容</a>
+        <a href="javascript:void(0)">设置</a>
+      </nav>
+      <div class="topbar-actions">
         <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-          <span aria-hidden="true">{{ theme === 'light' ? '☀️' : '🌙' }}</span>
+          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
         </button>
       </div>
-      <h1>后台登录</h1>
+    </header>
+
+    <form class="login-card" @submit.prevent="submit">
+      <p class="eyebrow">MaDongDong Admin</p>
+      <h2>后台登录</h2>
       <input v-model="username" placeholder="用户名" />
       <input v-model="password" type="password" placeholder="密码" />
       <button type="submit" :disabled="loading">{{ loading ? '登录中...' : '登录管理台' }}</button>
@@ -18,12 +30,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
 
 type ThemeMode = 'light' | 'dark'
+
+const router = useRouter()
+const username = ref('admin')
+const password = ref('admin123456')
+const loading = ref(false)
+const errorMessage = ref('')
 const theme = ref<ThemeMode>('light')
 
 const applyTheme = (value: ThemeMode) => {
@@ -39,12 +57,6 @@ const toggleTheme = () => {
 const themeToggleLabel = computed(() =>
   theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
 )
-
-const router = useRouter()
-const username = ref('admin')
-const password = ref('admin123456')
-const loading = ref(false)
-const errorMessage = ref('')
 
 const submit = async () => {
   loading.value = true
@@ -63,7 +75,7 @@ const submit = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-admin-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  
+
   const token = localStorage.getItem('blog_admin_token')
   if (!token) {
     return
