@@ -17,8 +17,8 @@
           <small>slug: {{ item.slug }} ｜ {{ item.description || '无描述' }}</small>
         </div>
         <div class="row-actions">
-          <button @click="startEdit(item)">编辑</button>
-          <button class="danger-btn" @click="$emit('delete', item.id)">删除</button>
+          <button :disabled="isDefaultCategory(item)" @click="startEdit(item)">编辑</button>
+          <button class="danger-btn" :disabled="isDefaultCategory(item)" @click="$emit('delete', item.id)">删除</button>
         </div>
       </li>
     </ul>
@@ -104,7 +104,14 @@ const create = () => {
   slugTouched.value = false
 }
 
+const isDefaultCategory = (item: CategoryItem) => {
+  const name = String(item.name || '').trim()
+  const slug = String(item.slug || '').trim().toLowerCase()
+  return name === '未分类' || slug === 'uncategorized'
+}
+
 const startEdit = (item: CategoryItem) => {
+  if (isDefaultCategory(item)) return
   editing.value = true
   editId.value = item.id
   editName.value = item.name

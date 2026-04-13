@@ -41,6 +41,9 @@ async def update_category(
     """更新分类。"""
 
     category = await get_category_or_404(session, category_id)
+    if _is_default_category(category):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="默认分类不允许编辑")
+
     await _ensure_category_slug_unique(session, slug, exclude_id=category_id)
     category.name = name
     category.slug = slug
@@ -54,6 +57,8 @@ async def delete_category(session: AsyncSession, category_id: int) -> None:
     """删除分类。"""
 
     category = await get_category_or_404(session, category_id)
+    if _is_default_category(category):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="默认分类不允许删除")
 
     article_result = await session.execute(select(Article).where(Article.category_id == category_id).limit(1))
     if article_result.scalar_one_or_none() is not None:
@@ -355,6 +360,10 @@ def _apply_editor_action(article: Article, current_user: User, action: str) -> N
         article.published_at = datetime.now(timezone.utc)
         return
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不支持的文章操作")
+
+
+def _is_default_category(category: Category) -> bool:
+    return (category.name or "").strip() == "未分类" or (category.slug or "").strip().lower() == "uncategorized"
 
 
 def _is_admin(current_user: User) -> bool:
