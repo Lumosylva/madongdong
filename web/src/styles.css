@@ -363,15 +363,15 @@ a {
 .sidebar-card {
   display: flex;
   flex-direction: column;
-  min-height: 520px;
-  max-height: 520px;
+  min-height: 760px;
+  max-height: 760px;
 }
 
 .hot-list {
   margin-top: 6px;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
-  padding-right: 4px;
+  padding-right: 0;
   flex: 1;
 }
 
