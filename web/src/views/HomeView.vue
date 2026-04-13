@@ -2,6 +2,7 @@
   <div class="shell" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
       :nav-items="data.nav_items"
       :theme="theme"
       :current-path="route.path"
@@ -14,13 +15,8 @@
 
     <main class="layout">
       <section class="content-panel">
-        <div class="hero-intro">
-          <p class="hero-kicker">Personal Dispatches</p>
-          <p class="hero-subtitle">{{ data.site.site_subtitle || '记录技术、生活与长期主义' }}</p>
-        </div>
         <div class="section-head">
           <h2>最新文章</h2>
-          <span>第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页</span>
         </div>
         <article v-for="article in data.latest_articles.items" :key="article.id" class="article-card">
           <div class="card-meta">
@@ -35,6 +31,7 @@
             <span>评论 {{ article.comment_count }}</span>
           </div>
         </article>
+        <div class="pager-meta">第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页</div>
         <div class="pager">
           <button v-if="page > 1" @click="changePage(page - 1)">上一页</button>
           <button v-if="page < data.latest_articles.total_pages" @click="changePage(page + 1)">下一页</button>

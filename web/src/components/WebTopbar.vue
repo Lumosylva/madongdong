@@ -2,7 +2,10 @@
   <header class="topbar">
     <div class="brand-block">
       <span class="brand-mark">MD</span>
-      <h1>{{ title }}</h1>
+      <div>
+        <h1>{{ title }}</h1>
+        <p v-if="subtitle" class="brand-subtitle">{{ subtitle }}</p>
+      </div>
     </div>
 
     <button
@@ -98,12 +101,14 @@ const props = withDefaults(
     title: string
     navItems: NavItem[]
     theme: ThemeMode
+    subtitle?: string
     searchKeyword?: string
     currentPath?: string
     currentFullPath?: string
     collapsibleSearch?: boolean
   }>(),
   {
+    subtitle: '',
     searchKeyword: '',
     currentPath: '/',
     currentFullPath: '/',

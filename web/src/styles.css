@@ -148,23 +148,11 @@ a {
   color: var(--text-soft);
 }
 
-.hero-intro {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-
-.hero-kicker {
-  color: var(--accent);
+.brand-subtitle {
+  margin: 2px 0 0;
   font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.hero-subtitle {
-  max-width: 720px;
-  font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.2;
+  color: var(--text-soft);
 }
 
 .nav,
@@ -429,11 +417,18 @@ a {
   line-height: 1.9;
 }
 
+.pager-meta {
+  margin-top: 14px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
 .pager {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 24px;
+  margin-top: 10px;
 }
 
 .footer {

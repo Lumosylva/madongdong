@@ -66,13 +66,7 @@ a {
   min-height: 100vh;
 }
 
-.admin-page,
-.login-wrap {
-  width: min(1320px, calc(100% - 24px));
-  margin: 0 auto;
-  padding: 16px 0 48px;
-}
-
+undefined
 .topbar,
 .hero-panel,
 .panel,
@@ -91,6 +85,8 @@ a {
   border-right: none;
   box-shadow: none;
   position: relative;
+  z-index: 120;
+  overflow: visible;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -143,17 +139,13 @@ a {
   gap: 8px;
 }
 
-.theme-toggle,
-.logout-btn {
+.theme-toggle {
   border: none;
   border-radius: 999px;
   cursor: pointer;
   background: var(--bg-soft);
   border: 1px solid var(--line);
   color: var(--text);
-}
-
-.theme-toggle {
   width: 36px;
   min-width: 36px;
   height: 36px;
@@ -163,14 +155,85 @@ a {
   font-size: 16px;
 }
 
-.logout-btn {
-  padding: 8px 12px;
+.user-menu {
+  position: relative;
+}
+
+.user-trigger {
+  width: auto;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.role-badge {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  border: 1px solid transparent;
+}
+
+.role-badge.admin {
+  background: rgba(14, 165, 164, 0.18);
+  border-color: rgba(14, 165, 164, 0.45);
+  color: var(--accent);
+}
+
+.role-badge.author {
+  background: rgba(234, 154, 24, 0.18);
+  border-color: rgba(234, 154, 24, 0.45);
+  color: var(--accent-2);
+}
+
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 180px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  z-index: 300;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-soft);
+}
+
+.dropdown-item.danger {
+  color: var(--danger);
 }
 
 .dashboard-shell {
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 18px;
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar,
@@ -292,6 +355,31 @@ button:disabled {
 .editor-panel textarea {
   min-height: 280px;
   margin-top: 12px;
+}
+
+.article-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.row-actions button,
+.article-row button {
+  width: auto;
+  padding: 8px 12px;
+}
+
+.danger-btn {
+  background: linear-gradient(135deg, #fb7185, #f97316) !important;
+  color: #fff !important;
 }
 
 .eyebrow,
