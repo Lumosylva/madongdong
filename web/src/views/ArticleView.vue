@@ -48,6 +48,10 @@
         </div>
       </form>
 
+      <p v-if="commentToastMessage" class="comment-toast" :class="commentToastStatus === 'error' ? 'error' : 'success'">
+        {{ commentToastMessage }}
+      </p>
+
       <div class="comment-list" ref="commentListRef">
         <div
           v-for="comment in data.comments"
@@ -69,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -84,6 +88,10 @@ const commentContent = ref('')
 const guestNickname = ref('')
 const guestEmail = ref('')
 const keyword = ref('')
+const commentListRef = ref<HTMLElement | null>(null)
+const highlightedCommentId = ref<number | null>(null)
+const commentToastMessage = ref('')
+const commentToastStatus = ref<'success' | 'error' | ''>('')
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -126,14 +134,45 @@ const loadData = async () => {
 
 const submitComment = async () => {
   if (!data.value || !commentContent.value.trim()) return
-  await webApi.submitComment({
-    article_id: data.value.article.id,
-    content: commentContent.value,
-    guest_nickname: guestNickname.value || null,
-    guest_email: guestEmail.value || null,
-  })
-  commentContent.value = ''
-  await loadData()
+
+  try {
+    await webApi.submitComment({
+      article_id: data.value.article.id,
+      content: commentContent.value,
+      guest_nickname: guestNickname.value || null,
+      guest_email: guestEmail.value || null,
+    })
+
+    commentToastStatus.value = 'success'
+    commentToastMessage.value = '评论提交成功'
+    const previousMaxCommentId = Math.max(0, ...(data.value.comments.map((item) => item.id) || [0]))
+
+    commentContent.value = ''
+    guestNickname.value = ''
+    guestEmail.value = ''
+    await loadData()
+
+    const latest = data.value?.comments.find((item) => item.id > previousMaxCommentId) || data.value?.comments[0]
+    if (latest) {
+      highlightedCommentId.value = latest.id
+      await nextTick()
+      const target = commentListRef.value?.querySelector(`[data-comment-id="${latest.id}"]`)
+      if (target instanceof HTMLElement) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+      setTimeout(() => {
+        highlightedCommentId.value = null
+      }, 2000)
+    }
+  } catch (error) {
+    commentToastStatus.value = 'error'
+    commentToastMessage.value = error instanceof Error ? error.message : '评论提交失败，请稍后重试'
+  } finally {
+    setTimeout(() => {
+      commentToastMessage.value = ''
+      commentToastStatus.value = ''
+    }, 2200)
+  }
 }
 
 const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')
