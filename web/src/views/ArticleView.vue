@@ -157,12 +157,15 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
-const goToCommentSection = () => {
+const goToCommentSection = async () => {
   const el = document.querySelector('#comment-section')
   if (el instanceof HTMLElement) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     el.classList.add('section-highlight')
     window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
+    await nextTick()
+    const focusTarget = el.querySelector('textarea, input') as HTMLElement | null
+    focusTarget?.focus()
   }
 }
 
