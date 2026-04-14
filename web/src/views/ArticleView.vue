@@ -66,7 +66,7 @@
       </section>
     </article>
 
-    <section class="comment-panel">
+    <section class="comment-panel" id="comment-section">
       <div class="comment-head">
         <h2>评论</h2>
         <span class="comment-count">共 {{ data.comments.length }} 条</span>
