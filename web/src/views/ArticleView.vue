@@ -20,7 +20,7 @@
         <div class="article-head-divider"></div>
         <div class="article-head-row">
           <h1>{{ data.article.title }}</h1>
-          <button v-if="isLoggedIn" type="button" class="jump-comment-btn" @click="goToCommentSection">去评论</button>
+          <button type="button" class="jump-comment-btn" @click="goToCommentSection">去评论</button>
         </div>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>

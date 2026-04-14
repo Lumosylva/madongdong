@@ -107,6 +107,30 @@ const loadData = async () => {
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
+const hydrateWelcomeName = async () => {
+  const token = localStorage.getItem('md_web_token')
+  if (!token) return
+  try {
+    const currentUser = await webApi.getCurrentWebUser()
+    const name = currentUser?.nickname || currentUser?.username || localStorage.getItem('md-reader-nickname') || ''
+    if (name) {
+      localStorage.setItem('md-reader-nickname', name)
+      welcomeMessage.value = `欢迎回来，${name}`
+      setTimeout(() => {
+        welcomeMessage.value = ''
+      }, 2600)
+    }
+  } catch {
+    const fallbackName = localStorage.getItem('md-reader-nickname')
+    if (fallbackName) {
+      welcomeMessage.value = `欢迎回来，${fallbackName}`
+      setTimeout(() => {
+        welcomeMessage.value = ''
+      }, 2600)
+    }
+  }
+}
+
 const changePage = async (value: number) => {
   page.value = value
   await loadData()
@@ -156,7 +180,7 @@ const formatRelativeTime = (value: string) => {
   return `${years} 年前`
 }
 
-onMounted(() => {
+onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
 
@@ -169,6 +193,7 @@ onMounted(() => {
     }, 2600)
   }
 
-  loadData()
+  await hydrateWelcomeName()
+  await loadData()
 })
 </script>
