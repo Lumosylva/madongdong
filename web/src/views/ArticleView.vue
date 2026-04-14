@@ -91,7 +91,11 @@
         </div>
       </form>
 
-      <p v-if="commentToastMessage" class="comment-toast" :class="commentToastStatus === 'error' ? 'error' : 'success'">
+      <p
+        v-if="commentToastMessage"
+        class="comment-toast"
+        :class="commentToastStatus === 'error' ? 'error' : (commentToastStatus === 'warning' ? 'warning' : 'success')"
+      >
         {{ commentToastMessage }}
       </p>
 
@@ -180,15 +184,16 @@ const submitComment = async () => {
   if (!data.value || !commentContent.value.trim()) return
 
   try {
-    await webApi.submitComment({
+    const created = await webApi.submitComment({
       article_id: data.value.article.id,
       content: commentContent.value,
       guest_nickname: guestNickname.value || null,
       guest_email: guestEmail.value || null,
-    })
+    }) as { status?: string }
 
     commentToastStatus.value = 'success'
-    commentToastMessage.value = '评论提交成功'
+    const createdStatus = String(created?.status || '').toUpperCase()
+    commentToastMessage.value = createdStatus === 'APPROVED' ? '评论已发布' : '评论已提交，待审核'
     const previousMaxCommentId = Math.max(0, ...(data.value.comments.map((item) => item.id) || [0]))
 
     commentContent.value = ''

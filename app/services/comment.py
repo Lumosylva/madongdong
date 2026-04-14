@@ -33,13 +33,15 @@ async def create_comment(
         if not guest_nickname or not guest_email:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="匿名评论必须提供昵称和邮箱")
 
+    auto_approved = bool(current_user and _is_admin_or_author(current_user))
+
     comment = Comment(
         article_id=article.id,
         user_id=current_user.id if current_user else None,
         guest_nickname=None if current_user else guest_nickname,
         guest_email=None if current_user else guest_email,
         content=content,
-        status=CommentStatus.PENDING,
+        status=CommentStatus.APPROVED if auto_approved else CommentStatus.PENDING,
         parent_id=parent.id if parent else None,
     )
     session.add(comment)
@@ -105,3 +107,8 @@ async def count_article_comments(session: AsyncSession, article_id: int) -> int:
     result = await session.execute(statement)
     count = result.scalar_one()
     return int(count)
+
+
+def _is_admin_or_author(user: User) -> bool:
+    role_names = {str(role.name or '').strip().lower() for role in user.roles}
+    return 'admin' in role_names or 'author' in role_names
