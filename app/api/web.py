@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.core.security import get_current_user_optional
 from app.models.auth import User
+from app.schemas.auth import CurrentUserResponse, ReaderRegisterRequest
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.web import ArticlePageResponse, HomeResponse, SearchResponse
+from app.services.auth import register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
     get_homepage_data,
@@ -77,4 +79,19 @@ async def submit_comment(
         guest_email=str(payload.guest_email) if payload.guest_email else None,
     )
     return CommentResponse.model_validate(comment)
+
+
+@router.post('/auth/register', summary='读者注册')
+async def reader_register(
+    payload: ReaderRegisterRequest,
+    session: AsyncSession = Depends(get_db_session),
+) -> CurrentUserResponse:
+    user = await register_reader_user(
+        session=session,
+        username=payload.username,
+        password=payload.password,
+        nickname=payload.nickname,
+        email=str(payload.email),
+    )
+    return CurrentUserResponse.model_validate(user)
 

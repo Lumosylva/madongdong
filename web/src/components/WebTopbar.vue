@@ -30,12 +30,15 @@
       </RouterLink>
     </nav>
 
-    <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">
+    <div class="topbar-right">
+      <RouterLink to="/register" class="register-entry">注册</RouterLink>
+
+      <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">
       <button
-        v-if="collapsibleSearch"
+        v-if="collapsibleSearch && !searchOpen"
         type="button"
         class="search-trigger"
-        :aria-label="searchOpen ? '收起搜索' : '展开搜索'"
+        aria-label="展开搜索"
         :aria-expanded="searchOpen"
         @click="toggleSearch"
       >
@@ -59,6 +62,7 @@
         <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
       </button>
     </form>
+    </div>
   </header>
 
   <transition name="drawer-fade">

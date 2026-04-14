@@ -43,4 +43,10 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
+  registerReader(payload: { username: string; password: string; nickname: string; email: string }) {
+    return request('/web/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
 }
