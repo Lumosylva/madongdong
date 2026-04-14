@@ -24,7 +24,7 @@
             :key="item.id"
             type="button"
             class="article-cover-thumb"
-            @click="$emit('update:coverUrl', item.url); showCoverPicker = false"
+            @click="selectCover(item.url)"
           >
             <img :src="item.url" :alt="item.original_name" />
             <span>{{ item.original_name }}</span>
@@ -65,7 +65,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed, ref } from 'vue'
+
+const props = defineProps<{
   isAdmin: boolean
   title: string
   coverUrl: string
@@ -77,19 +79,25 @@ defineProps<{
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
 }>()
 
-import { computed, ref } from 'vue'
-
-const showCoverPicker = ref(false)
-const imageMedia = computed(() => props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml'))
-
-defineEmits<{
+const emit = defineEmits<{
   'update:title': [value: string]
   'update:coverUrl': [value: string]
   'update:contentMarkdown': [value: string]
   'update:categoryId': [value: number]
   'update:tagIdsText': [value: string]
   'update:action': [value: 'draft' | 'submit' | 'publish']
-  'select-cover': [value: string]
   submit: []
 }>()
+
+const showCoverPicker = ref(false)
+const imageMedia = computed(() =>
+  props.media.filter(
+    (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
+  ),
+)
+
+const selectCover = (url: string) => {
+  emit('update:coverUrl', url)
+  showCoverPicker.value = false
+}
 </script>
