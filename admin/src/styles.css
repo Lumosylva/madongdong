@@ -799,6 +799,7 @@ button:disabled {
   gap: 14px;
   margin-top: 16px;
   padding: 0 2px;
+  flex-wrap: wrap;
 }
 
 .article-page-size,
@@ -809,9 +810,13 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.article-page-size select,
+.article-page-btn {
+  min-height: 38px;
+  border-radius: 14px;
+}
+
 .article-page-size select {
-  min-height: 36px;
-  border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--bg-soft);
   color: var(--text);
@@ -819,12 +824,14 @@ button:disabled {
 }
 
 .article-page-btn {
-  min-height: 36px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg-soft);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(237, 242, 249, 0.8);
   color: var(--text);
-  padding: 0 14px;
+  padding: 0 16px;
+}
+
+.article-page-btn:hover {
+  background: rgba(237, 242, 249, 0.96);
 }
 
 .article-page-indicator {
