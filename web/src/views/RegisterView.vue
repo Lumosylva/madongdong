@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
@@ -43,6 +43,7 @@ import WebTopbar from '../components/WebTopbar.vue'
 type ThemeMode = 'light' | 'dark'
 
 const route = useRoute()
+const router = useRouter()
 const theme = ref<ThemeMode>('light')
 const username = ref('')
 const nickname = ref('')
@@ -76,11 +77,17 @@ const submit = async () => {
       password: password.value,
     })
     status.value = 'success'
-    message.value = '注册成功，请前往文章页参与评论。'
+    message.value = '注册成功，正在跳转首页...'
+    const displayName = nickname.value.trim() || username.value.trim()
+    localStorage.setItem('md-welcome-once', `欢迎加入，${displayName}`)
+    localStorage.setItem('md-reader-nickname', displayName)
     username.value = ''
     nickname.value = ''
     email.value = ''
     password.value = ''
+    setTimeout(() => {
+      router.push('/')
+    }, 500)
   } catch (error) {
     status.value = 'error'
     message.value = error instanceof Error ? error.message : '注册失败'

@@ -265,6 +265,12 @@ watch(() => route.params.id, () => {
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+
+  const savedNickname = localStorage.getItem('md-reader-nickname')
+  if (savedNickname && !guestNickname.value.trim()) {
+    guestNickname.value = savedNickname
+  }
+
   loadData()
 })
 </script>

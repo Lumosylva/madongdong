@@ -14,6 +14,8 @@
       @search="goSearch"
     />
 
+    <p v-if="welcomeMessage" class="tips success-message" style="margin: 10px 0 0;">{{ welcomeMessage }}</p>
+
     <main class="layout">
       <section class="content-panel">
         <article v-for="article in data.latest_articles.items" :key="article.id" class="article-card">
@@ -69,6 +71,7 @@ const route = useRoute()
 const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
+const welcomeMessage = ref('')
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -149,6 +152,16 @@ const formatRelativeTime = (value: string) => {
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+
+  const onceWelcome = localStorage.getItem('md-welcome-once')
+  if (onceWelcome) {
+    welcomeMessage.value = onceWelcome
+    localStorage.removeItem('md-welcome-once')
+    setTimeout(() => {
+      welcomeMessage.value = ''
+    }, 2600)
+  }
+
   loadData()
 })
 </script>
