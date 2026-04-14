@@ -793,13 +793,12 @@ button:disabled {
 }
 
 .article-pagination {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 14px;
   margin-top: 16px;
   padding: 0 2px;
-  flex-wrap: wrap;
 }
 
 .article-page-size,
@@ -808,6 +807,18 @@ button:disabled {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.article-page-size {
+  justify-self: start;
+}
+
+.article-page-indicator-center {
+  justify-self: center;
+}
+
+.article-page-controls {
+  justify-self: end;
 }
 
 .article-page-size select,

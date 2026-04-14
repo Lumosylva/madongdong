@@ -50,9 +50,9 @@
         </select>
         <span>篇</span>
       </div>
+      <span class="article-page-indicator article-page-indicator-center">{{ formatPageLabel }}</span>
       <div class="article-page-controls">
         <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
-        <span class="article-page-indicator">{{ formatPageLabel }}</span>
         <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
       </div>
     </div>
