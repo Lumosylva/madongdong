@@ -1,11 +1,13 @@
 """认证业务逻辑。"""
 
 from fastapi import HTTPException, status
+from passlib.context import CryptContext
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import get_password_hash
 from app.models.auth import Role, User
+
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
@@ -45,7 +47,7 @@ async def register_reader_user(
 
     user = User(
         username=username,
-        password_hash=get_password_hash(password),
+        password_hash=pwd_context.hash(password),
         nickname=nickname,
         email=email,
         is_active=True,
