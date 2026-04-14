@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import get_current_user_optional
+from app.core.security import create_access_token, get_current_user_optional, verify_password
 from app.models.auth import User
-from app.schemas.auth import CurrentUserResponse, ReaderRegisterRequest
+from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.web import ArticlePageResponse, HomeResponse, SearchResponse
-from app.services.auth import register_reader_user
+from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
     get_homepage_data,
@@ -94,4 +94,23 @@ async def reader_register(
         email=str(payload.email),
     )
     return CurrentUserResponse.model_validate(user)
+
+
+@router.post('/auth/login', summary='读者登录')
+async def reader_login(
+    payload: LoginRequest,
+    session: AsyncSession = Depends(get_db_session),
+) -> TokenResponse:
+    user = await get_user_by_username(session, payload.username)
+    if user is None or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='用户名或密码错误')
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='当前用户已被禁用')
+
+    role_names = {str(role.name or '').strip().lower() for role in user.roles}
+    if 'reader' not in role_names:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台登录')
+
+    token = create_access_token(user.username)
+    return TokenResponse(access_token=token)
 

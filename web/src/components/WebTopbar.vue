@@ -31,7 +31,7 @@
     </nav>
 
     <div class="topbar-right">
-      <RouterLink to="/register" class="register-entry">注册</RouterLink>
+      <RouterLink to="/login" class="auth-entry">登录 / 注册</RouterLink>
 
       <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">
       <button

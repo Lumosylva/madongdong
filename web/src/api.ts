@@ -49,4 +49,10 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
+  loginReader(payload: { username: string; password: string }) {
+    return request<{ access_token: string; token_type: string }>('/web/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
 }
