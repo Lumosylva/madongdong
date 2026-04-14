@@ -24,6 +24,10 @@
           <span class="overview-metric-label">待审核</span>
         </div>
         <div class="overview-metric">
+          <span class="overview-metric-value">{{ rejectedCount }}</span>
+          <span class="overview-metric-label">已驳回</span>
+        </div>
+        <div class="overview-metric">
           <span class="overview-metric-value">{{ deletedArticles.length }}</span>
           <span class="overview-metric-label">垃圾箱</span>
         </div>
@@ -61,5 +65,9 @@ const draftCount = computed(() =>
 
 const publishedCount = computed(() =>
   props.articles.filter((item) => normalizeStatus(item.status) === 'published').length,
+)
+
+const rejectedCount = computed(() =>
+  props.articles.filter((item) => normalizeStatus(item.status) === 'rejected').length,
 )
 </script>
