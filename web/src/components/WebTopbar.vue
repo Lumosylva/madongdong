@@ -37,7 +37,7 @@
         </button>
         <div v-if="accountMenuOpen" class="account-dropdown">
           <p v-if="isLoggedIn" class="account-name">{{ accountName }}</p>
-          <RouterLink v-if="isLoggedIn && isOnArticlePage" :to="`#comment-section`" class="dropdown-item" @click="accountMenuOpen = false">去评论</RouterLink>
+          <button v-if="isLoggedIn && isOnArticlePage" type="button" class="dropdown-item" @click="goToCommentSection">去评论</button>
           <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
           <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
           <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
@@ -200,6 +200,16 @@ const toggleSearch = () => {
 
 const toggleAccountMenu = () => {
   accountMenuOpen.value = !accountMenuOpen.value
+}
+
+const goToCommentSection = () => {
+  accountMenuOpen.value = false
+  const el = document.querySelector('#comment-section')
+  if (el instanceof HTMLElement) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    el.classList.add('section-highlight')
+    window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
+  }
 }
 
 const logout = () => {
