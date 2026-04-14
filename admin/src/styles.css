@@ -714,6 +714,12 @@ button:disabled {
   font-size: 13px;
 }
 
+.article-manage-panel {
+  overflow-x: clip;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .article-manage-panel .action-row.article-filter-row,
 .article-manage-panel .article-manage-list {
   padding-inline: 2px;
@@ -794,11 +800,12 @@ button:disabled {
 
 .article-pagination {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
   margin-top: 16px;
   padding: 0 2px;
+  max-width: 100%;
 }
 
 .article-page-size,
@@ -808,6 +815,7 @@ button:disabled {
   gap: 8px;
   flex-wrap: wrap;
   align-self: center;
+  min-width: 0;
 }
 
 .article-page-size {
