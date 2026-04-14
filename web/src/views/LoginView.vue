@@ -76,6 +76,7 @@ const submit = async () => {
     const displayName = savedNickname || username.value.trim()
     localStorage.setItem('md-reader-nickname', displayName)
     localStorage.setItem('md-welcome-once', `欢迎回来，${displayName}`)
+    localStorage.removeItem('md-home-welcome-shown')
     status.value = 'success'
     message.value = '登录成功，正在跳转首页...'
     setTimeout(() => {

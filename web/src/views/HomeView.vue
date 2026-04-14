@@ -74,7 +74,7 @@ const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
 const welcomeMessage = ref('')
-const welcomeCooldownKey = 'md-welcome-cooldown-at'
+const welcomeShownKey = 'md-home-welcome-shown'
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -114,9 +114,7 @@ const hydrateWelcomeName = async () => {
   const token = localStorage.getItem('md_web_token')
   if (!token) return
 
-  const lastShownAt = Number(localStorage.getItem(welcomeCooldownKey) || '0')
-  const now = Date.now()
-  if (Number.isFinite(lastShownAt) && now - lastShownAt < 24 * 60 * 60 * 1000) {
+  if (localStorage.getItem(welcomeShownKey) === '1') {
     return
   }
 
@@ -126,7 +124,7 @@ const hydrateWelcomeName = async () => {
     if (name) {
       localStorage.setItem('md-reader-nickname', name)
       welcomeMessage.value = `欢迎回来，${name}`
-      localStorage.setItem(welcomeCooldownKey, String(now))
+      localStorage.setItem(welcomeShownKey, '1')
       setTimeout(() => {
         welcomeMessage.value = ''
       }, 2200)
@@ -135,7 +133,7 @@ const hydrateWelcomeName = async () => {
     const fallbackName = localStorage.getItem('md-reader-nickname')
     if (fallbackName) {
       welcomeMessage.value = `欢迎回来，${fallbackName}`
-      localStorage.setItem(welcomeCooldownKey, String(now))
+      localStorage.setItem(welcomeShownKey, '1')
       setTimeout(() => {
         welcomeMessage.value = ''
       }, 2200)
