@@ -85,6 +85,13 @@ const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo:
   iconLink.href = iconUrl
 }
 
+const parseDateTime = (value: string) => {
+  const text = String(value || '').trim()
+  if (!text) return new Date(0)
+  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
+  return new Date(`${text}Z`)
+}
+
 const loadData = async () => {
   const queryKeyword = String(route.query.keyword || '')
   keyword.value = queryKeyword

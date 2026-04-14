@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select, select
@@ -237,7 +237,7 @@ async def approve_article(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="当前文章不在待审核状态")
     article.status = ArticleStatus.PUBLISHED
     article.review_comment = comment
-    article.published_at = datetime.now()
+    article.published_at = datetime.now(timezone.utc)
     await session.commit()
     await session.refresh(article)
     return article
@@ -357,7 +357,7 @@ def _apply_editor_action(article: Article, current_user: User, action: str) -> N
         if not _is_admin(current_user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅管理员可直接发布文章")
         article.status = ArticleStatus.PUBLISHED
-        article.published_at = datetime.now()
+        article.published_at = datetime.now(timezone.utc)
         return
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不支持的文章操作")
 
@@ -384,7 +384,7 @@ async def delete_article(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="文章已在垃圾箱中")
 
     article.is_deleted = True
-    article.deleted_at = datetime.now()
+    article.deleted_at = datetime.now(timezone.utc)
     await session.commit()
     return {"message": "文章已移入垃圾箱"}
 
