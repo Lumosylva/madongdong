@@ -702,6 +702,42 @@ button:disabled {
 .editor-panel textarea {
   min-height: 280px;
   margin-top: 12px;
+  resize: vertical;
+}
+
+.article-create-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.article-create-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.article-create-meta {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.article-create-field {
+  display: grid;
+  gap: 8px;
+}
+
+.article-create-field label {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.article-create-actions {
+  margin-top: 8px;
+}
+
+.article-create-submit {
+  min-height: 44px;
 }
 
 .article-manage-head {
