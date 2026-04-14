@@ -106,8 +106,10 @@ a {
 }
 
 :root[data-theme='dark'] .scroll-top-btn {
-  background: rgba(10, 24, 44, 0.82);
+  background: rgba(9, 20, 38, 0.88);
   color: var(--text);
+  border-color: rgba(120, 170, 255, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 @media (max-width: 960px) {

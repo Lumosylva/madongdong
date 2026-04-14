@@ -14,7 +14,9 @@
       @search="goSearch"
     />
 
-    <p v-if="welcomeMessage" class="tips success-message" style="margin: 10px 0 0;">{{ welcomeMessage }}</p>
+    <transition name="welcome-toast-fade">
+      <div v-if="welcomeMessage" class="welcome-toast">{{ welcomeMessage }}</div>
+    </transition>
 
     <main class="layout">
       <section class="content-panel">
@@ -72,6 +74,7 @@ const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
 const welcomeMessage = ref('')
+const welcomeCooldownKey = 'md-welcome-cooldown-at'
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -110,23 +113,32 @@ const loadData = async () => {
 const hydrateWelcomeName = async () => {
   const token = localStorage.getItem('md_web_token')
   if (!token) return
+
+  const lastShownAt = Number(localStorage.getItem(welcomeCooldownKey) || '0')
+  const now = Date.now()
+  if (Number.isFinite(lastShownAt) && now - lastShownAt < 24 * 60 * 60 * 1000) {
+    return
+  }
+
   try {
     const currentUser = await webApi.getCurrentWebUser()
     const name = currentUser?.nickname || currentUser?.username || localStorage.getItem('md-reader-nickname') || ''
     if (name) {
       localStorage.setItem('md-reader-nickname', name)
       welcomeMessage.value = `欢迎回来，${name}`
+      localStorage.setItem(welcomeCooldownKey, String(now))
       setTimeout(() => {
         welcomeMessage.value = ''
-      }, 2600)
+      }, 2200)
     }
   } catch {
     const fallbackName = localStorage.getItem('md-reader-nickname')
     if (fallbackName) {
       welcomeMessage.value = `欢迎回来，${fallbackName}`
+      localStorage.setItem(welcomeCooldownKey, String(now))
       setTimeout(() => {
         welcomeMessage.value = ''
-      }, 2600)
+      }, 2200)
     }
   }
 }

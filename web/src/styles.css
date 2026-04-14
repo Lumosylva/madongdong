@@ -107,8 +107,10 @@ a {
 }
 
 :root[data-theme='dark'] .scroll-top-btn {
-  background: rgba(10, 24, 44, 0.82);
+  background: rgba(9, 20, 38, 0.88);
   color: var(--text);
+  border-color: rgba(120, 170, 255, 0.18);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
 }
 
 @media (max-width: 960px) {
@@ -607,6 +609,30 @@ a {
   color: rgba(14, 165, 164, 0.82);
   font-size: 11px;
   line-height: 1.4;
+}
+
+.welcome-toast {
+  width: fit-content;
+  max-width: min(420px, calc(100% - 24px));
+  margin: 6px auto 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(14, 165, 164, 0.18);
+  border-radius: 999px;
+  background: rgba(14, 165, 164, 0.08);
+  color: var(--text);
+  box-shadow: 0 10px 24px rgba(16, 35, 63, 0.08);
+  text-align: center;
+}
+
+.welcome-toast-fade-enter-active,
+.welcome-toast-fade-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.welcome-toast-fade-enter-from,
+.welcome-toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
 }
 
 .comment-inputs-row.auto-filled input[readonly] {
