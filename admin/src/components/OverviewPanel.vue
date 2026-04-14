@@ -2,10 +2,7 @@
   <section class="grid-panels overview-panels">
     <div class="panel overview-panel overview-articles-panel">
       <div class="overview-head">
-        <div>
-          <h3>文章概览</h3>
-          <p class="tips">文章统计</p>
-        </div>
+        <h3>文章统计</h3>
         <p v-if="loading" class="tips">正在同步后台数据...</p>
         <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </div>
@@ -35,8 +32,21 @@
     </div>
 
     <div class="panel overview-panel overview-comments-panel">
-      <h3>评论概览</h3>
-      <p class="tips">共 {{ comments.length }} 条评论</p>
+      <h3>评论统计</h3>
+      <div class="overview-metrics comments-metrics">
+        <div class="overview-metric">
+          <span class="overview-metric-value">{{ approvedCommentCount }}</span>
+          <span class="overview-metric-label">已通过</span>
+        </div>
+        <div class="overview-metric">
+          <span class="overview-metric-value">{{ pendingCommentCount }}</span>
+          <span class="overview-metric-label">待审核</span>
+        </div>
+        <div class="overview-metric">
+          <span class="overview-metric-value">{{ rejectedCommentCount }}</span>
+          <span class="overview-metric-label">已拒绝</span>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -69,5 +79,19 @@ const publishedCount = computed(() =>
 
 const rejectedCount = computed(() =>
   props.articles.filter((item) => normalizeStatus(item.status) === 'rejected').length,
+)
+
+const normalizeCommentStatus = (status: string) => String(status || '').trim().toLowerCase()
+
+const approvedCommentCount = computed(() =>
+  props.comments.filter((item) => normalizeCommentStatus(item.status) === 'approved').length,
+)
+
+const pendingCommentCount = computed(() =>
+  props.comments.filter((item) => normalizeCommentStatus(item.status) === 'pending').length,
+)
+
+const rejectedCommentCount = computed(() =>
+  props.comments.filter((item) => normalizeCommentStatus(item.status) === 'rejected').length,
 )
 </script>
