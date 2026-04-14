@@ -96,6 +96,7 @@ a {
   border-right: none;
   box-shadow: none;
   position: relative;
+  z-index: 120;
 }
 
 :root[data-theme='dark'] .topbar {
@@ -253,7 +254,7 @@ a {
   border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 8px;
-  z-index: 200;
+  z-index: 220;
 }
 
 .dropdown-item {
@@ -344,6 +345,11 @@ a {
   align-items: center;
   justify-content: flex-end;
   flex-wrap: nowrap;
+}
+
+.search-box {
+  position: relative;
+  z-index: 210;
 }
 
 .search-input-wrap {
