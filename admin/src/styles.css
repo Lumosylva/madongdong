@@ -807,6 +807,7 @@ button:disabled {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  align-self: center;
 }
 
 .article-page-size {
@@ -815,6 +816,11 @@ button:disabled {
 
 .article-page-indicator-center {
   justify-self: center;
+  align-self: center;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
 }
 
 .article-page-controls {
