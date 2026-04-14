@@ -36,7 +36,7 @@
             ｜ 评论：{{ item.comment_count || 0 }}
           </small>
         </div>
-        <button class="danger-btn" @click="$emit('move-to-trash', item.id)">删除</button>
+        <button class="danger-btn" @click="confirmTrash(item.id)">删除</button>
       </li>
 
       <li v-if="!displayArticles.length" class="article-empty">暂无符合条件的文章</li>
@@ -52,7 +52,7 @@ const props = defineProps<{
   formatArticleStatus: (status: string) => string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   'move-to-trash': [articleId: number]
 }>()
 
@@ -92,6 +92,12 @@ const resetFilters = () => {
   keyword.value = ''
   statusFilter.value = 'all'
   sortOrder.value = 'newest'
+}
+
+const confirmTrash = (articleId: number) => {
+  if (window.confirm('确定要将这篇文章移入垃圾箱吗？')) {
+    emit('move-to-trash', articleId)
+  }
 }
 
 const escapeHtml = (value: string) =>

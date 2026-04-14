@@ -790,8 +790,13 @@ button:disabled {
 }
 
 .danger-btn {
-  background: linear-gradient(135deg, #fb7185, #f97316) !important;
-  color: #fff !important;
+  background: rgba(227, 91, 119, 0.1) !important;
+  color: var(--danger) !important;
+  border: 1px solid rgba(227, 91, 119, 0.16) !important;
+}
+
+.danger-btn:hover {
+  background: rgba(227, 91, 119, 0.16) !important;
 }
 
 .eyebrow,
