@@ -19,7 +19,7 @@
         <p class="tips">仅支持普通读者账号登录前台。</p>
 
         <input v-model="username" placeholder="用户名" />
-        <input v-model="password" type="password" placeholder="密码" />
+        <input v-model="password" type="password" placeholder="密码" @keyup.enter="submit" />
 
         <button :disabled="submitting" @click="submit">
           {{ submitting ? '登录中...' : '登录' }}
