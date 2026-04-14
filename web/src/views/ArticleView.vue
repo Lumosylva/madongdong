@@ -75,12 +75,13 @@
         <span class="comment-count">共 {{ data.comments.length }} 条</span>
       </div>
 
-      <form class="comment-form" @submit.prevent="submitComment">
+      <form class="comment-form" :class="{ focused: commentFormFocused }" @submit.prevent="submitComment">
         <div class="comment-inputs-row">
-          <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
+          <input ref="nicknameInputRef" v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
           <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
         </div>
         <textarea
+          ref="commentTextareaRef"
           v-model="commentContent"
           placeholder="写下你的看法（支持友好交流）"
           @focus="commentFieldFocused = true"
@@ -143,6 +144,9 @@ const highlightedCommentId = ref<number | null>(null)
 const commentToastMessage = ref('')
 const commentToastStatus = ref<'success' | 'warning' | 'error' | ''>('')
 const commentSubmitting = ref(false)
+const commentFormFocused = ref(false)
+const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
