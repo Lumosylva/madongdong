@@ -35,13 +35,15 @@
         <button type="button" class="auth-entry" @click="toggleAccountMenu">
           {{ accountLabel }}
         </button>
-        <div v-if="accountMenuOpen" class="account-dropdown">
-          <p v-if="isLoggedIn" class="account-name">{{ accountName }}</p>
-          <button v-if="isLoggedIn && isOnArticlePage" type="button" class="dropdown-item" @click="goToCommentSection">去评论</button>
-          <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
-          <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
-          <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
-        </div>
+        <transition name="menu-pop">
+          <div v-if="accountMenuOpen" class="account-dropdown">
+            <p v-if="isLoggedIn" class="account-name">{{ accountName }}</p>
+            <button v-if="isLoggedIn && isOnArticlePage" type="button" class="dropdown-item" @click="goToCommentSection">去评论</button>
+            <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
+            <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
+            <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+          </div>
+        </transition>
       </div>
 
       <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">

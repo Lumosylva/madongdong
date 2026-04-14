@@ -84,7 +84,7 @@ a {
 .search-result-panel,
 .sidebar-card,
 .content-panel {
-  background: var(--bg-panel);
+  background: var(--bg);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
@@ -255,6 +255,7 @@ a {
   box-shadow: var(--shadow);
   padding: 8px;
   z-index: 220;
+  transform-origin: top right;
 }
 
 .dropdown-item {
@@ -409,13 +410,24 @@ a {
 
 .search-fade-slide-enter-active,
 .search-fade-slide-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.22s ease, transform 0.22s ease, max-width 0.22s ease;
 }
 
 .search-fade-slide-enter-from,
 .search-fade-slide-leave-to {
   opacity: 0;
-  transform: translateX(6px);
+  transform: translateX(10px) scaleX(0.96);
+}
+
+.menu-pop-enter-active,
+.menu-pop-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.menu-pop-enter-from,
+.menu-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
 }
 
 .search-box input,

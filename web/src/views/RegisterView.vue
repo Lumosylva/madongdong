@@ -76,11 +76,17 @@ const submit = async () => {
       email: email.value.trim(),
       password: password.value,
     })
+    const token = await webApi.loginReader({
+      username: username.value.trim(),
+      password: password.value,
+    })
+    localStorage.setItem('md_web_token', token.access_token)
     status.value = 'success'
-    message.value = '注册成功，正在跳转首页...'
+    message.value = '注册成功，正在自动登录并跳转首页...'
     const displayName = nickname.value.trim() || username.value.trim()
     localStorage.setItem('md-welcome-once', `欢迎加入，${displayName}`)
     localStorage.setItem('md-reader-nickname', displayName)
+    localStorage.setItem('md-reader-email', email.value.trim())
     username.value = ''
     nickname.value = ''
     email.value = ''
