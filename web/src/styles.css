@@ -938,6 +938,19 @@ a {
     padding: 7px 12px;
   }
 
+  .article-extra {
+    margin-top: 22px;
+    gap: 12px;
+  }
+
+  .article-nav-links {
+    gap: 12px;
+  }
+
+  .nav-row {
+    gap: 4px;
+  }
+
   .shell,
   .article-page,
   .search-page {
