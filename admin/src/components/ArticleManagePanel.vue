@@ -236,4 +236,18 @@ const formatRelativeTime = (value: string) => {
   border-color: rgba(227, 91, 119, 0.22);
   color: var(--danger);
 }
+
+.article-page-btn {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-soft);
+  min-height: 38px;
+  border-radius: 14px;
+  padding: 0 16px;
+}
+
+.article-page-btn:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text);
+}
 </style>
