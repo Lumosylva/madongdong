@@ -197,8 +197,8 @@ const submitComment = async () => {
     const previousMaxCommentId = Math.max(0, ...(data.value.comments.map((item) => item.id) || [0]))
 
     commentContent.value = ''
-    guestNickname.value = ''
-    guestEmail.value = ''
+    localStorage.setItem('md-reader-nickname', guestNickname.value.trim())
+    localStorage.setItem('md-reader-email', guestEmail.value.trim())
     await loadData()
 
     const latest = data.value?.comments.find((item) => item.id > previousMaxCommentId) || data.value?.comments[0]
@@ -269,6 +269,10 @@ onMounted(() => {
   const savedNickname = localStorage.getItem('md-reader-nickname')
   if (savedNickname && !guestNickname.value.trim()) {
     guestNickname.value = savedNickname
+  }
+  const savedEmail = localStorage.getItem('md-reader-email')
+  if (savedEmail && !guestEmail.value.trim()) {
+    guestEmail.value = savedEmail
   }
 
   loadData()
