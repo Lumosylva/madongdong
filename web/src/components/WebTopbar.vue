@@ -31,37 +31,46 @@
     </nav>
 
     <div class="topbar-right">
-      <RouterLink to="/login" class="auth-entry">登录 / 注册</RouterLink>
+      <div class="account-menu" ref="accountMenuRef">
+        <button type="button" class="auth-entry" @click="toggleAccountMenu">
+          {{ accountLabel }}
+        </button>
+        <div v-if="accountMenuOpen" class="account-dropdown">
+          <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
+          <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
+          <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+        </div>
+      </div>
 
       <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">
-      <button
-        v-if="collapsibleSearch && !searchOpen"
-        type="button"
-        class="search-trigger"
-        aria-label="展开搜索"
-        :aria-expanded="searchOpen"
-        @click="toggleSearch"
-      >
-        <span aria-hidden="true">⌕</span>
-      </button>
+        <button
+          v-if="collapsibleSearch && !searchOpen"
+          type="button"
+          class="search-trigger"
+          aria-label="展开搜索"
+          :aria-expanded="searchOpen"
+          @click="toggleSearch"
+        >
+          <span aria-hidden="true">⌕</span>
+        </button>
 
-      <transition name="search-fade-slide">
-        <div v-if="!collapsibleSearch || searchOpen" class="search-input-wrap">
-          <input
-            :value="searchKeyword"
-            placeholder="输入关键词回车搜索"
-            @input="onKeywordInput"
-          />
-          <button type="submit" aria-label="搜索" class="search-submit-inside">
-            <span aria-hidden="true">⌕</span>
-          </button>
-        </div>
-      </transition>
+        <transition name="search-fade-slide">
+          <div v-if="!collapsibleSearch || searchOpen" class="search-input-wrap">
+            <input
+              :value="searchKeyword"
+              placeholder="输入关键词回车搜索"
+              @input="onKeywordInput"
+            />
+            <button type="submit" aria-label="搜索" class="search-submit-inside">
+              <span aria-hidden="true">⌕</span>
+            </button>
+          </div>
+        </transition>
 
-      <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="$emit('toggle-theme')">
-        <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
-      </button>
-    </form>
+        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="$emit('toggle-theme')">
+          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
+        </button>
+      </form>
     </div>
   </header>
 
@@ -95,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 
 import type { NavItem } from '../types'
 
@@ -131,6 +140,11 @@ const emit = defineEmits<{
 
 const searchOpen = ref(!props.collapsibleSearch || !!props.searchKeyword)
 const mobileMenuOpen = ref(false)
+const accountMenuOpen = ref(false)
+const accountMenuRef = ref<HTMLElement | null>(null)
+
+const isLoggedIn = computed(() => !!localStorage.getItem('md_web_token'))
+const accountLabel = computed(() => (isLoggedIn.value ? '账号' : '登录 / 注册'))
 
 watch(
   () => props.searchKeyword,
@@ -180,6 +194,25 @@ const toggleSearch = () => {
   searchOpen.value = !searchOpen.value
 }
 
+const toggleAccountMenu = () => {
+  accountMenuOpen.value = !accountMenuOpen.value
+}
+
+const logout = () => {
+  localStorage.removeItem('md_web_token')
+  localStorage.removeItem('md-reader-nickname')
+  localStorage.removeItem('md-reader-email')
+  accountMenuOpen.value = false
+  window.location.reload()
+}
+
+const handleDocumentClick = (event: MouseEvent) => {
+  const target = event.target as Node | null
+  if (accountMenuRef.value && target && !accountMenuRef.value.contains(target)) {
+    accountMenuOpen.value = false
+  }
+}
+
 const onSubmit = () => {
   if (props.collapsibleSearch && !searchOpen.value) {
     searchOpen.value = true
@@ -187,4 +220,12 @@ const onSubmit = () => {
   }
   emit('search')
 }
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleDocumentClick)
+})
 </script>

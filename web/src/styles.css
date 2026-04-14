@@ -239,6 +239,44 @@ a {
   gap: 10px;
 }
 
+.account-menu {
+  position: relative;
+}
+
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 140px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  z-index: 200;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-soft);
+}
+
+.dropdown-item.danger {
+  color: var(--danger);
+}
+
 .auth-entry {
   height: 36px;
   display: inline-flex;
