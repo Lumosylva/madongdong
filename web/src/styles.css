@@ -697,10 +697,31 @@ a {
   letter-spacing: 0.08em;
 }
 
+.article-tags-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tag-expand-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+}
+
 .tag-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.tag-list.collapsed {
+  max-height: 60px;
+  overflow: hidden;
 }
 
 .tag-item {

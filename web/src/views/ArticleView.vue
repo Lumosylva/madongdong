@@ -35,11 +35,16 @@
 
       <section class="article-extra">
         <div class="article-tags">
-          <span class="meta-label">标签</span>
-          <div class="tag-list">
+          <div class="article-tags-head">
+            <span class="meta-label">标签</span>
+            <button v-if="hasMoreTags" type="button" class="tag-expand-btn" @click="showAllTags = !showAllTags">
+              {{ showAllTags ? '收起标签' : '展开更多标签' }}
+            </button>
+          </div>
+          <div class="tag-list" :class="{ collapsed: hasMoreTags && !showAllTags }">
             <span v-if="!data.article.tags?.length" class="tag-item muted">无标签</span>
             <RouterLink
-              v-for="tag in data.article.tags"
+              v-for="tag in visibleTags"
               :key="tag.id"
               :to="`/search?keyword=${encodeURIComponent(tag.name)}`"
               class="tag-item"
@@ -123,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -147,6 +152,7 @@ const commentFieldFocused = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
+const showAllTags = ref(false)
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -169,6 +175,13 @@ const goToCommentSection = async () => {
     focusTarget?.focus()
   }
 }
+
+const hasMoreTags = computed(() => (data.value?.article.tags?.length || 0) > 6)
+const visibleTags = computed(() => {
+  const tags = data.value?.article.tags || []
+  if (showAllTags.value || tags.length <= 6) return tags
+  return tags.slice(0, 6)
+})
 
 const goSearch = () => {
   if (!keyword.value.trim()) return
