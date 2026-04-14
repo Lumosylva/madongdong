@@ -29,14 +29,14 @@
             <span class="article-status-chip" :class="`status-${normalizeStatus(item.status)}`">{{ formatArticleStatus(item.status) }}</span>
           </p>
           <small class="article-row-meta">
-            分类：{{ item.category?.name || '未分类' }}
-            ｜ 作者：{{ item.author?.nickname || 'admin' }}
-            ｜ 发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}
-            ｜ 流量：{{ item.view_count || 0 }}
-            ｜ 评论：{{ item.comment_count || 0 }}
+            <span>分类：{{ item.category?.name || '未分类' }}</span>
+            <span>作者：{{ item.author?.nickname || 'admin' }}</span>
+            <span>发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
+            <span>浏览：{{ item.view_count || 0 }}</span>
+            <span>评论：{{ item.comment_count || 0 }}</span>
           </small>
         </div>
-        <button class="danger-btn" @click="confirmTrash(item.id)">删除</button>
+        <button class="danger-btn" @click="confirmTrash(item.id)">移入垃圾箱</button>
       </li>
 
       <li v-if="!displayArticles.length" class="article-empty">暂无符合条件的文章</li>
