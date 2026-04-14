@@ -1057,6 +1057,14 @@ a {
     width: min(260px, 100%);
   }
 
+  .scroll-top-btn {
+    right: 12px;
+    bottom: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
   .article-head-row {
     flex-direction: column;
     align-items: flex-start;

@@ -120,6 +120,16 @@ a {
   }
 }
 
+@media (max-width: 420px) {
+  .scroll-top-btn {
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+}
+
 .admin-page,
 .login-wrap {
   width: min(1500px, calc(100% - 12px));
