@@ -705,12 +705,31 @@ a {
 }
 
 .tag-expand-btn {
-  border: none;
-  background: transparent;
-  color: var(--accent);
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  color: var(--text-soft);
   cursor: pointer;
-  padding: 0;
+  padding: 5px 10px;
   font-size: 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.18s ease;
+}
+
+.tag-expand-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.tag-expand-icon {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.tag-expand-icon.rotated {
+  transform: rotate(180deg);
 }
 
 .tag-list {

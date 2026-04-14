@@ -38,6 +38,7 @@
           <div class="article-tags-head">
             <span class="meta-label">标签</span>
             <button v-if="hasMoreTags" type="button" class="tag-expand-btn" @click="showAllTags = !showAllTags">
+              <span class="tag-expand-icon" :class="{ rotated: showAllTags }">▾</span>
               {{ showAllTags ? '收起标签' : '展开更多标签' }}
             </button>
           </div>
