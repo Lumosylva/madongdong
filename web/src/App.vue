@@ -1,12 +1,14 @@
 <template>
   <router-view />
-  <button v-show="showScrollTop" class="scroll-top-btn" type="button" aria-label="回到顶部" @click="scrollToTop">
-    ↑
-  </button>
+  <transition name="scroll-top-fade">
+    <button v-if="showScrollTop" class="scroll-top-btn" type="button" aria-label="回到顶部" @click="scrollToTop">
+      ↑
+    </button>
+  </transition>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const scrollTop = ref(0)
 const showScrollTop = ref(false)
