@@ -943,6 +943,15 @@ a {
     gap: 12px;
   }
 
+  .tag-list {
+    gap: 6px;
+  }
+
+  .tag-item {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
   .article-nav-links {
     gap: 12px;
   }
