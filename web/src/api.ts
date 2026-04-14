@@ -3,6 +3,8 @@ import type { ArticlePageResponse, HomeResponse, SearchResponse } from './types'
 const API_BASE = 'http://127.0.0.1:8000/api/v1'
 const API_ORIGIN = new URL(API_BASE).origin
 
+const getToken = () => localStorage.getItem('md_web_token') || ''
+
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => {
   const value = String(url || '').trim()
   if (!value) return ''
@@ -55,7 +57,19 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
-  getCurrentWebUser() {
-    return request<{ id: number; username: string; nickname: string; email: string }>('/admin/auth/me')
+  async getCurrentWebUser() {
+    const response = await fetch(`${API_BASE}/web/auth/me`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: getToken() ? `Bearer ${getToken()}` : '',
+      },
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(text || '请求失败')
+    }
+
+    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string }>
   },
 }

@@ -82,11 +82,12 @@
       </div>
 
       <form class="comment-form" @submit.prevent="submitComment">
-        <div class="comment-inputs-row">
-          <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
-          <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
+        <div class="comment-inputs-row" :class="{ 'auto-filled': isLoggedIn }">
+          <input ref="nicknameInputRef" v-model="guestNickname" placeholder="昵称（登录后可自动填充）" :readonly="isLoggedIn" />
+          <input ref="emailInputRef" v-model="guestEmail" placeholder="邮箱（登录后可自动填充）" :readonly="isLoggedIn" />
         </div>
         <textarea
+          ref="commentTextareaRef"
           v-model="commentContent"
           placeholder="写下你的看法（支持友好交流）"
           @focus="commentFieldFocused = true"
@@ -165,6 +166,10 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
+const emailInputRef = ref<HTMLInputElement | null>(null)
+const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
+
 const goToCommentSection = async () => {
   const el = document.querySelector('#comment-section')
   if (el instanceof HTMLElement) {
@@ -172,8 +177,11 @@ const goToCommentSection = async () => {
     el.classList.add('section-highlight')
     window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
     await nextTick()
-    const focusTarget = el.querySelector('textarea, input') as HTMLElement | null
-    focusTarget?.focus()
+    if (isLoggedIn.value) {
+      commentTextareaRef.value?.focus()
+    } else {
+      nicknameInputRef.value?.focus()
+    }
   }
 }
 
