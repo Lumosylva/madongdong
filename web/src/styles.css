@@ -466,9 +466,9 @@ a {
 }
 
 .search-submit-inside {
-  width: 36px;
-  min-width: 36px;
-  height: 36px;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
   margin-left: 10px;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -496,9 +496,9 @@ a {
   background: transparent !important;
   color: var(--text) !important;
   border-radius: 999px;
-  width: 36px;
-  min-width: 36px;
-  height: 36px;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -508,7 +508,7 @@ a {
 .search-submit-inside:hover,
 .theme-toggle:hover {
   color: var(--accent);
-  background: var(--bg-soft) !important;
+  background: rgba(237, 242, 249, 0.68) !important;
   transform: translateY(-1px);
 }
 
