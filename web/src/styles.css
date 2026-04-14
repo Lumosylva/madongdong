@@ -945,6 +945,12 @@ a {
 
   .tag-list {
     gap: 6px;
+    max-height: 68px;
+    overflow: hidden;
+  }
+
+  .tag-list.expanded {
+    max-height: none;
   }
 
   .tag-item {
