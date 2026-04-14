@@ -211,6 +211,19 @@ const loadData = async () => {
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
+const hydrateCurrentUser = async () => {
+  const token = localStorage.getItem('md_web_token')
+  if (!token) return
+  try {
+    const currentUser = await webApi.getCurrentWebUser()
+    if (currentUser?.nickname) guestNickname.value = currentUser.nickname
+    if (currentUser?.email) guestEmail.value = currentUser.email
+    isLoggedIn.value = true
+  } catch {
+    isLoggedIn.value = false
+  }
+}
+
 const submitComment = async () => {
   if (!data.value || !commentContent.value.trim()) return
 
@@ -298,10 +311,9 @@ watch(() => route.params.id, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
-onMounted(() => {
+onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  isLoggedIn.value = !!localStorage.getItem('md_web_token')
 
   const savedNickname = localStorage.getItem('md-reader-nickname')
   if (savedNickname && !guestNickname.value.trim()) {
@@ -312,6 +324,7 @@ onMounted(() => {
     guestEmail.value = savedEmail
   }
 
-  loadData()
+  await hydrateCurrentUser()
+  await loadData()
 })
 </script>

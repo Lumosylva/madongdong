@@ -109,8 +109,15 @@ const highlightTitle = (value: string) => {
   return safe.replace(pattern, '<mark>$1</mark>')
 }
 
+const parseDateTime = (value: string) => {
+  const text = String(value || '').trim()
+  if (!text) return new Date(0)
+  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
+  return new Date(`${text}Z`)
+}
+
 const formatRelativeTime = (value: string) => {
-  const date = new Date(value)
+  const date = parseDateTime(value)
   const now = Date.now()
   const diffMs = Math.max(0, now - date.getTime())
   const minute = 60 * 1000

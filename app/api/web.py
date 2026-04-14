@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import create_access_token, get_current_user_optional, verify_password
+from app.core.security import create_access_token, get_current_user, get_current_user_optional, verify_password
 from app.models.auth import User
 from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
@@ -36,6 +36,7 @@ async def home(
 async def article_detail(
     article_id: int,
     session: AsyncSession = Depends(get_db_session),
+    current_user: User | None = Depends(get_current_user_optional),
 ) -> ArticlePageResponse:
     article = await get_published_article_detail(session, article_id)
     if article is None:
@@ -113,4 +114,14 @@ async def reader_login(
 
     token = create_access_token(user.username)
     return TokenResponse(access_token=token)
+
+
+@router.get('/auth/me', summary='获取前台当前登录用户')
+async def reader_me(
+    current_user: User = Depends(get_current_user),
+) -> CurrentUserResponse:
+    role_names = {str(role.name or '').strip().lower() for role in current_user.roles}
+    if 'reader' not in role_names:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台使用')
+    return CurrentUserResponse.model_validate(current_user)
 

@@ -55,4 +55,7 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
+  getCurrentWebUser() {
+    return request<{ id: number; username: string; nickname: string; email: string }>('/admin/auth/me')
+  },
 }
