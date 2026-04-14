@@ -277,7 +277,13 @@ a {
 
 .nav a.active {
   background: var(--bg-soft);
-  border: 1px solid var(--line);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.nav a[href='/'].active {
+  border: none;
+  box-shadow: none;
 }
 
 .search-box,
@@ -413,6 +419,17 @@ a {
   height: 36px;
   display: flex;
   align-items: center;
+}
+
+.search-fade-slide-enter-active,
+.search-fade-slide-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.search-fade-slide-enter-from,
+.search-fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
 }
 
 .search-input-wrap input {

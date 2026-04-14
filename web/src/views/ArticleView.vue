@@ -2,6 +2,7 @@
   <div class="article-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :subtitle="data.site.site_subtitle || ''"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
