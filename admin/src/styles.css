@@ -46,6 +46,7 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 button,
@@ -137,6 +138,7 @@ a {
   width: min(1500px, calc(100% - 12px));
   margin: 0 auto;
   padding: 0 0 48px;
+  overflow-x: hidden;
 }
 
 .topbar,
