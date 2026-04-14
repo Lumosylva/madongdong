@@ -68,6 +68,47 @@ a {
   min-height: 100vh;
 }
 
+.scroll-top-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text);
+  box-shadow: 0 12px 30px rgba(16, 35, 63, 0.18);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+}
+
+.scroll-top-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme='dark'] .scroll-top-btn {
+  background: rgba(10, 24, 44, 0.82);
+  color: var(--text);
+}
+
+@media (max-width: 960px) {
+  .scroll-top-btn {
+    right: 12px;
+    bottom: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
 .admin-page,
 .login-wrap {
   width: min(1500px, calc(100% - 12px));

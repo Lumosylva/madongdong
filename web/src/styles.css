@@ -69,6 +69,47 @@ a {
   min-height: 100vh;
 }
 
+.scroll-top-btn {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text);
+  box-shadow: 0 12px 30px rgba(16, 35, 63, 0.18);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 800;
+  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+}
+
+.scroll-top-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+:root[data-theme='dark'] .scroll-top-btn {
+  background: rgba(10, 24, 44, 0.82);
+  color: var(--text);
+}
+
+@media (max-width: 960px) {
+  .scroll-top-btn {
+    right: 12px;
+    bottom: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
 .shell,
 .article-page,
 .search-page {
@@ -535,6 +576,26 @@ a {
 .comment-form.focused input {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.14);
+}
+
+.comment-field-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.comment-inputs-row.auto-filled .comment-field-wrap {
+  gap: 4px;
+}
+
+.comment-field-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(14, 165, 164, 0.08);
+  color: rgba(14, 165, 164, 0.82);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .comment-inputs-row.auto-filled input[readonly] {
@@ -1029,6 +1090,17 @@ a {
   .nav-row .adjacent-empty {
     max-width: 100%;
     word-break: break-word;
+  }
+
+  .comment-field-badge {
+    padding: 1px 6px;
+    font-size: 10px;
+    background: rgba(14, 165, 164, 0.06);
+    color: rgba(14, 165, 164, 0.76);
+  }
+
+  .comment-field-wrap {
+    gap: 4px;
   }
 
   .comment-inputs-row {

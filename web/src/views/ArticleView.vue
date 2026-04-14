@@ -83,8 +83,14 @@
 
       <form class="comment-form" @submit.prevent="submitComment">
         <div class="comment-inputs-row" :class="{ 'auto-filled': isLoggedIn }">
-          <input ref="nicknameInputRef" v-model="guestNickname" placeholder="昵称（登录后可自动填充）" :readonly="isLoggedIn" />
-          <input ref="emailInputRef" v-model="guestEmail" placeholder="邮箱（登录后可自动填充）" :readonly="isLoggedIn" />
+          <label class="comment-field-wrap">
+            <span v-if="isLoggedIn" class="comment-field-badge">已自动填充</span>
+            <input ref="nicknameInputRef" v-model="guestNickname" placeholder="昵称（登录后可自动填充）" :readonly="isLoggedIn" />
+          </label>
+          <label class="comment-field-wrap">
+            <span v-if="isLoggedIn" class="comment-field-badge">已自动填充</span>
+            <input ref="emailInputRef" v-model="guestEmail" placeholder="邮箱（登录后可自动填充）" :readonly="isLoggedIn" />
+          </label>
         </div>
         <textarea
           ref="commentTextareaRef"
