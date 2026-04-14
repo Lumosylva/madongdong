@@ -138,7 +138,7 @@ const keyword = ref('')
 const commentListRef = ref<HTMLElement | null>(null)
 const highlightedCommentId = ref<number | null>(null)
 const commentToastMessage = ref('')
-const commentToastStatus = ref<'success' | 'error' | ''>('')
+const commentToastStatus = ref<'success' | 'warning' | 'error' | ''>('')
 const commentSubmitting = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
@@ -191,8 +191,8 @@ const submitComment = async () => {
       guest_email: guestEmail.value || null,
     }) as { status?: string }
 
-    commentToastStatus.value = 'success'
     const createdStatus = String(created?.status || '').toUpperCase()
+    commentToastStatus.value = createdStatus === 'APPROVED' ? 'success' : 'warning'
     commentToastMessage.value = createdStatus === 'APPROVED' ? '评论已发布' : '评论已提交，待审核'
     const previousMaxCommentId = Math.max(0, ...(data.value.comments.map((item) => item.id) || [0]))
 
