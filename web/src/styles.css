@@ -960,6 +960,29 @@ a {
     gap: 4px;
   }
 
+  .nav-row .adjacent-link,
+  .nav-row .adjacent-empty {
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .comment-inputs-row {
+    grid-template-columns: 1fr;
+  }
+
+  .comment-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .comment-actions button {
+    width: 100%;
+  }
+
+  .comment-tip {
+    order: 2;
+  }
+
   .shell,
   .article-page,
   .search-page {
