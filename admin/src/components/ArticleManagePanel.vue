@@ -22,7 +22,7 @@
     </div>
 
     <ul class="article-manage-list">
-      <li v-for="item in displayArticles" :key="item.id" class="article-row">
+      <li v-for="item in pagedArticles" :key="item.id" class="article-row">
         <div class="article-row-main">
           <p class="article-row-title">
             <span v-html="highlightTitle(item.title)"></span>
@@ -39,8 +39,23 @@
         <button class="danger-btn" @click="confirmTrash(item.id)">移入垃圾箱</button>
       </li>
 
-      <li v-if="!displayArticles.length" class="article-empty">暂无符合条件的文章</li>
+      <li v-if="!pagedArticles.length" class="article-empty">暂无符合条件的文章</li>
     </ul>
+
+    <div class="article-pagination">
+      <div class="article-page-size">
+        <span>每页</span>
+        <select v-model="pageSize" @change="changePageSize">
+          <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+        </select>
+        <span>篇</span>
+      </div>
+      <div class="article-page-controls">
+        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
+        <span class="article-page-indicator">{{ formatPageLabel }}</span>
+        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -88,10 +103,37 @@ const displayArticles = computed(() => {
     })
 })
 
+const pageSizeOptions = [10, 20, 50]
+const pageSize = ref(10)
+const currentPage = ref(1)
+
+const totalPages = computed(() => Math.max(1, Math.ceil(displayArticles.value.length / pageSize.value)))
+
+const pagedArticles = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return displayArticles.value.slice(start, start + pageSize.value)
+})
+
+const canGoPrev = computed(() => currentPage.value > 1)
+const canGoNext = computed(() => currentPage.value < totalPages.value)
+
 const resetFilters = () => {
   keyword.value = ''
   statusFilter.value = 'all'
   sortOrder.value = 'newest'
+  currentPage.value = 1
+}
+
+const changePageSize = () => {
+  currentPage.value = 1
+}
+
+const goPrevPage = () => {
+  if (canGoPrev.value) currentPage.value -= 1
+}
+
+const goNextPage = () => {
+  if (canGoNext.value) currentPage.value += 1
 }
 
 const confirmTrash = (articleId: number) => {
@@ -119,6 +161,8 @@ const highlightTitle = (value: string) => {
   const pattern = new RegExp(`(${escapeRegExp(key)})`, 'ig')
   return safe.replace(pattern, '<mark>$1</mark>')
 }
+
+const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
 
 const parseDateTime = (value: string) => {
   const text = String(value || '').trim()
