@@ -72,6 +72,10 @@ const submit = async () => {
       password: password.value,
     })
     localStorage.setItem('md_web_token', token.access_token)
+    const savedNickname = localStorage.getItem('md-reader-nickname')
+    if (savedNickname) {
+      localStorage.setItem('md-welcome-once', `欢迎回来，${savedNickname}`)
+    }
     status.value = 'success'
     message.value = '登录成功，正在跳转首页...'
     setTimeout(() => {
