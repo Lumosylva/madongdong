@@ -26,7 +26,7 @@
         <div class="article-row-main">
           <p class="article-row-title">
             <span v-html="highlightTitle(item.title)"></span>
-            <span class="article-status-chip">{{ formatArticleStatus(item.status) }}</span>
+            <span class="article-status-chip" :class="`status-${normalizeStatus(item.status)}`">{{ formatArticleStatus(item.status) }}</span>
           </p>
           <small class="article-row-meta">
             分类：{{ item.category?.name || '未分类' }}
@@ -166,5 +166,30 @@ const formatRelativeTime = (value: string) => {
   background: rgba(94, 234, 212, 0.24);
   border-color: rgba(94, 234, 212, 0.5);
   color: #e6fffb;
+}
+
+.article-status-chip.status-published {
+  background: rgba(14, 165, 164, 0.1);
+  border-color: rgba(14, 165, 164, 0.22);
+  color: var(--accent);
+}
+
+.article-status-chip.status-draft {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: var(--text-soft);
+}
+
+.article-status-chip.status-pending,
+.article-status-chip.status-pending_review {
+  background: rgba(234, 154, 24, 0.1);
+  border-color: rgba(234, 154, 24, 0.22);
+  color: #d97706;
+}
+
+.article-status-chip.status-rejected {
+  background: rgba(227, 91, 119, 0.1);
+  border-color: rgba(227, 91, 119, 0.22);
+  color: var(--danger);
 }
 </style>
