@@ -20,7 +20,7 @@
         <div class="article-head-divider"></div>
         <div class="article-head-row">
           <h1>{{ data.article.title }}</h1>
-          <button v-if="isLoggedIn" type="button" class="jump-comment-btn" @click="goToCommentSection">↘ 去评论</button>
+          <button v-if="isLoggedIn" type="button" class="jump-comment-btn" @click="goToCommentSection">去评论</button>
         </div>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
@@ -75,13 +75,12 @@
         <span class="comment-count">共 {{ data.comments.length }} 条</span>
       </div>
 
-      <form class="comment-form" :class="{ focused: commentFormFocused }" @submit.prevent="submitComment">
+      <form class="comment-form" @submit.prevent="submitComment">
         <div class="comment-inputs-row">
-          <input ref="nicknameInputRef" v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
+          <input v-model="guestNickname" placeholder="匿名昵称（登录后可留空）" />
           <input v-model="guestEmail" placeholder="匿名邮箱（登录后可留空）" />
         </div>
         <textarea
-          ref="commentTextareaRef"
           v-model="commentContent"
           placeholder="写下你的看法（支持友好交流）"
           @focus="commentFieldFocused = true"
@@ -144,9 +143,7 @@ const highlightedCommentId = ref<number | null>(null)
 const commentToastMessage = ref('')
 const commentToastStatus = ref<'success' | 'warning' | 'error' | ''>('')
 const commentSubmitting = ref(false)
-const commentFormFocused = ref(false)
-const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
-const nicknameInputRef = ref<HTMLInputElement | null>(null)
+const commentFieldFocused = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
@@ -243,8 +240,6 @@ const submitComment = async () => {
     }, 2200)
   }
 }
-
-const formatDate = (value: string) => new Date(value).toLocaleString('zh-CN')
 
 const truncateText = (value: string | null | undefined, maxLength: number) => {
   const text = String(value || '').trim()
