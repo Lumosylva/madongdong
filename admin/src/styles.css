@@ -732,6 +732,34 @@ button:disabled {
   font-size: 13px;
 }
 
+.article-cover-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.article-cover-pick-btn {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  background: rgba(148, 163, 184, 0.08) !important;
+  color: var(--text-soft) !important;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.article-cover-pick-btn:hover {
+  background: rgba(148, 163, 184, 0.14) !important;
+  color: var(--text) !important;
+}
+
+.article-create-hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
 .article-create-actions {
   margin-top: 8px;
   display: grid;

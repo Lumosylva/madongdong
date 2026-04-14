@@ -251,6 +251,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         categories: categories.value,
         tagIdsText: tagIdsText.value,
         action: action.value,
+        media: media.value,
       }
     case 'articles-category':
       return {
@@ -302,6 +303,9 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
           title.value = value
         },
         'update:coverUrl': (value: string) => {
+          coverUrl.value = value
+        },
+        'select-cover': (value: string) => {
           coverUrl.value = value
         },
         'update:contentMarkdown': (value: string) => {
