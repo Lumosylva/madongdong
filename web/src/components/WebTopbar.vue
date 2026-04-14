@@ -37,7 +37,6 @@
         </button>
         <transition name="menu-pop">
           <div v-if="accountMenuOpen" class="account-dropdown">
-            <p v-if="isLoggedIn" class="account-name">{{ accountName }}</p>
             <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
             <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
             <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
@@ -148,7 +147,7 @@ const accountMenuRef = ref<HTMLElement | null>(null)
 
 const isLoggedIn = computed(() => !!localStorage.getItem('md_web_token'))
 const accountName = computed(() => localStorage.getItem('md-reader-nickname') || '已登录用户')
-const accountLabel = computed(() => (isLoggedIn.value ? '账号' : '登录 / 注册'))
+const accountLabel = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
 const isOnArticlePage = computed(() => (props.currentPath || '').startsWith('/article/'))
 
 watch(

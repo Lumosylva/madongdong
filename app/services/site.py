@@ -52,7 +52,8 @@ async def list_nav_items(session: AsyncSession, visible_only: bool = False) -> l
     if visible_only:
         statement = statement.where(NavItem.is_visible.is_(True))
     result = await session.execute(statement)
-    return list(result.scalars().all())
+    items = list(result.scalars().all())
+    return [item for item in items if str(item.title or '').strip() != '搜索']
 
 
 async def create_nav_item(
