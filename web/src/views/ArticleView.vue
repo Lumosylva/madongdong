@@ -18,7 +18,10 @@
       <div class="article-head">
         <p class="article-breadcrumb">首页 / {{ data.article.category?.name || '未分类' }} / 正文</p>
         <div class="article-head-divider"></div>
-        <h1>{{ data.article.title }}</h1>
+        <div class="article-head-row">
+          <h1>{{ data.article.title }}</h1>
+          <button v-if="isLoggedIn" type="button" class="jump-comment-btn" @click="goToCommentSection">去评论</button>
+        </div>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
           <span>{{ data.article.category?.name || '未分类' }}</span>
@@ -142,6 +145,7 @@ const commentToastStatus = ref<'success' | 'warning' | 'error' | ''>('')
 const commentSubmitting = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
+const isLoggedIn = ref(false)
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -151,6 +155,15 @@ const applyTheme = (value: ThemeMode) => {
 
 const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const goToCommentSection = () => {
+  const el = document.querySelector('#comment-section')
+  if (el instanceof HTMLElement) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    el.classList.add('section-highlight')
+    window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
+  }
 }
 
 const goSearch = () => {
@@ -265,6 +278,7 @@ watch(() => route.params.id, () => {
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  isLoggedIn.value = !!localStorage.getItem('md_web_token')
 
   const savedNickname = localStorage.getItem('md-reader-nickname')
   if (savedNickname && !guestNickname.value.trim()) {
