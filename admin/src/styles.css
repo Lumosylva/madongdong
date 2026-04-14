@@ -734,6 +734,19 @@ button:disabled {
 
 .article-create-actions {
   margin-top: 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.article-create-actions-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr 1fr;
+  gap: 10px;
+}
+
+.article-create-actions-grid select,
+.article-create-actions-grid input {
+  min-height: 44px;
 }
 
 .article-create-submit {

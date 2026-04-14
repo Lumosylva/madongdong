@@ -24,20 +24,22 @@
       ></textarea>
     </div>
 
-    <div class="action-row article-create-actions">
-      <select :value="categoryId" @change="$emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
-        <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
-      </select>
-      <input
-        :value="tagIdsText"
-        placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
-        @input="$emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
-      />
-      <select :value="action" @change="$emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">
-        <option value="draft">保存草稿</option>
-        <option v-if="!isAdmin" value="submit">提交审核</option>
-        <option v-if="isAdmin" value="publish">直接发布</option>
-      </select>
+    <div class="article-create-actions">
+      <div class="article-create-actions-grid">
+        <select :value="categoryId" @change="$emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
+          <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
+        </select>
+        <input
+          :value="tagIdsText"
+          placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
+          @input="$emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
+        />
+        <select :value="action" @change="$emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">
+          <option value="draft">保存草稿</option>
+          <option v-if="!isAdmin" value="submit">提交审核</option>
+          <option v-if="isAdmin" value="publish">直接发布</option>
+        </select>
+      </div>
       <button class="article-create-submit" @click="$emit('submit')">提交</button>
     </div>
   </section>
