@@ -1,31 +1,34 @@
 <template>
   <section class="panel article-manage-panel">
-    <h3>文章管理</h3>
+    <div class="article-manage-head">
+      <h3>文章管理</h3>
+      <span class="article-count">共 {{ displayArticles.length }} 篇</span>
+    </div>
 
-    <div class="action-row" style="margin-bottom: 12px;">
-      <input v-model="keyword" placeholder="按标题搜索" />
-      <select v-model="statusFilter">
+    <div class="action-row article-filter-row">
+      <input class="article-search-input" v-model="keyword" placeholder="按标题搜索" />
+      <select class="article-filter-select" v-model="statusFilter">
         <option value="all">全部状态</option>
         <option value="published">已发布</option>
         <option value="draft">草稿</option>
         <option value="pending">待审核</option>
         <option value="rejected">已驳回</option>
       </select>
-      <select v-model="sortOrder">
+      <select class="article-filter-select" v-model="sortOrder">
         <option value="newest">发布时间：最新优先</option>
         <option value="oldest">发布时间：最早优先</option>
       </select>
-      <button @click="resetFilters">重置筛选</button>
+      <button class="article-reset-btn" @click="resetFilters">重置筛选</button>
     </div>
 
-    <ul>
+    <ul class="article-manage-list">
       <li v-for="item in displayArticles" :key="item.id" class="article-row">
-        <div>
-          <p>
+        <div class="article-row-main">
+          <p class="article-row-title">
             <span v-html="highlightTitle(item.title)"></span>
-            <span> · {{ formatArticleStatus(item.status) }}</span>
+            <span class="article-status-chip">{{ formatArticleStatus(item.status) }}</span>
           </p>
-          <small>
+          <small class="article-row-meta">
             分类：{{ item.category?.name || '未分类' }}
             ｜ 作者：{{ item.author?.nickname || 'admin' }}
             ｜ 发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}
@@ -35,6 +38,8 @@
         </div>
         <button class="danger-btn" @click="$emit('move-to-trash', item.id)">删除</button>
       </li>
+
+      <li v-if="!displayArticles.length" class="article-empty">暂无符合条件的文章</li>
     </ul>
   </section>
 </template>
