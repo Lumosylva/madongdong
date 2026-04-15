@@ -914,7 +914,7 @@ button:disabled {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(255, 255, 255, 0.72);
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
 }
 
@@ -926,20 +926,24 @@ button:disabled {
 }
 
 .article-markdown-editor .md-editor-toolbar-wrapper {
-  flex-wrap: wrap;
-  gap: 1px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0 !important;
+  align-items: center !important;
 }
 
 .article-markdown-editor .md-editor-toolbar-item,
 .article-markdown-editor .md-editor-toolbar-item > button {
-  min-width: 34px !important;
-  min-height: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  width: 38px !important;
+  height: 38px !important;
   padding: 0 !important;
+  margin: 0 !important;
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
+  flex: 0 0 auto !important;
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button {
@@ -952,8 +956,8 @@ button:disabled {
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button svg {
-  width: 15px !important;
-  height: 15px !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button:hover {
