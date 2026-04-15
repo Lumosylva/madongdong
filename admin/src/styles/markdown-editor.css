@@ -18,6 +18,14 @@
   align-items: center;
 }
 
+.article-markdown-toolbar-title {
+  margin-bottom: 6px;
+}
+
+.article-markdown-toolbar-actions {
+  margin-top: -2px;
+}
+
 .article-markdown-toolbar-main {
   min-width: 0;
   flex: 1 1 auto;
@@ -56,9 +64,12 @@
   border: 1px solid rgba(148, 163, 184, 0.14);
   width: min(100%, 420px);
   margin-left: auto;
+  box-sizing: border-box;
+  justify-content: stretch;
 }
 
 .article-markdown-mode-btn {
+  width: 100% !important;
   min-height: 34px;
   padding: 0 10px;
   border-radius: 999px;
@@ -69,6 +80,8 @@
   letter-spacing: 0.01em;
   min-width: 0;
   white-space: nowrap;
+  font-size: clamp(10px, 1.1vw, 14px);
+  box-sizing: border-box;
 }
 
 .article-markdown-mode-btn:hover {
@@ -86,19 +99,21 @@
 .article-markdown-status {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: var(--text-soft);
   font-size: 12px;
 }
 
 .article-markdown-clear {
-  min-height: 36px;
-  padding: 0 14px;
+  min-height: 32px;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.18) !important;
   background: rgba(255, 255, 255, 0.62) !important;
   color: var(--text-soft) !important;
   font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .article-markdown-clear:hover {

@@ -46,10 +46,10 @@
         </div>
       </div>
       <div class="article-markdown-toolbar article-markdown-toolbar-actions">
-        <div class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">编辑</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">分栏预览</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">实时预览</button>
+        <div ref="toolbarWrapRef" class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">{{ isCompactToolbar ? '编' : '编辑' }}</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">{{ isCompactToolbar ? '分栏' : '分栏预览' }}</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">{{ isCompactToolbar ? '预览' : '实时预览' }}</button>
         </div>
       </div>
 
@@ -96,12 +96,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import Vditor from 'vditor'
 import { marked } from 'marked'
 
 import { API_ORIGIN } from '../api'
-import './ArticleCreatePanel.css'
+import '../styles/markdown-editor.css'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -127,6 +127,8 @@ const emit = defineEmits<{
 
 const showCoverPicker = ref(false)
 const previewMode = ref<'edit' | 'split' | 'preview'>('split')
+const toolbarWidth = ref(0)
+const toolbarWrapRef = ref<HTMLDivElement | null>(null)
 const editorRef = ref<HTMLDivElement | null>(null)
 const vditor = ref<Vditor | null>(null)
 const imageMedia = computed(() =>
@@ -136,6 +138,7 @@ const imageMedia = computed(() =>
 )
 const contentLength = computed(() => props.contentMarkdown.trim().length)
 const previewHtml = computed(() => marked.parse(props.contentMarkdown || '', { breaks: true }))
+const isCompactToolbar = computed(() => toolbarWidth.value > 0 && toolbarWidth.value < 380)
 
 const previewUrl = (url: string) => fullUrl(url)
 
@@ -158,6 +161,10 @@ const syncContent = (value: string) => {
 const clearContent = () => {
   vditor.value?.setValue('')
   syncContent('')
+}
+
+const updateToolbarWidth = () => {
+  toolbarWidth.value = toolbarWrapRef.value?.getBoundingClientRect().width || 0
 }
 
 const initEditor = async () => {
@@ -229,6 +236,12 @@ watch(
 
 onMounted(() => {
   initEditor()
+  updateToolbarWidth()
+  window.addEventListener('resize', updateToolbarWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateToolbarWidth)
 })
 
 onBeforeUnmount(() => {
