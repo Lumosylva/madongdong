@@ -41,28 +41,22 @@
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
-          <div class="article-markdown-title-row">
-            <label>正文（Markdown）</label>
-            <span class="article-markdown-count">{{ contentLength }} 字</span>
-          </div>
+          <label>正文（Markdown）</label>
           <p class="article-markdown-tip">支持标题、列表、引用、代码块、链接、图片和表格</p>
         </div>
+        <div class="article-markdown-count">{{ contentLength }} 字</div>
       </div>
       <div class="article-markdown-toolbar article-markdown-toolbar-actions">
         <div ref="toolbarWrapRef" class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">{{ isCompactToolbar ? '编' : '编辑' }}</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">{{ isCompactToolbar ? '分栏' : '分栏预览' }}</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">{{ isCompactToolbar ? '预览' : '实时预览' }}</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">编辑</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">分栏预览</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">实时预览</button>
+          <button type="button" class="article-markdown-clear" @click="clearContent">清空正文</button>
         </div>
       </div>
 
       <div :class="['article-markdown-workspace', `mode-${previewMode}`]">
         <div class="article-markdown-editor-wrap">
-          <div class="article-markdown-toolbar article-markdown-toolbar-inline">
-            <div class="article-markdown-status">
-              <button type="button" class="article-markdown-clear" @click="clearContent">清空正文</button>
-            </div>
-          </div>
           <div ref="editorRef" class="article-markdown-editor"></div>
         </div>
 
@@ -129,7 +123,6 @@ const emit = defineEmits<{
 
 const showCoverPicker = ref(false)
 const previewMode = ref<'edit' | 'split' | 'preview'>('split')
-const toolbarWidth = ref(0)
 const toolbarWrapRef = ref<HTMLDivElement | null>(null)
 const editorRef = ref<HTMLDivElement | null>(null)
 const vditor = ref<Vditor | null>(null)
@@ -140,7 +133,6 @@ const imageMedia = computed(() =>
 )
 const contentLength = computed(() => props.contentMarkdown.trim().length)
 const previewHtml = computed(() => marked.parse(props.contentMarkdown || '', { breaks: true }))
-const isCompactToolbar = computed(() => toolbarWidth.value > 0 && toolbarWidth.value < 380)
 
 const previewUrl = (url: string) => fullUrl(url)
 
@@ -166,7 +158,7 @@ const clearContent = () => {
 }
 
 const updateToolbarWidth = () => {
-  toolbarWidth.value = toolbarWrapRef.value?.getBoundingClientRect().width || 0
+  void toolbarWrapRef.value?.getBoundingClientRect().width
 }
 
 const initEditor = async () => {
