@@ -38,7 +38,7 @@
       </transition>
     </div>
 
-    <div class="article-create-field article-markdown-field">
+    <div ref="markdownPanelRef" class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
           <label>正文（Markdown）</label>
@@ -126,7 +126,9 @@ const previewMode = ref<'edit' | 'split' | 'preview'>('split')
 const toolbarWrapRef = ref<HTMLDivElement | null>(null)
 const editorRef = ref<HTMLDivElement | null>(null)
 const previewScrollRef = ref<HTMLElement | null>(null)
+const markdownPanelRef = ref<HTMLElement | null>(null)
 const vditor = ref<Vditor | null>(null)
+const resizeObserver = ref<ResizeObserver | null>(null)
 const imageMedia = computed(() =>
   props.media.filter(
     (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
@@ -171,8 +173,27 @@ const syncPreviewScroll = () => {
   previewScroll.scrollTop = previewMax > 0 ? ratio * previewMax : 0
 }
 
+const syncEditorHeight = () => {
+  const panel = markdownPanelRef.value
+  const editorRoot = editorRef.value?.querySelector('.vditor') as HTMLElement | null
+  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+  const previewPanel = previewScrollRef.value?.closest('.article-markdown-preview-panel') as HTMLElement | null
+  const previewBody = previewScrollRef.value
+  if (!panel || !editorRoot || !editorScroll || !previewPanel || !previewBody) return
+
+  const availableHeight = Math.max(480, Math.round(panel.getBoundingClientRect().width * 0.72))
+  const headerHeight = 44
+  const bodyHeight = availableHeight - headerHeight
+  editorRoot.style.height = `${availableHeight}px`
+  editorScroll.style.height = `${bodyHeight}px`
+  previewPanel.style.height = `${availableHeight}px`
+  previewBody.style.height = `${bodyHeight}px`
+  previewBody.style.maxHeight = `${bodyHeight}px`
+}
+
 const updateToolbarWidth = () => {
   void toolbarWrapRef.value?.getBoundingClientRect().width
+  syncEditorHeight()
 }
 
 const initEditor = async () => {
@@ -221,6 +242,7 @@ const initEditor = async () => {
       }
       const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
       editorScroll?.addEventListener('scroll', syncPreviewScroll, { passive: true })
+      syncEditorHeight()
     },
   })
   await nextTick()
@@ -248,10 +270,17 @@ onMounted(() => {
   initEditor()
   updateToolbarWidth()
   window.addEventListener('resize', updateToolbarWidth)
+  resizeObserver.value = new ResizeObserver(() => syncEditorHeight())
+  if (markdownPanelRef.value) {
+    resizeObserver.value.observe(markdownPanelRef.value)
+  }
+  syncEditorHeight()
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateToolbarWidth)
+  resizeObserver.value?.disconnect()
+  resizeObserver.value = null
 })
 
 onBeforeUnmount(() => {

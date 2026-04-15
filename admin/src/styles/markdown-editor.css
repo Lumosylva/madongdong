@@ -199,7 +199,7 @@
 }
 
 .article-markdown-editor-wrap {
-  overflow: visible;
+  overflow: hidden;
 }
 
 .article-markdown-editor .vditor-toolbar,
@@ -270,6 +270,7 @@
 .article-markdown-editor .vditor-wysiwyg {
   min-height: calc(620px - 48px);
   height: calc(620px - 48px);
+  overflow: auto;
   background: transparent;
 }
 
