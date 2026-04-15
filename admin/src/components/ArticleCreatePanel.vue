@@ -1,7 +1,10 @@
 <template>
   <section class="editor-panel article-create-panel">
     <div class="article-create-head">
-      <h3>创建文章</h3>
+      <div>
+        <h3>创建文章</h3>
+        <span class="article-create-meta">Markdown 分屏编辑，右侧实时预览</span>
+      </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
 
@@ -35,13 +38,12 @@
       </transition>
     </div>
 
-    <div class="article-create-field">
-      <label>正文（Markdown）</label>
-      <textarea
-        :value="contentMarkdown"
-        placeholder="请输入 Markdown 正文内容"
-        @input="emit('update:contentMarkdown', ($event.target as HTMLTextAreaElement).value)"
-      ></textarea>
+    <div class="article-create-field article-markdown-field">
+      <div class="article-markdown-toolbar">
+        <label>正文（Markdown）</label>
+        <span class="article-markdown-tip">支持标题、列表、引用、代码块和链接</span>
+      </div>
+      <MdEditor v-model="markdownModel" :theme="editorTheme" preview-theme="github" language="zh-CN" class="article-markdown-editor" />
     </div>
 
     <div class="article-create-actions">
@@ -66,7 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { MdEditor } from 'md-editor-v3'
 
 import { API_ORIGIN } from '../api'
 
@@ -112,4 +115,20 @@ const selectCover = (url: string) => {
   emit('update:coverUrl', fullUrl(url))
   showCoverPicker.value = false
 }
+
+const markdownModel = computed({
+  get: () => props.contentMarkdown,
+  set: (value: string) => emit('update:contentMarkdown', value),
+})
+
+const editorTheme = computed(() => 'light')
+
+watch(
+  () => props.coverUrl,
+  (value) => {
+    if (value) {
+      showCoverPicker.value = false
+    }
+  },
+)
 </script>
