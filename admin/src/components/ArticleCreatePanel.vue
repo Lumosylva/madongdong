@@ -41,7 +41,10 @@
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
-          <label>正文（Markdown）</label>
+          <div class="article-markdown-title-row">
+            <label>正文（Markdown）</label>
+            <span class="article-markdown-count">{{ contentLength }} 字</span>
+          </div>
           <p class="article-markdown-tip">支持标题、列表、引用、代码块、链接、图片和表格</p>
         </div>
       </div>
@@ -57,7 +60,6 @@
         <div class="article-markdown-editor-wrap">
           <div class="article-markdown-toolbar article-markdown-toolbar-inline">
             <div class="article-markdown-status">
-              <span>{{ contentLength }} 字符</span>
               <button type="button" class="article-markdown-clear" @click="clearContent">清空正文</button>
             </div>
           </div>
