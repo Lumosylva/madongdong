@@ -33,21 +33,69 @@
 
         <nav class="sidebar-nav">
           <template v-for="item in visibleMainMenus" :key="item.key">
-            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" :data-label="item.label" @click="setView(item.key)">
+            <div
+              v-if="item.key === 'articles'"
+              ref="articleMenuGroupRef"
+              class="sidebar-menu-group"
+              @mouseenter="isSidebarCollapsed && openArticleFlyout()"
+              @mouseleave="isSidebarCollapsed && closeArticleFlyoutDelayed()"
+            >
+              <a
+                href="javascript:void(0)"
+                :class="{ active: currentView === item.key }"
+                :data-label="item.label"
+                @click="setView(item.key)"
+              >
+                <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
+                <span class="sidebar-text">{{ item.label }}</span>
+                <span v-if="!isSidebarCollapsed" class="sidebar-chevron">›</span>
+              </a>
+
+              <transition name="sidebar-flyout-fade">
+                <div
+                  v-if="isSidebarCollapsed && articleFlyoutOpen"
+                  class="sidebar-flyout"
+                  :class="`flyout-${sidebarFlyoutSide}`"
+                  @mouseenter="openArticleFlyout()"
+                  @mouseleave="closeArticleFlyoutDelayed()"
+                >
+                  <div class="sidebar-flyout-title">文章</div>
+                  <button
+                    v-for="sub in articleSubMenus"
+                    :key="sub.key"
+                    type="button"
+                    class="sidebar-flyout-item"
+                    :class="{ active: articleSubView === sub.key }"
+                    @click="setArticleSubView(sub.key)"
+                  >
+                    {{ sub.label }}
+                  </button>
+                </div>
+              </transition>
+
+              <div v-if="!isSidebarCollapsed && currentView === 'articles'" class="sidebar-subnav">
+                <a
+                  v-for="sub in articleSubMenus"
+                  :key="sub.key"
+                  href="javascript:void(0)"
+                  :class="{ active: articleSubView === sub.key }"
+                  @click="setArticleSubView(sub.key)"
+                >
+                  <span class="sidebar-text">{{ sub.label }}</span>
+                </a>
+              </div>
+            </div>
+
+            <a
+              v-else
+              href="javascript:void(0)"
+              :class="{ active: currentView === item.key }"
+              :data-label="item.label"
+              @click="setView(item.key)"
+            >
               <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
               <span class="sidebar-text">{{ item.label }}</span>
             </a>
-            <div v-if="item.key === 'articles' && currentView === 'articles'" class="sidebar-subnav">
-              <a
-                v-for="sub in articleSubMenus"
-                :key="sub.key"
-                href="javascript:void(0)"
-                :class="{ active: articleSubView === sub.key }"
-                @click="setArticleSubView(sub.key)"
-              >
-                <span class="sidebar-text">{{ sub.label }}</span>
-              </a>
-            </div>
           </template>
         </nav>
       </aside>
@@ -60,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
@@ -103,6 +151,8 @@ const router = useRouter()
 const currentView = ref<ViewType>('overview')
 const articleSubView = ref<ArticleSubView>('manage')
 const isSidebarCollapsed = ref(false)
+const articleFlyoutOpen = ref(false)
+const articleFlyoutCloseTimer = ref<number | null>(null)
 const currentUser = ref<AdminUser | null>(null)
 const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
@@ -159,10 +209,45 @@ const menuIconMap: Record<ViewType, string> = {
 }
 
 const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧边菜单' : '收起侧边菜单'))
+const sidebarFlyoutSide = ref<'right' | 'left'>('right')
+const articleMenuGroupRef = ref<HTMLElement | null>(null)
+
+const clearArticleFlyoutTimer = () => {
+  if (articleFlyoutCloseTimer.value !== null) {
+    window.clearTimeout(articleFlyoutCloseTimer.value)
+    articleFlyoutCloseTimer.value = null
+  }
+}
+
+const openArticleFlyout = () => {
+  clearArticleFlyoutTimer()
+  articleFlyoutOpen.value = true
+  updateFlyoutSide()
+}
+
+const closeArticleFlyoutDelayed = () => {
+  clearArticleFlyoutTimer()
+  articleFlyoutCloseTimer.value = window.setTimeout(() => {
+    articleFlyoutOpen.value = false
+    articleFlyoutCloseTimer.value = null
+  }, 180)
+}
+
+const updateFlyoutSide = () => {
+  if (!articleMenuGroupRef.value) return
+  const rect = articleMenuGroupRef.value.getBoundingClientRect()
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0
+  sidebarFlyoutSide.value = rect.right + 220 > viewportWidth ? 'left' : 'right'
+}
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
+  articleFlyoutOpen.value = false
+  clearArticleFlyoutTimer()
   localStorage.setItem('md-admin-sidebar-collapsed', isSidebarCollapsed.value ? '1' : '0')
+  if (isSidebarCollapsed.value) {
+    queueMicrotask(updateFlyoutSide)
+  }
 }
 
 const setView = (view: ViewType) => {
@@ -171,6 +256,9 @@ const setView = (view: ViewType) => {
     return
   }
   currentView.value = view
+  if (view !== 'articles') {
+    articleFlyoutOpen.value = false
+  }
   if (view === 'articles') {
     articleSubView.value = articleSubView.value || 'manage'
   }
@@ -178,6 +266,8 @@ const setView = (view: ViewType) => {
 
 const setArticleSubView = (subView: ArticleSubView) => {
   articleSubView.value = subView
+  currentView.value = 'articles'
+  articleFlyoutOpen.value = false
 }
 
 const applyTheme = (value: ThemeMode) => {
@@ -737,9 +827,13 @@ onMounted(async () => {
   await loadAll()
   action.value = isAdmin.value ? 'publish' : 'submit'
   document.addEventListener('click', handleDocumentClick)
+  window.addEventListener('resize', updateFlyoutSide)
+  updateFlyoutSide()
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
+  window.removeEventListener('resize', updateFlyoutSide)
+  clearArticleFlyoutTimer()
 })
 </script>
