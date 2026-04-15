@@ -910,7 +910,7 @@ button:disabled {
   min-width: 0;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar) {
+.article-markdown-editor .md-editor-toolbar {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(255, 255, 255, 0.72);
   max-width: 100%;
@@ -918,44 +918,44 @@ button:disabled {
   overflow-y: hidden;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar-wrapper),
-.article-markdown-editor :deep(.md-editor-content),
-.article-markdown-editor :deep(.md-editor-preview) {
+.article-markdown-editor .md-editor-toolbar-wrapper,
+.article-markdown-editor .md-editor-content,
+.article-markdown-editor .md-editor-preview {
   min-width: 0;
   max-width: 100%;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar-wrapper) {
+.article-markdown-editor .md-editor-toolbar-wrapper {
   flex-wrap: wrap;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar-wrap),
-.article-markdown-editor :deep(.md-editor-toolbar-item),
-.article-markdown-editor :deep(.md-editor-toolbar-item > button),
-.article-markdown-editor :deep(.md-editor-toolbar button) {
+.article-markdown-editor .md-editor-toolbar-item,
+.article-markdown-editor .md-editor-toolbar-item > button {
   min-width: 26px !important;
   min-height: 26px !important;
-}
-
-.article-markdown-editor :deep(.md-editor-toolbar button) {
   width: 26px !important;
   height: 26px !important;
-  border-radius: 8px !important;
-  background: rgba(148, 163, 184, 0.08) !important;
-  color: var(--text-soft) !important;
-  border: 1px solid rgba(148, 163, 184, 0.12) !important;
-  box-shadow: none !important;
   padding: 0 !important;
+}
+
+.article-markdown-editor .md-editor-toolbar-item > button {
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 8px !important;
+  background-color: rgba(248, 250, 252, 0.92) !important;
+  color: var(--text-soft) !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  box-shadow: none !important;
   line-height: 1 !important;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar button svg) {
+.article-markdown-editor .md-editor-toolbar-item > button svg {
   width: 14px !important;
   height: 14px !important;
 }
 
-.article-markdown-editor :deep(.md-editor-toolbar button:hover) {
-  background: rgba(148, 163, 184, 0.14) !important;
+.article-markdown-editor .md-editor-toolbar-item > button:hover {
+  background-color: rgba(241, 245, 249, 0.98) !important;
   color: var(--text) !important;
 }
 
