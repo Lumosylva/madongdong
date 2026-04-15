@@ -1,3 +1,4 @@
+/* Toolbar */
 .article-markdown-field {
   gap: 10px;
 }
@@ -167,6 +168,7 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
+/* Editor */
 .article-markdown-workspace.mode-preview {
   grid-template-columns: 1fr;
 }
@@ -273,6 +275,7 @@
   background: transparent;
 }
 
+/* Preview */
 .article-markdown-preview-panel {
   display: grid;
   grid-template-rows: auto 1fr;
