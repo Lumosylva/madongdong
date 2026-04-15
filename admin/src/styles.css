@@ -927,22 +927,24 @@ button:disabled {
 
 .article-markdown-editor .md-editor-toolbar-wrapper {
   flex-wrap: wrap;
+  gap: 2px;
 }
 
 .article-markdown-editor .md-editor-toolbar-item,
 .article-markdown-editor .md-editor-toolbar-item > button {
-  min-width: 26px !important;
-  min-height: 26px !important;
-  width: 26px !important;
-  height: 26px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
   padding: 0 !important;
+  background: rgba(248, 250, 252, 0.92) !important;
+  background-color: rgba(248, 250, 252, 0.92) !important;
+  background-image: none !important;
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button {
   display: grid !important;
   place-items: center !important;
-  border-radius: 8px !important;
-  background-color: rgba(248, 250, 252, 0.92) !important;
   color: var(--text-soft) !important;
   border: 1px solid rgba(148, 163, 184, 0.14) !important;
   box-shadow: none !important;
@@ -950,11 +952,12 @@ button:disabled {
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button svg {
-  width: 14px !important;
-  height: 14px !important;
+  width: 15px !important;
+  height: 15px !important;
 }
 
 .article-markdown-editor .md-editor-toolbar-item > button:hover {
+  background: rgba(241, 245, 249, 0.98) !important;
   background-color: rgba(241, 245, 249, 0.98) !important;
   color: var(--text) !important;
 }
