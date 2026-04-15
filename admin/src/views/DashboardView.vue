@@ -33,7 +33,7 @@
 
         <nav class="sidebar-nav">
           <template v-for="item in visibleMainMenus" :key="item.key">
-            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" @click="setView(item.key)">
+            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" :data-label="item.label" @click="setView(item.key)">
               <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
               <span class="sidebar-text">{{ item.label }}</span>
             </a>
@@ -162,6 +162,7 @@ const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
+  localStorage.setItem('md-admin-sidebar-collapsed', isSidebarCollapsed.value ? '1' : '0')
 }
 
 const setView = (view: ViewType) => {
@@ -730,7 +731,9 @@ const createArticle = async () => {
 
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-admin-theme')
+  const storedSidebarState = localStorage.getItem('md-admin-sidebar-collapsed')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  isSidebarCollapsed.value = storedSidebarState === '1'
   await loadAll()
   action.value = isAdmin.value ? 'publish' : 'submit'
   document.addEventListener('click', handleDocumentClick)
