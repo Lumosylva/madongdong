@@ -65,7 +65,7 @@
             <span>实时预览</span>
             <span class="article-markdown-preview-meta">所见即所得</span>
           </div>
-          <article class="article-markdown-preview" v-html="previewHtml"></article>
+          <article ref="previewScrollRef" class="article-markdown-preview" v-html="previewHtml"></article>
         </aside>
       </div>
     </div>
@@ -125,6 +125,7 @@ const showCoverPicker = ref(false)
 const previewMode = ref<'edit' | 'split' | 'preview'>('split')
 const toolbarWrapRef = ref<HTMLDivElement | null>(null)
 const editorRef = ref<HTMLDivElement | null>(null)
+const previewScrollRef = ref<HTMLElement | null>(null)
 const vditor = ref<Vditor | null>(null)
 const imageMedia = computed(() =>
   props.media.filter(
@@ -155,6 +156,19 @@ const syncContent = (value: string) => {
 const clearContent = () => {
   vditor.value?.setValue('')
   syncContent('')
+}
+
+const syncPreviewScroll = () => {
+  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+  const previewScroll = previewScrollRef.value
+  if (!editorScroll || !previewScroll) return
+
+  const editorMax = editorScroll.scrollHeight - editorScroll.clientHeight
+  if (editorMax <= 0) return
+
+  const ratio = editorScroll.scrollTop / editorMax
+  const previewMax = previewScroll.scrollHeight - previewScroll.clientHeight
+  previewScroll.scrollTop = previewMax > 0 ? ratio * previewMax : 0
 }
 
 const updateToolbarWidth = () => {
@@ -205,6 +219,8 @@ const initEditor = async () => {
       if (vditor.value) {
         vditor.value.setValue(props.contentMarkdown || '')
       }
+      const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+      editorScroll?.addEventListener('scroll', syncPreviewScroll, { passive: true })
     },
   })
   await nextTick()
@@ -239,6 +255,8 @@ onUnmounted(() => {
 })
 
 onBeforeUnmount(() => {
+  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+  editorScroll?.removeEventListener('scroll', syncPreviewScroll)
   vditor.value?.destroy()
   vditor.value = null
 })

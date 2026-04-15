@@ -157,15 +157,27 @@
   grid-template-columns: 1fr;
 }
 
+.article-markdown-workspace.mode-edit .article-markdown-editor-wrap,
+.article-markdown-workspace.mode-preview .article-markdown-preview-panel,
+.article-markdown-workspace.mode-split .article-markdown-editor-wrap,
+.article-markdown-workspace.mode-split .article-markdown-preview-panel {
+  height: 620px;
+  min-height: 620px;
+  max-height: 620px;
+}
+
 .article-markdown-workspace.mode-split {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
+  gap: 12px;
 }
 
 .article-markdown-workspace.mode-split .article-markdown-editor-wrap,
 .article-markdown-workspace.mode-split .article-markdown-preview-panel {
   min-width: 0;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  position: static;
+  top: auto;
 }
 
 /* Editor */
@@ -183,6 +195,10 @@
 
 .article-markdown-workspace.mode-edit .article-markdown-editor-wrap {
   min-height: 620px;
+}
+
+.article-markdown-workspace.mode-split .article-markdown-editor-wrap {
+  overflow: visible;
 }
 
 .article-markdown-editor-wrap,
@@ -271,7 +287,7 @@
 .article-markdown-editor .vditor-ir,
 .article-markdown-editor .vditor-sv,
 .article-markdown-editor .vditor-wysiwyg {
-  min-height: 580px;
+  min-height: calc(620px - 48px);
   background: transparent;
 }
 
@@ -304,13 +320,14 @@
 }
 
 .article-markdown-preview {
-  padding: 28px 32px 32px;
+  padding: 24px 28px 28px;
   overflow: auto;
-  max-height: 620px;
+  max-height: calc(620px - 44px);
   font-size: 15px;
   line-height: 1.9;
   color: var(--text);
   font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
+  scroll-behavior: smooth;
 }
 
 .article-markdown-preview > * {
