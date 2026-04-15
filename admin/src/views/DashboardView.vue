@@ -37,7 +37,7 @@
               v-if="item.key === 'articles'"
               ref="articleMenuGroupRef"
               class="sidebar-menu-group"
-              @mouseenter="isSidebarCollapsed && openArticleFlyout()"
+              @mouseenter="isSidebarCollapsed && openArticleFlyout($event)"
               @mouseleave="isSidebarCollapsed && closeArticleFlyoutDelayed()"
             >
               <a
@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
@@ -212,6 +212,7 @@ const menuIconMap: Record<ViewType, string> = {
 const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧边菜单' : '收起侧边菜单'))
 const sidebarFlyoutSide = ref<'right' | 'left'>('right')
 const articleMenuGroupRef = ref<HTMLElement | null>(null)
+const articleMenuGroupEl = ref<HTMLElement | null>(null)
 
 const clearArticleFlyoutTimer = () => {
   if (articleFlyoutCloseTimer.value !== null) {
@@ -220,9 +221,12 @@ const clearArticleFlyoutTimer = () => {
   }
 }
 
-const openArticleFlyout = () => {
+const openArticleFlyout = (event?: MouseEvent) => {
   clearArticleFlyoutTimer()
   articleFlyoutOpen.value = true
+  if (event?.currentTarget instanceof HTMLElement) {
+    articleMenuGroupEl.value = event.currentTarget
+  }
   updateFlyoutSide()
 }
 
@@ -235,8 +239,9 @@ const closeArticleFlyoutDelayed = () => {
 }
 
 const updateFlyoutSide = () => {
-  if (!articleMenuGroupRef.value) return
-  const rect = articleMenuGroupRef.value.getBoundingClientRect()
+  const el = articleMenuGroupEl.value || articleMenuGroupRef.value
+  if (!el || typeof el.getBoundingClientRect !== 'function') return
+  const rect = el.getBoundingClientRect()
   const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0
   sidebarFlyoutSide.value = rect.right + 220 > viewportWidth ? 'left' : 'right'
 }

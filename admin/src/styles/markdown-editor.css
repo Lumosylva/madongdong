@@ -25,7 +25,7 @@
 
 .article-markdown-toolbar-actions {
   margin-top: -2px;
-  gap: 12px;
+  gap: 8px;
   justify-content: flex-end;
   flex-wrap: nowrap;
 }
@@ -73,7 +73,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(72px, 1fr));
   gap: 0;
-  padding: 3px;
+  padding: 2px;
   border-radius: 999px;
   background: rgba(241, 245, 249, 0.98);
   border: 1px solid rgba(203, 213, 225, 0.95);
@@ -88,8 +88,8 @@
 
 .article-markdown-mode-btn {
   width: 100% !important;
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: 32px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 0 !important;
   background: transparent !important;
@@ -116,8 +116,8 @@
 }
 
 .article-markdown-clear {
-  min-height: 34px;
-  padding: 0 10px;
+  min-height: 32px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 0 !important;
   background: transparent !important;
@@ -168,6 +168,23 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   position: static;
   top: auto;
+}
+
+.article-markdown-workspace.mode-split .article-markdown-editor .vditor-toolbar {
+  padding: 8px 10px;
+  gap: 4px;
+}
+
+.article-markdown-workspace.mode-split .article-markdown-editor .vditor-toolbar__item {
+  margin-right: 4px;
+}
+
+.article-markdown-workspace.mode-split .article-markdown-editor .vditor-toolbar__item + .vditor-toolbar__item {
+  margin-left: 1px;
+}
+
+.article-markdown-workspace.mode-split .article-markdown-editor .vditor-toolbar button {
+  border-radius: 8px;
 }
 
 .article-markdown-workspace.mode-preview {

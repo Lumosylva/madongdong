@@ -160,40 +160,131 @@ const clearContent = () => {
   syncContent('')
 }
 
-const syncPreviewScroll = () => {
-  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+const isSplitMode = computed(() => previewMode.value === 'split')
+
+const getEditorScrollEl = () => {
+  const root = editorRef.value
+  if (!root) return null
+  const candidates = [
+    '.vditor-content',
+    '.vditor-ir',
+    '.vditor-wysiwyg',
+    '.vditor-sv',
+  ]
+
+  for (const selector of candidates) {
+    const el = root.querySelector(selector) as HTMLElement | null
+    if (!el) continue
+    const style = getComputedStyle(el)
+    const canScroll = (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflowY === 'overlay') && el.scrollHeight > el.clientHeight
+    if (canScroll) return el
+  }
+
+  for (const selector of candidates) {
+    const el = root.querySelector(selector) as HTMLElement | null
+    if (el) return el
+  }
+
+  return null
+}
+
+const logScrollContainer = (phase: string) => {
+  const root = editorRef.value
+  if (!root) return
+  const candidates = ['.vditor-content', '.vditor-ir', '.vditor-wysiwyg', '.vditor-sv']
+  const details = candidates.map((selector) => {
+    const el = root.querySelector(selector) as HTMLElement | null
+    return {
+      selector,
+      found: Boolean(el),
+      tag: el?.tagName || null,
+      className: el?.className || null,
+      scrollHeight: el?.scrollHeight ?? null,
+      clientHeight: el?.clientHeight ?? null,
+      overflowY: el ? getComputedStyle(el).overflowY : null,
+    }
+  })
+  const matched = details.filter((item) => item.found)
+  console.warn(`[ArticleCreatePanel] Markdown scroll container diagnostics @ ${phase}:`, matched)
+}
+
+const syncScrollByRatio = (source: 'editor' | 'preview') => {
+  if (!isSplitMode.value) return
+  const editorScroll = getEditorScrollEl()
   const previewScroll = previewScrollRef.value
   if (!editorScroll || !previewScroll) return
 
   const editorMax = editorScroll.scrollHeight - editorScroll.clientHeight
-  if (editorMax <= 0) return
-
-  const ratio = editorScroll.scrollTop / editorMax
   const previewMax = previewScroll.scrollHeight - previewScroll.clientHeight
-  previewScroll.scrollTop = previewMax > 0 ? ratio * previewMax : 0
+  if (editorMax <= 0 || previewMax <= 0) return
+
+  const editorRatio = editorScroll.scrollTop / editorMax
+  const previewRatio = previewScroll.scrollTop / previewMax
+
+  if (source === 'editor') {
+    previewScroll.scrollTop = Math.min(previewMax, Math.max(0, editorRatio * previewMax))
+  } else {
+    editorScroll.scrollTop = Math.min(editorMax, Math.max(0, previewRatio * editorMax))
+  }
+}
+
+let syncScrollRaf = 0
+let syncScrollSource: 'editor' | 'preview' | null = null
+
+const scheduleScrollSync = (source: 'editor' | 'preview') => {
+  if (!isSplitMode.value) return
+  syncScrollSource = source
+  if (syncScrollRaf) return
+  syncScrollRaf = window.requestAnimationFrame(() => {
+    syncScrollRaf = 0
+    const currentSource = syncScrollSource
+    syncScrollSource = null
+    if (currentSource) {
+      syncScrollByRatio(currentSource)
+    }
+  })
+}
+
+const handleEditorScroll = () => {
+  scheduleScrollSync('editor')
+}
+
+const handlePreviewScroll = () => {
+  scheduleScrollSync('preview')
 }
 
 const syncEditorHeight = () => {
+  if (!isSplitMode.value) return
   const panel = markdownPanelRef.value
   const editorRoot = editorRef.value?.querySelector('.vditor') as HTMLElement | null
-  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
+  const editorScroll = getEditorScrollEl()
   const previewPanel = previewScrollRef.value?.closest('.article-markdown-preview-panel') as HTMLElement | null
   const previewBody = previewScrollRef.value
   if (!panel || !editorRoot || !editorScroll || !previewPanel || !previewBody) return
 
-  const availableHeight = Math.max(480, Math.round(panel.getBoundingClientRect().width * 0.72))
+  const rect = panel.getBoundingClientRect()
+  const viewportBottom = window.innerHeight || document.documentElement.clientHeight || 0
+  const spaceBelow = Math.max(0, viewportBottom - rect.top)
+  const availableHeight = Math.max(480, Math.floor(spaceBelow - 16))
   const headerHeight = 44
-  const bodyHeight = availableHeight - headerHeight
+  const bodyHeight = Math.max(320, availableHeight - headerHeight)
+
   editorRoot.style.height = `${availableHeight}px`
   editorScroll.style.height = `${bodyHeight}px`
   previewPanel.style.height = `${availableHeight}px`
   previewBody.style.height = `${bodyHeight}px`
   previewBody.style.maxHeight = `${bodyHeight}px`
+  requestAnimationFrame(() => syncScrollByRatio('editor'))
 }
 
 const updateToolbarWidth = () => {
   void toolbarWrapRef.value?.getBoundingClientRect().width
   syncEditorHeight()
+}
+
+const requestSyncEditorHeight = () => {
+  if (typeof window === 'undefined') return
+  window.requestAnimationFrame(() => syncEditorHeight())
 }
 
 const initEditor = async () => {
@@ -240,8 +331,14 @@ const initEditor = async () => {
       if (vditor.value) {
         vditor.value.setValue(props.contentMarkdown || '')
       }
-      const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
-      editorScroll?.addEventListener('scroll', syncPreviewScroll, { passive: true })
+      logScrollContainer('after-init')
+      const editorScroll = getEditorScrollEl()
+      if (editorScroll) {
+        editorScroll.addEventListener('scroll', handleEditorScroll, { passive: true })
+      }
+      if (previewScrollRef.value) {
+        previewScrollRef.value.addEventListener('scroll', handlePreviewScroll, { passive: true })
+      }
       syncEditorHeight()
     },
   })
@@ -253,6 +350,7 @@ watch(
   (value) => {
     if (vditor.value && value !== vditor.value.getValue()) {
       vditor.value.setValue(value || '')
+      logScrollContainer('content-watch')
     }
   },
 )
@@ -266,26 +364,39 @@ watch(
   },
 )
 
+watch(isSplitMode, (value) => {
+  if (value) {
+    syncEditorHeight()
+  }
+})
+
 onMounted(() => {
   initEditor()
   updateToolbarWidth()
   window.addEventListener('resize', updateToolbarWidth)
-  resizeObserver.value = new ResizeObserver(() => syncEditorHeight())
+  window.addEventListener('scroll', requestSyncEditorHeight, true)
+  resizeObserver.value = new ResizeObserver(() => requestSyncEditorHeight())
   if (markdownPanelRef.value) {
     resizeObserver.value.observe(markdownPanelRef.value)
   }
-  syncEditorHeight()
+  requestSyncEditorHeight()
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateToolbarWidth)
+  window.removeEventListener('scroll', requestSyncEditorHeight, true)
   resizeObserver.value?.disconnect()
   resizeObserver.value = null
 })
 
 onBeforeUnmount(() => {
-  const editorScroll = editorRef.value?.querySelector('.vditor-content') as HTMLElement | null
-  editorScroll?.removeEventListener('scroll', syncPreviewScroll)
+  const editorScroll = getEditorScrollEl()
+  editorScroll?.removeEventListener('scroll', handleEditorScroll)
+  previewScrollRef.value?.removeEventListener('scroll', handlePreviewScroll)
+  if (syncScrollRaf) {
+    window.cancelAnimationFrame(syncScrollRaf)
+    syncScrollRaf = 0
+  }
   vditor.value?.destroy()
   vditor.value = null
 })
