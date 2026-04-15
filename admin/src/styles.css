@@ -927,18 +927,18 @@ button:disabled {
 
 .article-markdown-editor .md-editor-toolbar-wrapper {
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 1px;
 }
 
 .article-markdown-editor .md-editor-toolbar-item,
 .article-markdown-editor .md-editor-toolbar-item > button {
-  min-width: 32px !important;
-  min-height: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  width: 34px !important;
+  height: 34px !important;
   padding: 0 !important;
-  background: rgba(248, 250, 252, 0.92) !important;
-  background-color: rgba(248, 250, 252, 0.92) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   background-image: none !important;
 }
 
@@ -946,7 +946,7 @@ button:disabled {
   display: grid !important;
   place-items: center !important;
   color: var(--text-soft) !important;
-  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
   box-shadow: none !important;
   line-height: 1 !important;
 }
