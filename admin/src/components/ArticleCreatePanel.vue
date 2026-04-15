@@ -3,7 +3,7 @@
     <div class="article-create-head">
       <div>
         <h3>创建文章</h3>
-        <span class="article-create-meta">Markdown 分屏编辑，右侧实时预览</span>
+        <span class="article-create-meta">Vditor Markdown 编辑器</span>
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
@@ -43,7 +43,7 @@
         <label>正文（Markdown）</label>
         <span class="article-markdown-tip">支持标题、列表、引用、代码块和链接</span>
       </div>
-      <MdEditor v-model="markdownModel" :theme="editorTheme" preview-theme="github" language="zh-CN" class="article-markdown-editor" />
+      <div ref="editorRef" class="article-markdown-editor"></div>
     </div>
 
     <div class="article-create-actions">
@@ -68,10 +68,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { MdEditor } from 'md-editor-v3'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import Vditor from 'vditor'
 
 import { API_ORIGIN } from '../api'
+import 'vditor/dist/index.css'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -120,8 +121,6 @@ const markdownModel = computed({
   get: () => props.contentMarkdown,
   set: (value: string) => emit('update:contentMarkdown', value),
 })
-
-const editorTheme = computed(() => 'light')
 
 watch(
   () => props.coverUrl,
