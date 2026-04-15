@@ -3,7 +3,7 @@
     <div class="article-create-head">
       <div>
         <h3>创建文章</h3>
-        <span class="article-create-meta">Vditor Markdown 编辑器</span>
+        <span class="article-create-meta">Markdown 编辑器</span>
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
@@ -40,10 +40,36 @@
 
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar">
-        <label>正文（Markdown）</label>
-        <span class="article-markdown-tip">支持标题、列表、引用、代码块和链接</span>
+        <div>
+          <label>正文（Markdown）</label>
+          <p class="article-markdown-tip">支持标题、列表、引用、代码块、链接、图片和表格</p>
+        </div>
+        <div class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">编辑</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">分栏预览</button>
+          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">实时预览</button>
+        </div>
       </div>
-      <div ref="editorRef" class="article-markdown-editor"></div>
+
+      <div :class="['article-markdown-workspace', `mode-${previewMode}`]">
+        <div class="article-markdown-editor-wrap">
+          <div class="article-markdown-toolbar article-markdown-toolbar-inline">
+            <div class="article-markdown-status">
+              <span>{{ contentLength }} 字符</span>
+              <button type="button" class="article-markdown-clear" @click="clearContent">清空正文</button>
+            </div>
+          </div>
+          <div ref="editorRef" class="article-markdown-editor"></div>
+        </div>
+
+        <aside class="article-markdown-preview-panel" aria-label="正文实时预览">
+          <div class="article-markdown-preview-head">
+            <span>实时预览</span>
+            <span class="article-markdown-preview-meta">所见即所得</span>
+          </div>
+          <article class="article-markdown-preview" v-html="previewHtml"></article>
+        </aside>
+      </div>
     </div>
 
     <div class="article-create-actions">
@@ -70,9 +96,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Vditor from 'vditor'
+import { marked } from 'marked'
 
 import { API_ORIGIN } from '../api'
-import 'vditor/dist/index.css'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -97,11 +123,16 @@ const emit = defineEmits<{
 }>()
 
 const showCoverPicker = ref(false)
+const previewMode = ref<'edit' | 'split' | 'preview'>('split')
+const editorRef = ref<HTMLDivElement | null>(null)
+const vditor = ref<Vditor | null>(null)
 const imageMedia = computed(() =>
   props.media.filter(
     (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
   ),
 )
+const contentLength = computed(() => props.contentMarkdown.trim().length)
+const previewHtml = computed(() => marked.parse(props.contentMarkdown || '', { breaks: true }))
 
 const previewUrl = (url: string) => fullUrl(url)
 
@@ -117,10 +148,72 @@ const selectCover = (url: string) => {
   showCoverPicker.value = false
 }
 
-const markdownModel = computed({
-  get: () => props.contentMarkdown,
-  set: (value: string) => emit('update:contentMarkdown', value),
-})
+const syncContent = (value: string) => {
+  emit('update:contentMarkdown', value)
+}
+
+const clearContent = () => {
+  vditor.value?.setValue('')
+  syncContent('')
+}
+
+const initEditor = async () => {
+  if (!editorRef.value || vditor.value) return
+  vditor.value = new Vditor(editorRef.value, {
+    height: 620,
+    mode: 'ir',
+    theme: 'classic',
+    icon: 'ant',
+    cache: { enable: false },
+    placeholder: '请在这里输入文章正文，支持 Markdown 语法。',
+    value: props.contentMarkdown,
+    counter: {
+      enable: true,
+      type: 'markdown',
+    },
+    toolbarConfig: {
+      pin: true,
+    },
+    toolbar: [
+      'headings',
+      'bold',
+      'italic',
+      'strike',
+      '|',
+      'line',
+      'quote',
+      'list',
+      'ordered-list',
+      'check',
+      '|',
+      'code',
+      'inline-code',
+      'table',
+      'link',
+      'upload',
+      '|',
+      'undo',
+      'redo',
+      'fullscreen',
+    ],
+    input: (value) => syncContent(value),
+    after: () => {
+      if (vditor.value) {
+        vditor.value.setValue(props.contentMarkdown || '')
+      }
+    },
+  })
+  await nextTick()
+}
+
+watch(
+  () => props.contentMarkdown,
+  (value) => {
+    if (vditor.value && value !== vditor.value.getValue()) {
+      vditor.value.setValue(value || '')
+    }
+  },
+)
 
 watch(
   () => props.coverUrl,
@@ -130,4 +223,13 @@ watch(
     }
   },
 )
+
+onMounted(() => {
+  initEditor()
+})
+
+onBeforeUnmount(() => {
+  vditor.value?.destroy()
+  vditor.value = null
+})
 </script>

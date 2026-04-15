@@ -22,11 +22,21 @@
       </div>
     </header>
 
-    <div class="dashboard-shell">
-      <aside class="sidebar">
+    <div class="dashboard-shell" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <aside class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
+        <div class="sidebar-head">
+          <button type="button" class="sidebar-toggle" :aria-label="sidebarToggleLabel" @click="toggleSidebar">
+            <span aria-hidden="true">{{ isSidebarCollapsed ? '☰' : '⇤' }}</span>
+          </button>
+          <span class="sidebar-title">菜单</span>
+        </div>
+
         <nav class="sidebar-nav">
           <template v-for="item in visibleMainMenus" :key="item.key">
-            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" @click="setView(item.key)">{{ item.label }}</a>
+            <a href="javascript:void(0)" :class="{ active: currentView === item.key }" @click="setView(item.key)">
+              <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
+              <span class="sidebar-text">{{ item.label }}</span>
+            </a>
             <div v-if="item.key === 'articles' && currentView === 'articles'" class="sidebar-subnav">
               <a
                 v-for="sub in articleSubMenus"
@@ -34,7 +44,9 @@
                 href="javascript:void(0)"
                 :class="{ active: articleSubView === sub.key }"
                 @click="setArticleSubView(sub.key)"
-              >{{ sub.label }}</a>
+              >
+                <span class="sidebar-text">{{ sub.label }}</span>
+              </a>
             </div>
           </template>
         </nav>
@@ -90,6 +102,7 @@ type ArticleSubMenuItem = {
 const router = useRouter()
 const currentView = ref<ViewType>('overview')
 const articleSubView = ref<ArticleSubView>('manage')
+const isSidebarCollapsed = ref(false)
 const currentUser = ref<AdminUser | null>(null)
 const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
@@ -136,6 +149,20 @@ const articleSubMenus: ArticleSubMenuItem[] = [
   { key: 'create', label: '创建文章', contentKey: 'articles-create' },
   { key: 'category', label: '文章分类', contentKey: 'articles-category' },
 ]
+
+const menuIconMap: Record<ViewType, string> = {
+  overview: '⌂',
+  articles: '✎',
+  media: '◫',
+  comments: '☍',
+  site: '⚙',
+}
+
+const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧边菜单' : '收起侧边菜单'))
+
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+}
 
 const setView = (view: ViewType) => {
   const targetMenu = mainMenus.find((item) => item.key === view)
