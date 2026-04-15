@@ -39,11 +39,13 @@
     </div>
 
     <div class="article-create-field article-markdown-field">
-      <div class="article-markdown-toolbar">
-        <div>
+      <div class="article-markdown-toolbar article-markdown-toolbar-title">
+        <div class="article-markdown-toolbar-main">
           <label>正文（Markdown）</label>
           <p class="article-markdown-tip">支持标题、列表、引用、代码块、链接、图片和表格</p>
         </div>
+      </div>
+      <div class="article-markdown-toolbar article-markdown-toolbar-actions">
         <div class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
           <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">编辑</button>
           <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">分栏预览</button>
@@ -99,6 +101,7 @@ import Vditor from 'vditor'
 import { marked } from 'marked'
 
 import { API_ORIGIN } from '../api'
+import './ArticleCreatePanel.css'
 
 const props = defineProps<{
   isAdmin: boolean

@@ -43,7 +43,6 @@
               <a
                 href="javascript:void(0)"
                 :class="{ active: currentView === item.key }"
-                :data-label="item.label"
                 @click="setView(item.key)"
               >
                 <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
@@ -59,7 +58,9 @@
                   @mouseenter="openArticleFlyout()"
                   @mouseleave="closeArticleFlyoutDelayed()"
                 >
-                  <div class="sidebar-flyout-title">文章</div>
+                  <div class="sidebar-flyout-header">
+                    <strong class="sidebar-flyout-title">文章</strong>
+                  </div>
                   <button
                     v-for="sub in articleSubMenus"
                     :key="sub.key"
