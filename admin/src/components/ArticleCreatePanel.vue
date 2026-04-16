@@ -6,7 +6,7 @@
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
-    <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 保存草稿，Ctrl/Cmd + Enter 提交</p>
+    <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 临时保存，Ctrl/Cmd + Enter 提交</p>
 
     <div class="article-create-field">
       <label>标题</label>

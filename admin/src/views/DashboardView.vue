@@ -915,8 +915,8 @@ const createArticle = async () => {
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
-    currentView.value = 'articles'
     localStorage.removeItem(articleDraftStorageKey)
+    currentView.value = 'articles'
     await loadAll()
   } finally {
     articleSubmitting.value = false
