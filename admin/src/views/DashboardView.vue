@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
@@ -168,12 +168,14 @@ const copyrightText = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
+const articleSubmitting = ref(false)
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
 const categoryId = ref(1)
 const tagIdsText = ref('')
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
+const articleDraftStorageKey = 'md-admin-article-draft'
 
 const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
@@ -377,6 +379,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         action: action.value,
         media: media.value,
         showToolbarName: isSidebarCollapsed.value,
+        submitLoading: articleSubmitting.value,
       }
     case 'articles-category':
       return {
@@ -533,10 +536,65 @@ const handleDocumentClick = (event: MouseEvent) => {
   }
 }
 
+const handleGlobalKeyDown = (event: KeyboardEvent) => {
+  const target = event.target as HTMLElement | null
+  const tagName = target?.tagName?.toUpperCase() || ''
+  const isEditable = tagName === 'INPUT' || tagName === 'TEXTAREA' || target?.isContentEditable
+
+  if (currentContentView.value !== 'articles-create') return
+
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    persistArticleDraft()
+    return
+  }
+
+  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    event.preventDefault()
+    if (!articleSubmitting.value) {
+      void createArticle()
+    }
+    return
+  }
+
+  if (event.key === 'Escape' && !isEditable) {
+    articleFlyoutOpen.value = false
+  }
+}
+
 const logout = async () => {
   isUserMenuOpen.value = false
   localStorage.removeItem('blog_admin_token')
   await router.push('/login')
+}
+
+const persistArticleDraft = () => {
+  if (!title.value && !coverUrl.value && !contentMarkdown.value && !tagIdsText.value) {
+    localStorage.removeItem(articleDraftStorageKey)
+    return
+  }
+  localStorage.setItem(
+    articleDraftStorageKey,
+    JSON.stringify({
+      title: title.value,
+      coverUrl: coverUrl.value,
+      contentMarkdown: contentMarkdown.value,
+      categoryId: categoryId.value,
+      tagIdsText: tagIdsText.value,
+      action: action.value,
+    }),
+  )
+}
+
+let articleDraftSaveTimer: number | null = null
+const scheduleArticleDraftSave = () => {
+  if (articleDraftSaveTimer !== null) {
+    window.clearTimeout(articleDraftSaveTimer)
+  }
+  articleDraftSaveTimer = window.setTimeout(() => {
+    persistArticleDraft()
+    articleDraftSaveTimer = null
+  }, 500)
 }
 
 const loadAll = async () => {
@@ -613,6 +671,10 @@ const createCategory = async (payload: { name: string; slug: string; description
   await adminApi.createCategory(payload)
   await loadAll()
 }
+
+watch([title, coverUrl, contentMarkdown, categoryId, tagIdsText, action], () => {
+  scheduleArticleDraftSave()
+})
 
 const updateCategory = async (payload: { id: number; name: string; slug: string; description: string | null }) => {
   await adminApi.updateCategory(payload.id, {
@@ -830,29 +892,35 @@ const resolveTagIdsByNames = async (rawInput: string) => {
 }
 
 const createArticle = async () => {
+  if (articleSubmitting.value) return
+  articleSubmitting.value = true
   const finalAction = isAdmin.value
     ? (action.value === 'publish' ? 'publish' : 'draft')
     : (action.value === 'submit' ? 'submit' : 'draft')
 
-  const autoSummary = extractSummary(contentMarkdown.value, 120)
+  try {
+    const autoSummary = extractSummary(contentMarkdown.value, 120)
+    const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
 
-  const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
-
-  await adminApi.createArticle({
-    title: title.value,
-    summary: autoSummary || '暂无摘要',
-    content_markdown: contentMarkdown.value,
-    cover_url: coverUrl.value || null,
-    category_id: categoryId.value,
-    tag_ids: resolvedTagIds,
-    action: finalAction,
-  })
-  title.value = ''
-  coverUrl.value = ''
-  contentMarkdown.value = ''
-  tagIdsText.value = ''
-  currentView.value = 'articles'
-  await loadAll()
+    await adminApi.createArticle({
+      title: title.value,
+      summary: autoSummary || '暂无摘要',
+      content_markdown: contentMarkdown.value,
+      cover_url: coverUrl.value || null,
+      category_id: categoryId.value,
+      tag_ids: resolvedTagIds,
+      action: finalAction,
+    })
+    title.value = ''
+    coverUrl.value = ''
+    contentMarkdown.value = ''
+    tagIdsText.value = ''
+    currentView.value = 'articles'
+    localStorage.removeItem(articleDraftStorageKey)
+    await loadAll()
+  } finally {
+    articleSubmitting.value = false
+  }
 }
 
 onMounted(async () => {
@@ -863,13 +931,41 @@ onMounted(async () => {
   await loadAll()
   action.value = isAdmin.value ? 'publish' : 'submit'
   document.addEventListener('click', handleDocumentClick)
+  document.addEventListener('keydown', handleGlobalKeyDown)
   window.addEventListener('resize', updateFlyoutSide)
   updateFlyoutSide()
+
+  const savedDraftRaw = localStorage.getItem(articleDraftStorageKey)
+  if (savedDraftRaw) {
+    try {
+      const savedDraft = JSON.parse(savedDraftRaw) as {
+        title?: string
+        coverUrl?: string
+        contentMarkdown?: string
+        categoryId?: number
+        tagIdsText?: string
+        action?: 'draft' | 'submit' | 'publish'
+      }
+      if (typeof savedDraft.title === 'string') title.value = savedDraft.title
+      if (typeof savedDraft.coverUrl === 'string') coverUrl.value = savedDraft.coverUrl
+      if (typeof savedDraft.contentMarkdown === 'string') contentMarkdown.value = savedDraft.contentMarkdown
+      if (typeof savedDraft.categoryId === 'number') categoryId.value = savedDraft.categoryId
+      if (typeof savedDraft.tagIdsText === 'string') tagIdsText.value = savedDraft.tagIdsText
+      if (savedDraft.action) action.value = savedDraft.action
+    } catch {
+      localStorage.removeItem(articleDraftStorageKey)
+    }
+  }
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
+  document.removeEventListener('keydown', handleGlobalKeyDown)
   window.removeEventListener('resize', updateFlyoutSide)
   clearArticleFlyoutTimer()
+  if (articleDraftSaveTimer !== null) {
+    window.clearTimeout(articleDraftSaveTimer)
+    articleDraftSaveTimer = null
+  }
 })
 </script>

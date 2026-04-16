@@ -1,17 +1,6 @@
 /*
-  文章创建模块，负责：
-
-  article-create-panel
-  article-create-head
-  article-create-meta
-  article-create-field
-  article-cover-row
-  article-cover-pick-btn
-  article-cover-picker
-  article-cover-thumb
-  article-create-actions
-  article-create-actions-grid
-  article-create-submit
+  Managed module: article create panel styles
+  Includes title, cover picker, category/tag controls, submission actions, and helper text.
 */
 .article-create-panel {
   display: grid;
@@ -31,6 +20,12 @@
   font-size: 13px;
 }
 
+.article-create-shortcuts-hint {
+  margin: -4px 0 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
 .article-create-field {
   display: grid;
   gap: 8px;
@@ -45,11 +40,13 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
+  align-items: center;
+  min-width: 0;
 }
 
 .article-cover-pick-btn {
   min-height: 44px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.22) !important;
   background: rgba(148, 163, 184, 0.08) !important;
   color: var(--text-soft) !important;
@@ -168,6 +165,11 @@
 .article-create-submit:hover {
   background: rgba(148, 163, 184, 0.14) !important;
   color: var(--text) !important;
+}
+
+.article-create-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
 }
 
 @media (max-width: 640px) {

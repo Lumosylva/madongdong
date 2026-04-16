@@ -6,6 +6,7 @@
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
+    <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 保存草稿，Ctrl/Cmd + Enter 提交</p>
 
     <div class="article-create-field">
       <label>标题</label>
@@ -75,7 +76,7 @@
           <option v-if="isAdmin" value="publish">直接发布</option>
         </select>
       </div>
-      <button class="article-create-submit" @click="emit('submit')">提交</button>
+      <button class="article-create-submit" :disabled="submitLoading" @click="emit('submit')">{{ submitLoading ? '提交中...' : '提交' }}</button>
     </div>
   </section>
 </template>
@@ -99,6 +100,7 @@ const props = defineProps<{
   action: 'draft' | 'submit' | 'publish'
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
   showToolbarName?: boolean
+  submitLoading?: boolean
 }>()
 
 const emit = defineEmits<{
