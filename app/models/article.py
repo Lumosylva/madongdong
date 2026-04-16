@@ -71,7 +71,6 @@ class Article(TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(255), index=True)
     summary: Mapped[str] = mapped_column(String(500))
     content_markdown: Mapped[str] = mapped_column(Text)
-    content_html: Mapped[str] = mapped_column(Text)
     cover_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[ArticleStatus] = mapped_column(
         Enum(ArticleStatus),

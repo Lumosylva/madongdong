@@ -110,4 +110,3 @@ class ArticleDetailResponse(ArticleSummaryResponse):
     """文章详情响应。"""
 
     content_markdown: str
-    content_html: str
