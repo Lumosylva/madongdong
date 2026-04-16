@@ -27,21 +27,44 @@
   max-width: 100%;
 }
 
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-wrapper),
+.article-markdown-workspace :deep([class*='toolbar-wrapper']) {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
+  padding-inline: 0 !important;
+}
+
 .article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar),
 .article-markdown-workspace :deep([class*='toolbar']) {
   display: flex;
   flex-wrap: nowrap;
+  justify-content: flex-start !important;
   align-items: center;
-  gap: 4px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
+  gap: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.article-markdown-workspace :deep(.md-editor-toolbar-left),
+.article-markdown-workspace :deep(.md-editor-toolbar-right) {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  padding-inline: 0 !important;
+  margin-inline: 0 !important;
+  min-width: 0 !important;
+  flex-wrap: nowrap !important;
 }
 
 .article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar > *),
 .article-markdown-workspace :deep([class*='toolbar'] > *) {
   min-width: 0 !important;
-  flex: 0 0 auto;
+  flex: 0 0 auto !important;
 }
 
 .article-markdown-workspace :deep(.md-editor-toolbar-item),
@@ -60,4 +83,26 @@
   background: transparent !important;
   box-shadow: none !important;
   min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.article-markdown-workspace :deep(.md-editor-toolbar-item-name) {
+  display: none !important;
+}
+
+.article-markdown-workspace :deep(.md-editor-toolbar button),
+.article-markdown-workspace :deep([class*='toolbar'] button) {
+  min-height: 18px !important;
+  min-width: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  flex: 0 0 auto !important;
+}
+
+.article-markdown-workspace :deep(.md-editor-toolbar-item) {
+  margin-inline: 0 !important;
 }

@@ -376,6 +376,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         tagIdsText: tagIdsText.value,
         action: action.value,
         media: media.value,
+        showToolbarName: isSidebarCollapsed.value,
       }
     case 'articles-category':
       return {

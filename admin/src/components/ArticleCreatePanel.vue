@@ -3,7 +3,6 @@
     <div class="article-create-head">
       <div>
         <h3>创建文章</h3>
-        <span class="article-create-meta">Markdown 编辑器</span>
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
@@ -42,9 +41,7 @@
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
           <label>正文（Markdown）</label>
-          <p class="article-markdown-tip">支持标题、列表、引用、代码块、链接、图片和表格</p>
         </div>
-        <div class="article-markdown-count">{{ contentLength }} 字</div>
       </div>
 
       <div class="article-markdown-workspace">
@@ -54,7 +51,7 @@
           :theme="editorTheme"
           :preview-theme="previewTheme"
           :toolbars-exclude="toolbarsExclude"
-          :show-toolbar-name="true"
+          :show-toolbar-name="showToolbarName"
           :editor-id="editorId"
           :scroll-element="scrollElement"
           @on-upload-img="handleUploadImg"
@@ -101,6 +98,7 @@ const props = defineProps<{
   tagIdsText: string
   action: 'draft' | 'submit' | 'publish'
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
+  showToolbarName?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -130,7 +128,6 @@ const imageMedia = computed(() =>
     (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
   ),
 )
-const contentLength = computed(() => props.contentMarkdown.trim().length)
 
 const previewUrl = (url: string) => fullUrl(url)
 

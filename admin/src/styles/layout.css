@@ -201,13 +201,14 @@
 .dashboard-shell {
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: 18px;
+  gap: 10px;
   position: relative;
   z-index: 1;
 }
 
 .dashboard-shell.sidebar-collapsed {
   grid-template-columns: 64px 1fr;
+  gap: 8px;
 }
 
 .sidebar,
