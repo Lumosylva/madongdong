@@ -1001,6 +1001,23 @@ button:disabled {
   min-width: 0;
 }
 
+.article-markdown-workspace :deep(.md-editor-toolbar-item),
+.article-markdown-workspace :deep(.md-editor-toolbar-item.active),
+.article-markdown-workspace :deep(.md-editor-toolbar-item:hover),
+.article-markdown-workspace :deep(.md-editor-toolbar-item button),
+.article-markdown-workspace :deep(.md-editor-toolbar-item button:hover),
+.article-markdown-workspace :deep(.md-editor-toolbar-item button:active),
+.article-markdown-workspace :deep(.md-editor-toolbar-item button:focus),
+.article-markdown-workspace :deep(.md-toolbar-item),
+.article-markdown-workspace :deep(.md-toolbar-item:hover),
+.article-markdown-workspace :deep(.md-toolbar-item button),
+.article-markdown-workspace :deep(.md-toolbar-item button:hover),
+.article-markdown-workspace :deep(.md-toolbar-item button:active),
+.article-markdown-workspace :deep(.md-toolbar-item button:focus) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 .article-cover-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
