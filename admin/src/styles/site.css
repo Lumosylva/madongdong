@@ -1,6 +1,13 @@
 /*
-  Managed module: site settings styles
-  Includes site settings panel layout, logo uploader, and site info form controls.
+  站点设置模块，负责：
+
+  settings-panel
+  settings-grid
+  settings-card
+  logo-uploader
+  logo-dropzone
+  logo-preview
+  站点信息输入区
 */
 .settings-panel {
   display: grid;

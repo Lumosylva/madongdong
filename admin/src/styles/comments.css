@@ -1,6 +1,12 @@
 /*
-  Managed module: comments moderation styles
-  Includes comment list cards and comment action UI.
+  评论管理模块，负责：
+
+  comments-panel
+  comment-panel
+  评论列表
+  评论卡片/行
+  评论操作按钮
+  评论页面响应式
 */
 .comments-panel {
   display: grid;

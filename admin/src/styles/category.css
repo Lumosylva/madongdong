@@ -1,6 +1,11 @@
 /*
-  Managed module: category management styles
-  Includes category create/edit forms, list rows, and category-specific layout.
+  文章分类模块，负责：
+
+  category-panel
+  分类创建表单
+  分类列表行
+  分类编辑区
+  分类页面响应式收缩
 */
 .category-panel {
   display: grid;

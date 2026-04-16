@@ -1,6 +1,14 @@
 /*
-  Managed module: media management styles
-  Includes media upload row, grouped media panels, media item layout, and shared media fallbacks.
+  媒体管理模块，负责：
+
+  media-panel
+  media-upload-row
+  media-group-panel
+  media-list
+  media-row
+  媒体条目 URL
+  删除按钮
+  依赖的通用提示/危险按钮样式
 */
 .media-panel {
   display: grid;

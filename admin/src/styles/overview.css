@@ -1,6 +1,19 @@
 /*
-  Managed module: overview dashboard styles
-  Includes summary cards, dashboard metrics, overview panel layout, and overview list rows.
+  概览面板模块，负责：
+
+  overview-panels
+  overview-panel
+  overview-articles-panel
+  overview-comments-panel
+  overview-head
+  overview-list
+  overview-row
+  overview-main
+  overview-title
+  overview-meta
+  overview-stats
+  overview-comment-row
+  统计卡片样式
 */
 .overview-panels {
   align-items: start;

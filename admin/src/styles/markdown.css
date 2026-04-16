@@ -1,12 +1,12 @@
 /*
-  MdEditorV3 专属样式
-  MdEditorV3 / MdPreview
-  工具栏
-  编辑器宽度约束
-  Markdown 相关视觉覆盖
-  
-  Managed module: markdown editor styling
-  Includes MdEditorV3 / MdPreview width constraints, toolbar behavior, and visual overrides.
+  Markdown 编辑器模块，负责：
+
+  article-markdown-workspace
+  MdEditorV3
+  工具栏宽度控制
+  工具栏按钮透明化
+  编辑器横向滚动 / 适配
+  Markdown 预览相关覆盖
 */
 .article-markdown-workspace {
   min-width: 0;

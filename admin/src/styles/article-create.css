@@ -1,6 +1,17 @@
 /*
-  Managed module: article create panel styles
-  Includes title, cover picker, category/tag controls, and submission actions.
+  文章创建模块，负责：
+
+  article-create-panel
+  article-create-head
+  article-create-meta
+  article-create-field
+  article-cover-row
+  article-cover-pick-btn
+  article-cover-picker
+  article-cover-thumb
+  article-create-actions
+  article-create-actions-grid
+  article-create-submit
 */
 .article-create-panel {
   display: grid;

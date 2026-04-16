@@ -1,6 +1,17 @@
 /*
-  Managed module: admin layout shell
-  Includes the topbar, sidebar navigation, shell grid, and responsive layout behavior.
+  页面布局模块，负责：
+
+  admin-page
+  login-wrap
+  dashboard-shell
+  dashboard-main
+  topbar
+  sidebar
+  sidebar-nav
+  sidebar-flyout
+  user-menu
+  theme-toggle
+  响应式布局
 */
 .admin-page,
 .login-wrap {

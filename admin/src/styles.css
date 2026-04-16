@@ -9,24 +9,15 @@
 @import './styles/login.css';
 @import './styles/comments.css';
 @import './styles/media.css';
-@import './styles/overrides.css';
 
 /*
-  全局变量
+  口总文件，负责：
+
+  引入 shared/topbar.tokens.css
+  引入各模块 CSS
+  定义全局变量
   基础重置
-  通用入口导入
-  各模块样式汇总
-  
-  Managed style modules:
-  - layout: shell, topbar, sidebar, main regions
-  - markdown: MdEditorV3-specific styling and toolbar behavior
-  - overview: dashboard summary cards and metrics
-  - article-manage: article list, filters, pagination
-  - article-create: create panel fields and cover picker
-  - category: category management layout
-  - comments: comment moderation layout
-  - media: media management layout
-  - overrides: shared fallback controls
+  全局背景、字号、滚动按钮等通用样式
 */
 
 :root {

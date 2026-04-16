@@ -1,6 +1,11 @@
 /*
-  Managed module: admin login page styles
-  Includes login page layout, login card, and login-specific topbar presentation.
+  登录页模块，负责：
+
+  login-wrap
+  login-card
+  登录页输入框/按钮
+  登录页提示文案
+  登录页 topbar 相关展示
 */
 .login-wrap {
   width: min(1500px, calc(100% - 12px));

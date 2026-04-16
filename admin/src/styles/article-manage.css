@@ -1,6 +1,25 @@
 /*
-  Managed module: article management styles
-  Includes article filtering, list rows, status chips, pagination controls, and shared management controls.
+  文章管理模块，负责：
+
+  article-manage-panel
+  article-manage-head
+  article-count
+  article-filter-row
+  article-search-input
+  article-filter-select
+  article-reset-btn
+  article-manage-list
+  article-row
+  article-row-main
+  article-row-title
+  article-status-chip
+  article-row-meta
+  article-empty
+  article-pagination
+  article-page-size
+  article-page-controls
+  article-page-btn
+  搜索高亮 mark
 */
 .article-manage-head {
   display: flex;
