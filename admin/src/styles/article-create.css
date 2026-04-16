@@ -1,0 +1,166 @@
+/*
+  Managed module: article create panel styles
+  Includes title, cover picker, category/tag controls, and submission actions.
+*/
+.article-create-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.article-create-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.article-create-meta {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.article-create-field {
+  display: grid;
+  gap: 8px;
+}
+
+.article-create-field label {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.article-cover-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.article-cover-pick-btn {
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  background: rgba(148, 163, 184, 0.08) !important;
+  color: var(--text-soft) !important;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.article-cover-pick-btn:hover {
+  background: rgba(148, 163, 184, 0.14) !important;
+  color: var(--text) !important;
+}
+
+.article-create-hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.article-cover-picker {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(140px, 160px);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.9);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+}
+
+.article-cover-thumb {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 14px;
+  background: var(--bg-panel);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  scroll-snap-align: start;
+}
+
+.article-cover-thumb img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--bg-soft);
+}
+
+.article-cover-thumb span {
+  font-size: 12px;
+  color: var(--text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-cover-thumb:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(16, 35, 63, 0.08);
+  border-color: rgba(14, 165, 164, 0.24);
+}
+
+.article-cover-thumb.selected {
+  border-color: rgba(14, 165, 164, 0.48);
+  background: rgba(14, 165, 164, 0.08);
+  box-shadow: 0 0 0 1px rgba(14, 165, 164, 0.12) inset;
+}
+
+.article-cover-thumb.selected span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.cover-picker-fade-enter-active,
+.cover-picker-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.cover-picker-fade-enter-from,
+.cover-picker-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.article-create-actions {
+  margin-top: 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.article-create-actions-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.article-create-actions-grid select,
+.article-create-actions-grid input {
+  min-height: 44px;
+  min-width: 0;
+}
+
+.article-create-submit {
+  min-height: 44px;
+  background: rgba(148, 163, 184, 0.08) !important;
+  color: var(--text-soft) !important;
+}
+
+.article-create-submit:hover {
+  background: rgba(148, 163, 184, 0.14) !important;
+  color: var(--text) !important;
+}
+
+@media (max-width: 640px) {
+  .article-create-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

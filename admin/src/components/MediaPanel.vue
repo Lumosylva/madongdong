@@ -1,25 +1,25 @@
 <template>
-  <section class="panel">
+  <section class="panel media-panel">
     <h3>媒体管理</h3>
 
-    <p v-if="toastMessage" class="tips" :class="toastStatus === 'error' ? 'error-message' : 'success-message'">
+    <p v-if="toastMessage" class="tips media-toast" :class="toastStatus === 'error' ? 'error-message' : 'success-message'">
       {{ toastMessage }}
     </p>
     <p v-if="copyMessage" class="tips success-message">{{ copyMessage }}</p>
 
-    <div class="action-row" style="margin-bottom: 12px;">
+    <div class="media-upload-row">
       <input ref="fileInputRef" type="file" accept="image/*,audio/*,video/*" @change="onSelectFile" />
       <button :disabled="uploading" @click="triggerUpload">{{ uploading ? '上传中...' : '上传媒体' }}</button>
     </div>
 
-    <div class="panel" style="margin-top: 10px;">
+    <div class="panel media-group-panel">
       <h4>图片</h4>
-      <ul v-if="grouped.image.length">
-        <li v-for="item in grouped.image" :key="item.id" class="article-row">
+      <ul v-if="grouped.image.length" class="media-list">
+        <li v-for="item in grouped.image" :key="item.id" class="media-row">
           <div>
             <p>{{ item.original_name }}</p>
             <small>
-              {{ item.mime_type }} ｜
+              {{ item.mime_type }} ︱
               <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>
@@ -29,14 +29,14 @@
       <p v-else class="tips">暂无图片</p>
     </div>
 
-    <div class="panel" style="margin-top: 10px;">
+    <div class="panel media-group-panel">
       <h4>音频</h4>
-      <ul v-if="grouped.audio.length">
-        <li v-for="item in grouped.audio" :key="item.id" class="article-row">
+      <ul v-if="grouped.audio.length" class="media-list">
+        <li v-for="item in grouped.audio" :key="item.id" class="media-row">
           <div>
             <p>{{ item.original_name }}</p>
             <small>
-              {{ item.mime_type }} ｜
+              {{ item.mime_type }} ︱
               <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>
@@ -46,14 +46,14 @@
       <p v-else class="tips">暂无音频</p>
     </div>
 
-    <div class="panel" style="margin-top: 10px;">
+    <div class="panel media-group-panel">
       <h4>视频</h4>
-      <ul v-if="grouped.video.length">
-        <li v-for="item in grouped.video" :key="item.id" class="article-row">
+      <ul v-if="grouped.video.length" class="media-list">
+        <li v-for="item in grouped.video" :key="item.id" class="media-row">
           <div>
             <p>{{ item.original_name }}</p>
             <small>
-              {{ item.mime_type }} ｜
+              {{ item.mime_type }} ︱
               <a href="javascript:void(0)" @click="copyUrl(item.url, item.original_name)">{{ fullUrl(item.url) }}</a>
             </small>
           </div>

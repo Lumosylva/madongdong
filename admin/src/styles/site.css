@@ -1,0 +1,97 @@
+/*
+  Managed module: site settings styles
+  Includes site settings panel layout, logo uploader, and site info form controls.
+*/
+.settings-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.settings-card {
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.settings-card h4 {
+  margin: 0;
+}
+
+.logo-uploader {
+  display: grid;
+  gap: 10px;
+}
+
+.logo-dropzone {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.logo-dropzone.dragging {
+  border-color: var(--accent);
+  background: rgba(14, 165, 164, 0.08);
+}
+
+.logo-preview-wrap {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+}
+
+.logo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo-placeholder {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.tips {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.success-message {
+  color: #10b981;
+}
+
+.error-message {
+  color: var(--danger);
+}
+
+.save-row {
+  margin-top: 8px;
+}
+
+.settings-card input {
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,122 @@
+/*
+  Managed module: media management styles
+  Includes media upload row, grouped media panels, media item layout, and shared media fallbacks.
+*/
+.media-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.media-toast {
+  margin: 0;
+}
+
+.media-upload-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.media-group-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.media-group-panel h4 {
+  margin: 0;
+}
+
+.media-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.media-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.media-row p {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.media-row small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.media-row a {
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.media-row .danger-btn {
+  align-self: center;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.row-actions button,
+.article-row button,
+.media-row button {
+  width: auto;
+  padding: 8px 12px;
+}
+
+.danger-btn {
+  background: rgba(227, 91, 119, 0.1) !important;
+  color: var(--danger) !important;
+  border: 1px solid rgba(227, 91, 119, 0.16) !important;
+  min-height: 38px !important;
+  padding: 0 10px !important;
+  font-size: 13px !important;
+  white-space: nowrap;
+}
+
+.danger-btn:hover {
+  background: rgba(227, 91, 119, 0.16) !important;
+}
+
+.eyebrow,
+.tips {
+  color: var(--text-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.error-message {
+  color: var(--danger);
+}
+
+.success-message {
+  color: var(--accent);
+}
+
+@media (max-width: 960px) {
+  .media-upload-row,
+  .media-row {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+}

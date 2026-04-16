@@ -127,34 +127,3 @@ const onDrop = (event: DragEvent) => {
   emitFile(file)
 }
 </script>
-
-<style scoped>
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.settings-card {
-  border: 1px solid var(--line);
-  background: var(--bg-soft);
-  border-radius: 12px;
-  padding: 14px;
-  display: grid;
-  gap: 10px;
-}
-
-.settings-card h4 {
-  margin: 0;
-}
-
-.save-row {
-  margin-top: 8px;
-}
-
-@media (max-width: 960px) {
-  .settings-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

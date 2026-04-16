@@ -1,0 +1,83 @@
+/*
+  Managed module: comments moderation styles
+  Includes comment list cards and comment action UI.
+*/
+.comments-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.comment-panel {
+  overflow-x: clip;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.comment-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.comment-row,
+.comment-card,
+.comment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.comment-row p,
+.comment-card p,
+.comment-item p {
+  margin: 0;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.comment-row small,
+.comment-card small,
+.comment-item small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.comment-actions,
+.comment-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.comment-actions button,
+.comment-row-actions button {
+  min-height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-soft);
+}
+
+.comment-actions button:hover,
+.comment-row-actions button:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text);
+}
+
+@media (max-width: 960px) {
+  .comment-row,
+  .comment-card,
+  .comment-item {
+    flex-direction: column;
+  }
+}

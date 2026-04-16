@@ -1,0 +1,69 @@
+/*
+  Managed module: category management styles
+  Includes category create/edit forms, list rows, and category-specific layout.
+*/
+.category-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.category-panel .action-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.category-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.category-row strong {
+  display: block;
+  line-height: 1.5;
+}
+
+.category-row small {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-soft);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.category-row .row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.category-edit-panel {
+  margin-top: 12px;
+}
+
+.category-edit-panel .action-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+@media (max-width: 960px) {
+  .category-panel .action-row,
+  .category-edit-panel .action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .category-row {
+    flex-direction: column;
+  }
+}

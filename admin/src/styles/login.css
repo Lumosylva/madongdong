@@ -1,0 +1,62 @@
+/*
+  Managed module: admin login page styles
+  Includes login page layout, login card, and login-specific topbar presentation.
+*/
+.login-wrap {
+  width: min(1500px, calc(100% - 12px));
+  margin: 0 auto;
+  padding: 0 0 48px;
+  overflow-x: hidden;
+}
+
+.login-wrap .topbar-login {
+  justify-content: space-between;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.login-card input,
+.login-card button {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+.login-card button {
+  cursor: pointer;
+  border: none;
+  color: #05131d;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #38bdf8);
+}
+
+.login-card button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-card .eyebrow {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-card h2 {
+  margin: 0;
+}
+
+.login-card .tips {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 12px;
+}
