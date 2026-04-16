@@ -999,6 +999,35 @@ button:disabled {
 
 .article-markdown-workspace :deep(.md-editor-v3) {
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  flex: 1 1 auto;
+}
+
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar),
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-content),
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor) {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar),
+.article-markdown-workspace :deep([class*='toolbar']) {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar > *),
+.article-markdown-workspace :deep([class*='toolbar'] > *) {
+  min-width: 0 !important;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .article-markdown-workspace :deep(.md-editor-toolbar-item),
@@ -1016,6 +1045,7 @@ button:disabled {
 .article-markdown-workspace :deep(.md-toolbar-item button:focus) {
   background: transparent !important;
   box-shadow: none !important;
+  min-width: 0 !important;
 }
 
 .article-cover-row {
