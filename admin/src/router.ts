@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { adminApi } from './api'
 import DashboardView from './views/DashboardView.vue'
 import LoginView from './views/LoginView.vue'
+import MdEditorV3ProbeView from './views/MdEditorV3ProbeView.vue'
 
 const hasToken = () => Boolean(localStorage.getItem('blog_admin_token'))
 
@@ -10,6 +11,7 @@ export const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', name: 'login', component: LoginView },
+    { path: '/md-editor-probe', name: 'md-editor-probe', component: MdEditorV3ProbeView, meta: { requiresAuth: true } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
   ],
 })

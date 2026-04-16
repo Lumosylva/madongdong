@@ -38,7 +38,7 @@
       </transition>
     </div>
 
-    <div ref="markdownPanelRef" class="article-create-field article-markdown-field">
+    <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
           <label>正文（Markdown）</label>
@@ -46,18 +46,21 @@
         </div>
         <div class="article-markdown-count">{{ contentLength }} 字</div>
       </div>
-      <div class="article-markdown-toolbar article-markdown-toolbar-actions">
-        <div ref="toolbarWrapRef" class="article-markdown-mode-switch" role="tablist" aria-label="正文预览模式">
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'edit' }]" @click="previewMode = 'edit'">编辑</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'split' }]" @click="previewMode = 'split'">分栏预览</button>
-          <button type="button" :class="['article-markdown-mode-btn', { active: previewMode === 'preview' }]" @click="previewMode = 'preview'">实时预览</button>
-          <button type="button" class="article-markdown-clear" @click="clearContent">清空正文</button>
-        </div>
-      </div>
 
-      <div :class="['article-markdown-workspace', `mode-${previewMode}`]">
+      <div class="article-markdown-workspace mode-split">
         <div class="article-markdown-editor-wrap">
-          <div ref="editorRef" class="article-markdown-editor"></div>
+          <MdEditor
+            v-model="contentMarkdownLocal"
+            :style="{ height: '640px' }"
+            :theme="editorTheme"
+            :preview-theme="previewTheme"
+            :toolbars-exclude="toolbarsExclude"
+            :show-toolbar-name="true"
+            :editor-id="editorId"
+            :scroll-element="scrollElement"
+            @on-change="handleEditorChange"
+            @on-upload-img="handleUploadImg"
+          />
         </div>
 
         <aside class="article-markdown-preview-panel" aria-label="正文实时预览">
@@ -65,7 +68,14 @@
             <span>实时预览</span>
             <span class="article-markdown-preview-meta">所见即所得</span>
           </div>
-          <article ref="previewScrollRef" class="article-markdown-preview" v-html="previewHtml"></article>
+          <MdPreview
+            :model-value="contentMarkdownLocal"
+            :theme="editorTheme"
+            :preview-theme="previewTheme"
+            :scroll-element="scrollElement"
+            :editor-id="editorId"
+            class="article-markdown-preview article-markdown-preview-md"
+          />
         </aside>
       </div>
     </div>
@@ -92,12 +102,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
-import Vditor from 'vditor'
-import { marked } from 'marked'
+import { computed, ref, watch } from 'vue'
+import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
+import 'md-editor-v3/lib/preview.css'
 
 import { API_ORIGIN } from '../api'
-import '../styles/markdown-editor.css'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -122,20 +132,23 @@ const emit = defineEmits<{
 }>()
 
 const showCoverPicker = ref(false)
-const previewMode = ref<'edit' | 'split' | 'preview'>('split')
-const toolbarWrapRef = ref<HTMLDivElement | null>(null)
-const editorRef = ref<HTMLDivElement | null>(null)
-const previewScrollRef = ref<HTMLElement | null>(null)
-const markdownPanelRef = ref<HTMLElement | null>(null)
-const vditor = ref<Vditor | null>(null)
-const resizeObserver = ref<ResizeObserver | null>(null)
+const editorTheme = ref<'light' | 'dark'>('light')
+const previewTheme = ref<'default' | 'github'>('github')
+const editorId = 'article-create-md-editor'
+const scrollElement = '.article-markdown-preview'
+const toolbarsExclude: ToolbarNames[] = ['save', 'htmlPreview', 'catalog', 'pageFullscreen']
+
+const contentMarkdownLocal = computed({
+  get: () => props.contentMarkdown,
+  set: (value: string) => emit('update:contentMarkdown', value),
+})
+
 const imageMedia = computed(() =>
   props.media.filter(
     (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
   ),
 )
 const contentLength = computed(() => props.contentMarkdown.trim().length)
-const previewHtml = computed(() => marked.parse(props.contentMarkdown || '', { breaks: true }))
 
 const previewUrl = (url: string) => fullUrl(url)
 
@@ -151,253 +164,18 @@ const selectCover = (url: string) => {
   showCoverPicker.value = false
 }
 
-const syncContent = (value: string) => {
+const handleEditorChange = (value: string) => {
   emit('update:contentMarkdown', value)
 }
 
-const clearContent = () => {
-  vditor.value?.setValue('')
-  syncContent('')
+const handleUploadImg = async (_files: File[], callback: (urls: string[]) => void) => {
+  callback(['https://picsum.photos/seed/md-editor-probe/800/400'])
 }
-
-const isSplitMode = computed(() => previewMode.value === 'split')
-
-const getEditorScrollEl = () => {
-  const root = editorRef.value
-  if (!root) return null
-  const candidates = [
-    '.vditor-content',
-    '.vditor-ir',
-    '.vditor-wysiwyg',
-    '.vditor-sv',
-  ]
-
-  for (const selector of candidates) {
-    const el = root.querySelector(selector) as HTMLElement | null
-    if (!el) continue
-    const style = getComputedStyle(el)
-    const canScroll = (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflowY === 'overlay') && el.scrollHeight > el.clientHeight
-    if (canScroll) return el
-  }
-
-  for (const selector of candidates) {
-    const el = root.querySelector(selector) as HTMLElement | null
-    if (el) return el
-  }
-
-  return null
-}
-
-const logScrollContainer = (phase: string) => {
-  const root = editorRef.value
-  if (!root) return
-  const candidates = ['.vditor-content', '.vditor-ir', '.vditor-wysiwyg', '.vditor-sv']
-  const details = candidates.map((selector) => {
-    const el = root.querySelector(selector) as HTMLElement | null
-    return {
-      selector,
-      found: Boolean(el),
-      tag: el?.tagName || null,
-      className: el?.className || null,
-      scrollHeight: el?.scrollHeight ?? null,
-      clientHeight: el?.clientHeight ?? null,
-      overflowY: el ? getComputedStyle(el).overflowY : null,
-    }
-  })
-  const matched = details.filter((item) => item.found)
-  console.warn(`[ArticleCreatePanel] Markdown scroll container diagnostics @ ${phase}:`, matched)
-}
-
-const syncScrollByRatio = (source: 'editor' | 'preview') => {
-  if (!isSplitMode.value) return
-  const editorScroll = getEditorScrollEl()
-  const previewScroll = previewScrollRef.value
-  if (!editorScroll || !previewScroll) return
-
-  const editorMax = editorScroll.scrollHeight - editorScroll.clientHeight
-  const previewMax = previewScroll.scrollHeight - previewScroll.clientHeight
-  if (editorMax <= 0 || previewMax <= 0) return
-
-  const editorRatio = editorScroll.scrollTop / editorMax
-  const previewRatio = previewScroll.scrollTop / previewMax
-
-  if (source === 'editor') {
-    previewScroll.scrollTop = Math.min(previewMax, Math.max(0, editorRatio * previewMax))
-  } else {
-    editorScroll.scrollTop = Math.min(editorMax, Math.max(0, previewRatio * editorMax))
-  }
-}
-
-let syncScrollRaf = 0
-let syncScrollSource: 'editor' | 'preview' | null = null
-
-const scheduleScrollSync = (source: 'editor' | 'preview') => {
-  if (!isSplitMode.value) return
-  syncScrollSource = source
-  if (syncScrollRaf) return
-  syncScrollRaf = window.requestAnimationFrame(() => {
-    syncScrollRaf = 0
-    const currentSource = syncScrollSource
-    syncScrollSource = null
-    if (currentSource) {
-      syncScrollByRatio(currentSource)
-    }
-  })
-}
-
-const handleEditorScroll = () => {
-  scheduleScrollSync('editor')
-}
-
-const handlePreviewScroll = () => {
-  scheduleScrollSync('preview')
-}
-
-const syncEditorHeight = () => {
-  if (!isSplitMode.value) return
-  const panel = markdownPanelRef.value
-  const editorRoot = editorRef.value?.querySelector('.vditor') as HTMLElement | null
-  const editorScroll = getEditorScrollEl()
-  const previewPanel = previewScrollRef.value?.closest('.article-markdown-preview-panel') as HTMLElement | null
-  const previewBody = previewScrollRef.value
-  if (!panel || !editorRoot || !editorScroll || !previewPanel || !previewBody) return
-
-  const rect = panel.getBoundingClientRect()
-  const viewportBottom = window.innerHeight || document.documentElement.clientHeight || 0
-  const spaceBelow = Math.max(0, viewportBottom - rect.top)
-  const availableHeight = Math.max(480, Math.floor(spaceBelow - 16))
-  const headerHeight = 44
-  const bodyHeight = Math.max(320, availableHeight - headerHeight)
-
-  editorRoot.style.height = `${availableHeight}px`
-  editorScroll.style.height = `${bodyHeight}px`
-  previewPanel.style.height = `${availableHeight}px`
-  previewBody.style.height = `${bodyHeight}px`
-  previewBody.style.maxHeight = `${bodyHeight}px`
-  requestAnimationFrame(() => syncScrollByRatio('editor'))
-}
-
-const updateToolbarWidth = () => {
-  void toolbarWrapRef.value?.getBoundingClientRect().width
-  syncEditorHeight()
-}
-
-const requestSyncEditorHeight = () => {
-  if (typeof window === 'undefined') return
-  window.requestAnimationFrame(() => syncEditorHeight())
-}
-
-const initEditor = async () => {
-  if (!editorRef.value || vditor.value) return
-  vditor.value = new Vditor(editorRef.value, {
-    height: 620,
-    mode: 'ir',
-    theme: 'classic',
-    icon: 'ant',
-    cache: { enable: false },
-    placeholder: '请在这里输入文章正文，支持 Markdown 语法。',
-    value: props.contentMarkdown,
-    counter: {
-      enable: true,
-      type: 'markdown',
-    },
-    toolbarConfig: {
-      pin: true,
-    },
-    toolbar: [
-      'headings',
-      'bold',
-      'italic',
-      'strike',
-      '|',
-      'line',
-      'quote',
-      'list',
-      'ordered-list',
-      'check',
-      '|',
-      'code',
-      'inline-code',
-      'table',
-      'link',
-      'upload',
-      '|',
-      'undo',
-      'redo',
-      'fullscreen',
-    ],
-    input: (value) => syncContent(value),
-    after: () => {
-      if (vditor.value) {
-        vditor.value.setValue(props.contentMarkdown || '')
-      }
-      logScrollContainer('after-init')
-      const editorScroll = getEditorScrollEl()
-      if (editorScroll) {
-        editorScroll.addEventListener('scroll', handleEditorScroll, { passive: true })
-      }
-      if (previewScrollRef.value) {
-        previewScrollRef.value.addEventListener('scroll', handlePreviewScroll, { passive: true })
-      }
-      syncEditorHeight()
-    },
-  })
-  await nextTick()
-}
-
-watch(
-  () => props.contentMarkdown,
-  (value) => {
-    if (vditor.value && value !== vditor.value.getValue()) {
-      vditor.value.setValue(value || '')
-      logScrollContainer('content-watch')
-    }
-  },
-)
 
 watch(
   () => props.coverUrl,
   (value) => {
-    if (value) {
-      showCoverPicker.value = false
-    }
+    if (value) showCoverPicker.value = false
   },
 )
-
-watch(isSplitMode, (value) => {
-  if (value) {
-    syncEditorHeight()
-  }
-})
-
-onMounted(() => {
-  initEditor()
-  updateToolbarWidth()
-  window.addEventListener('resize', updateToolbarWidth)
-  window.addEventListener('scroll', requestSyncEditorHeight, true)
-  resizeObserver.value = new ResizeObserver(() => requestSyncEditorHeight())
-  if (markdownPanelRef.value) {
-    resizeObserver.value.observe(markdownPanelRef.value)
-  }
-  requestSyncEditorHeight()
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateToolbarWidth)
-  window.removeEventListener('scroll', requestSyncEditorHeight, true)
-  resizeObserver.value?.disconnect()
-  resizeObserver.value = null
-})
-
-onBeforeUnmount(() => {
-  const editorScroll = getEditorScrollEl()
-  editorScroll?.removeEventListener('scroll', handleEditorScroll)
-  previewScrollRef.value?.removeEventListener('scroll', handlePreviewScroll)
-  if (syncScrollRaf) {
-    window.cancelAnimationFrame(syncScrollRaf)
-    syncScrollRaf = 0
-  }
-  vditor.value?.destroy()
-  vditor.value = null
-})
 </script>
