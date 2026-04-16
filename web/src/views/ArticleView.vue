@@ -32,7 +32,14 @@
         </div>
       </div>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
-      <div class="article-body" v-html="data.article.content_html"></div>
+      <div class="article-body article-body-md">
+        <MdPreview
+          :model-value="data.article.content_markdown || ''"
+          :theme="theme"
+          preview-theme="github"
+          :editor-id="articleEditorId"
+        />
+      </div>
 
       <section class="article-extra">
         <div class="article-tags">
@@ -122,6 +129,7 @@
           :key="comment.id"
           class="comment-item"
           :class="{ 'comment-item-new': highlightedCommentId === comment.id }"
+          :data-comment-id="comment.id"
         >
           <div class="comment-item-head">
             <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
@@ -139,6 +147,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { MdPreview } from 'md-editor-v3'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
@@ -162,6 +171,7 @@ type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
+const articleEditorId = 'web-article-preview'
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value

@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.article import Article, ArticleStatus, Category, Tag
 from app.models.auth import User
-from app.utils.markdown import render_markdown
 
 
 async def list_categories(session: AsyncSession) -> list[Category]:
@@ -177,7 +176,7 @@ async def create_article(
         title=title,
         summary=summary,
         content_markdown=content_markdown,
-        content_html=render_markdown(content_markdown),
+        content_html="",
         cover_url=cover_url,
         category=category,
         tags=tags,
@@ -211,7 +210,7 @@ async def update_article(
     article.title = title
     article.summary = summary
     article.content_markdown = content_markdown
-    article.content_html = render_markdown(content_markdown)
+    article.content_html = ""
     article.cover_url = cover_url
     article.category = category
     article.tags = tags

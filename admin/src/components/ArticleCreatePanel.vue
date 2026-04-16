@@ -58,7 +58,6 @@
             :show-toolbar-name="true"
             :editor-id="editorId"
             :scroll-element="scrollElement"
-            @on-change="handleEditorChange"
             @on-upload-img="handleUploadImg"
           />
         </div>
@@ -162,10 +161,6 @@ const fullUrl = (url: string) => {
 const selectCover = (url: string) => {
   emit('update:coverUrl', fullUrl(url))
   showCoverPicker.value = false
-}
-
-const handleEditorChange = (value: string) => {
-  emit('update:contentMarkdown', value)
 }
 
 const handleUploadImg = async (_files: File[], callback: (urls: string[]) => void) => {
