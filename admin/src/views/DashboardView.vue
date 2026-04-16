@@ -759,6 +759,39 @@ const tagSlugify = (value: string) =>
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '') || 'tag'
 
+const extractSummary = (markdown: string, maxLength = 120) => {
+  const text = String(markdown || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .replace(/^\s{0,3}>\s?/gm, '')
+    .replace(/^\s{0,3}[-*+]\s+/gm, '')
+    .replace(/^\s{0,3}\d+\.\s+/gm, '')
+    .replace(/\n{2,}/g, '\n')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (!text) return '暂无摘要'
+  if (text.length <= maxLength) return text
+
+  const sliced = text.slice(0, maxLength)
+  const punctIndex = Math.max(
+    sliced.lastIndexOf('。'),
+    sliced.lastIndexOf('！'),
+    sliced.lastIndexOf('？'),
+    sliced.lastIndexOf('；'),
+    sliced.lastIndexOf('.'),
+  )
+
+  if (punctIndex > Math.floor(maxLength * 0.6)) {
+    return sliced.slice(0, punctIndex + 1)
+  }
+
+  return `${sliced.trimEnd()}…`
+}
+
 const resolveTagIdsByNames = async (rawInput: string) => {
   const names = rawInput
     .split(',')
@@ -800,11 +833,7 @@ const createArticle = async () => {
     ? (action.value === 'publish' ? 'publish' : 'draft')
     : (action.value === 'submit' ? 'submit' : 'draft')
 
-  const autoSummary = contentMarkdown.value
-    .replace(/[#>*`\[\]\(\)\-!]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 120)
+  const autoSummary = extractSummary(contentMarkdown.value, 120)
 
   const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
 
