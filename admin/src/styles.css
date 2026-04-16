@@ -763,6 +763,7 @@ a {
   gap: 18px;
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 .grid-panels {
@@ -930,6 +931,7 @@ button:disabled {
 .article-create-panel {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .article-create-head {
@@ -937,6 +939,8 @@ button:disabled {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .article-create-meta {
@@ -956,9 +960,10 @@ button:disabled {
 
 .article-cover-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
+  min-width: 0;
 }
 
 .article-cover-pick-btn {
@@ -986,6 +991,14 @@ button:disabled {
   margin-top: 8px;
   display: grid;
   gap: 12px;
+}
+
+.article-markdown-workspace {
+  min-width: 0;
+}
+
+.article-markdown-workspace :deep(.md-editor-v3) {
+  min-width: 0;
 }
 
 .article-cover-row {
@@ -1089,15 +1102,16 @@ button:disabled {
 
 .article-create-actions-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1.3fr 1fr;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1fr);
   gap: 10px;
+  min-width: 0;
 }
 
 .article-create-actions-grid select,
 .article-create-actions-grid input {
   min-height: 44px;
+  min-width: 0;
 }
-
 
 .article-create-submit {
   min-height: 44px;

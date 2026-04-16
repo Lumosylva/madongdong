@@ -47,35 +47,18 @@
         <div class="article-markdown-count">{{ contentLength }} 字</div>
       </div>
 
-      <div class="article-markdown-workspace mode-split">
-        <div class="article-markdown-editor-wrap">
-          <MdEditor
-            v-model="contentMarkdownLocal"
-            :style="{ height: '640px' }"
-            :theme="editorTheme"
-            :preview-theme="previewTheme"
-            :toolbars-exclude="toolbarsExclude"
-            :show-toolbar-name="true"
-            :editor-id="editorId"
-            :scroll-element="scrollElement"
-            @on-upload-img="handleUploadImg"
-          />
-        </div>
-
-        <aside class="article-markdown-preview-panel" aria-label="正文实时预览">
-          <div class="article-markdown-preview-head">
-            <span>实时预览</span>
-            <span class="article-markdown-preview-meta">所见即所得</span>
-          </div>
-          <MdPreview
-            :model-value="contentMarkdownLocal"
-            :theme="editorTheme"
-            :preview-theme="previewTheme"
-            :scroll-element="scrollElement"
-            :editor-id="editorId"
-            class="article-markdown-preview article-markdown-preview-md"
-          />
-        </aside>
+      <div class="article-markdown-workspace">
+        <MdEditor
+          v-model="contentMarkdownLocal"
+          :style="{ height: '640px' }"
+          :theme="editorTheme"
+          :preview-theme="previewTheme"
+          :toolbars-exclude="toolbarsExclude"
+          :show-toolbar-name="true"
+          :editor-id="editorId"
+          :scroll-element="scrollElement"
+          @on-upload-img="handleUploadImg"
+        />
       </div>
     </div>
 
@@ -102,7 +85,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { MdEditor, MdPreview, type ToolbarNames } from 'md-editor-v3'
+import { MdEditor, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import 'md-editor-v3/lib/preview.css'
 
