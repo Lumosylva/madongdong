@@ -51,13 +51,15 @@
 }
 
 .article-filter-row {
-  grid-template-columns: minmax(0, 2.05fr) repeat(2, minmax(0, 1fr)) auto;
-  gap: 16px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 2.8fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 18px 20px;
   align-items: end;
 }
 
 .article-filter-row .article-search-input {
   min-width: 0;
+  width: 100%;
 }
 
 .article-filter-row .article-filter-select,
@@ -67,7 +69,7 @@
 
 @media (max-width: 960px) {
   .article-filter-row {
-    gap: 14px;
+    gap: 14px 16px;
   }
 }
 
@@ -80,7 +82,7 @@
 }
 
 .article-search-input {
-  grid-column: 1 / -1;
+  grid-column: 1 / span 1;
 }
 
 .article-search-input,
