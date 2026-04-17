@@ -12,6 +12,10 @@
   padding: 4px 2px 2px;
 }
 
+.article-trash-panel .article-manage-head {
+  padding: 4px 2px 2px;
+}
+
 .article-trash-subtitle {
   margin: 4px 0 0;
   color: var(--text-soft);
@@ -63,6 +67,11 @@
   box-shadow: 0 10px 22px rgba(16, 35, 63, 0.06);
 }
 
+.article-trash-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(16, 35, 63, 0.06);
+}
+
 :root[data-theme='dark'] .article-trash-row {
   background: rgba(17, 24, 39, 0.96);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
@@ -91,6 +100,11 @@
   gap: 8px 12px;
   color: var(--text-soft);
   line-height: 1.5;
+}
+
+.article-trash-meta::before {
+  content: '·';
+  color: transparent;
 }
 
 .article-trash-meta span {

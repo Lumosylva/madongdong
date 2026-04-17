@@ -29,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import '../styles/article-trash.css'
+
 defineProps<{
   deletedArticles: any[]
 }>()
