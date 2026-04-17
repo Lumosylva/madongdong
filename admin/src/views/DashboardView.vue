@@ -650,7 +650,6 @@ const loadAll = async () => {
 }
 
 const moveToTrash = async (articleId: number) => {
-  if (!confirm('确认将该文章移入垃圾箱？')) return
   await adminApi.deleteArticle(articleId)
   await loadAll()
 }

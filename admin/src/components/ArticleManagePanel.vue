@@ -36,11 +36,19 @@
             <span>评论：{{ item.comment_count || 0 }}</span>
           </small>
         </div>
-        <button class="danger-btn" @click="confirmTrash(item.id)">移入垃圾箱</button>
+        <button class="danger-btn article-trash-btn" @click="openTrashConfirm(item.id, item.title)">移入垃圾箱</button>
       </li>
 
       <li v-if="!pagedArticles.length" class="article-empty">暂无符合条件的文章</li>
     </ul>
+
+    <ArticleTrashConfirmModal
+      :open="trashConfirmOpen"
+      :title="trashTargetTitle"
+      message="确认后文章将进入垃圾箱，可在垃圾箱中恢复。"
+      @cancel="closeTrashConfirm"
+      @confirm="submitTrashConfirm"
+    />
 
     <div class="article-pagination">
       <div class="article-page-size">
@@ -62,6 +70,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import ArticleTrashConfirmModal from './ArticleTrashConfirmModal.vue'
+
 const props = defineProps<{
   articles: any[]
   formatArticleStatus: (status: string) => string
@@ -70,6 +80,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   'move-to-trash': [articleId: number]
 }>()
+
+const trashConfirmOpen = ref(false)
+const trashTargetId = ref<number | null>(null)
+const trashTargetTitle = ref('')
 
 const keyword = ref('')
 const statusFilter = ref<'all' | 'published' | 'draft' | 'pending' | 'rejected'>('all')
@@ -136,10 +150,22 @@ const goNextPage = () => {
   if (canGoNext.value) currentPage.value += 1
 }
 
-const confirmTrash = (articleId: number) => {
-  if (window.confirm('确定要将这篇文章移入垃圾箱吗？')) {
-    emit('move-to-trash', articleId)
-  }
+const openTrashConfirm = (articleId: number, title: string) => {
+  trashTargetId.value = articleId
+  trashTargetTitle.value = title
+  trashConfirmOpen.value = true
+}
+
+const closeTrashConfirm = () => {
+  trashConfirmOpen.value = false
+  trashTargetId.value = null
+  trashTargetTitle.value = ''
+}
+
+const submitTrashConfirm = () => {
+  if (trashTargetId.value === null) return
+  emit('move-to-trash', trashTargetId.value)
+  closeTrashConfirm()
 }
 
 const escapeHtml = (value: string) =>
