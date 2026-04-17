@@ -8,11 +8,11 @@
       <span class="article-count article-trash-count">共 {{ deletedArticles.length }} 篇</span>
     </div>
 
-    <p class="tips article-trash-empty" v-if="deletedArticles.length === 0">垃圾箱为空</p>
+    <p class="tips article-empty" v-if="deletedArticles.length === 0">垃圾箱为空</p>
 
-    <ul v-else class="article-trash-list">
-      <li v-for="item in deletedArticles" :key="item.id" class="article-trash-row">
-        <div class="article-trash-main">
+    <ul v-else class="article-manage-list article-trash-list">
+      <li v-for="item in deletedArticles" :key="item.id" class="article-row article-trash-row">
+        <div class="article-row-main article-trash-main">
           <p class="article-row-title article-trash-title">{{ item.title }}</p>
           <small class="article-row-meta article-trash-meta">
             <span>分类：{{ item.category?.name || '未分类' }}</span>
