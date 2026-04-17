@@ -464,6 +464,7 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
       return {
         upload: uploadMedia,
         'delete-media': deleteMedia,
+        'delete-media-batch': deleteMediaBatch,
       }
     case 'comments':
       return {
@@ -728,11 +729,15 @@ const uploadMedia = async (file: File) => {
 }
 
 const deleteMedia = async (mediaId: number) => {
-  if (!confirm('确认删除该媒体吗？删除后不可恢复。')) return
+  await deleteMediaBatch([mediaId])
+}
+
+const deleteMediaBatch = async (mediaIds: number[]) => {
+  if (!mediaIds.length) return
   try {
-    await adminApi.deleteMediaFiles([mediaId])
+    await adminApi.deleteMediaFiles(mediaIds)
     mediaToastStatus.value = 'success'
-    mediaToastMessage.value = '媒体已删除'
+    mediaToastMessage.value = mediaIds.length > 1 ? `已删除 ${mediaIds.length} 项媒体` : '媒体已删除'
     await loadAll()
   } catch (error) {
     mediaToastStatus.value = 'error'
