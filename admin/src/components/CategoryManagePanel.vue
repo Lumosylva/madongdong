@@ -1,35 +1,56 @@
 <template>
-  <section class="panel">
-    <h3>文章分类</h3>
-
-    <div class="action-row">
-      <input v-model="newName" placeholder="分类名称" />
-      <input v-model="newSlug" placeholder="分类标识（slug）" @input="slugTouched = true" />
-      <input v-model="newDescription" placeholder="分类描述（可选）" />
-      <button :disabled="duplicatedSlug" @click="create">创建分类</button>
+  <section class="panel category-panel">
+    <div class="article-manage-head category-head">
+      <div>
+        <h3>文章分类</h3>
+        <p class="category-subtitle">统一管理文章分类名称、标识与描述</p>
+      </div>
+      <span class="article-count category-count">共 {{ categories.length }} 项</span>
     </div>
-    <p v-if="duplicatedSlug" class="error-message">slug 已存在，请修改后再创建</p>
 
-    <ul>
-      <li v-for="item in categories" :key="item.id" class="article-row">
-        <div>
-          <strong>{{ item.name }}</strong>
-          <small>slug: {{ item.slug }} ｜ {{ item.description || '无描述' }}</small>
+    <div class="category-create-panel">
+      <div class="category-form-head">
+        <h4>创建分类</h4>
+        <span class="category-form-tip">自动生成 slug，也可以手动修改</span>
+      </div>
+      <div class="action-row category-action-row">
+        <input class="category-input" v-model="newName" placeholder="分类名称" />
+        <input class="category-input" v-model="newSlug" placeholder="分类标识（slug）" @input="slugTouched = true" />
+        <input class="category-input" v-model="newDescription" placeholder="分类描述（可选）" />
+        <button class="category-create-btn" :disabled="duplicatedSlug" @click="create">创建分类</button>
+      </div>
+      <p v-if="duplicatedSlug" class="error-message category-error">slug 已存在，请修改后再创建</p>
+    </div>
+
+    <ul class="category-list">
+      <li v-for="item in categories" :key="item.id" class="article-row category-row" :class="{ 'category-row-default': isDefaultCategory(item) }">
+        <div class="category-row-main">
+          <p class="category-row-title">
+            <span>{{ item.name }}</span>
+            <span v-if="isDefaultCategory(item)" class="category-badge">默认</span>
+          </p>
+          <small class="category-row-meta">slug：{{ item.slug }} ｜ {{ item.description || '无描述' }}</small>
         </div>
-        <div class="row-actions">
+        <div class="row-actions category-row-actions">
           <button :disabled="isDefaultCategory(item)" @click="startEdit(item)">编辑</button>
           <button class="danger-btn" :disabled="isDefaultCategory(item)" @click="$emit('delete', item.id)">删除</button>
         </div>
       </li>
     </ul>
 
-    <div v-if="editing" class="panel" style="margin-top: 12px;">
-      <h4>编辑分类</h4>
-      <div class="action-row">
-        <input v-model="editName" placeholder="分类名称" />
-        <input v-model="editSlug" placeholder="分类标识（slug）" />
-        <input v-model="editDescription" placeholder="分类描述（可选）" />
-        <button @click="saveEdit">保存修改</button>
+    <div v-if="editing" class="category-edit-panel">
+      <div class="category-edit-head">
+        <div>
+          <h4>编辑分类</h4>
+          <p class="category-form-tip">修改分类名称、标识和描述</p>
+        </div>
+        <button class="category-edit-close" type="button" @click="editing = false">关闭</button>
+      </div>
+      <div class="action-row category-edit-row">
+        <input class="category-input" v-model="editName" placeholder="分类名称" />
+        <input class="category-input" v-model="editSlug" placeholder="分类标识（slug）" />
+        <input class="category-input" v-model="editDescription" placeholder="分类描述（可选）" />
+        <button class="category-save-btn" @click="saveEdit">保存修改</button>
       </div>
     </div>
   </section>
