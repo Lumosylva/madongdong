@@ -171,6 +171,8 @@ const errorMessage = ref('')
 const articleSubmitting = ref(false)
 const articleSubmitError = ref('')
 const articleSubmitFocusField = ref<'title' | 'content' | null>(null)
+const articleSubmitFocusNonce = ref(0)
+let articleSubmitErrorTimer: number | null = null
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
@@ -935,6 +937,20 @@ const getArticleCreateFocusField = (error: unknown) => {
   return null
 }
 
+const showArticleSubmitError = (message: string, focusField: 'title' | 'content' | null = null) => {
+  articleSubmitError.value = message
+  articleSubmitFocusField.value = focusField
+  articleSubmitFocusNonce.value += 1
+  if (articleSubmitErrorTimer !== null) {
+    window.clearTimeout(articleSubmitErrorTimer)
+  }
+  articleSubmitErrorTimer = window.setTimeout(() => {
+    articleSubmitError.value = ''
+    articleSubmitFocusField.value = null
+    articleSubmitErrorTimer = null
+  }, 3000)
+}
+
 const createArticle = async () => {
   if (articleSubmitting.value) return
   articleSubmitting.value = true
@@ -947,13 +963,11 @@ const createArticle = async () => {
     const trimmedTitle = title.value.trim()
     const trimmedContent = contentMarkdown.value.trim()
     if (!trimmedTitle) {
-      articleSubmitError.value = '请先填写文章标题'
-      articleSubmitFocusField.value = 'title'
+      showArticleSubmitError('请先填写文章标题', 'title')
       return
     }
     if (!trimmedContent) {
-      articleSubmitError.value = '请先填写文章正文'
-      articleSubmitFocusField.value = 'content'
+      showArticleSubmitError('请先填写文章正文', 'content')
       return
     }
 
@@ -974,12 +988,17 @@ const createArticle = async () => {
     contentMarkdown.value = ''
     tagIdsText.value = ''
     clearArticleDraft()
+    if (articleSubmitErrorTimer !== null) {
+      window.clearTimeout(articleSubmitErrorTimer)
+      articleSubmitErrorTimer = null
+    }
+    articleSubmitError.value = ''
+    articleSubmitFocusField.value = null
     currentView.value = 'articles'
     await nextTick()
     await loadAll()
   } catch (error) {
-    articleSubmitError.value = getArticleCreateErrorMessage(error)
-    articleSubmitFocusField.value = getArticleCreateFocusField(error)
+    showArticleSubmitError(getArticleCreateErrorMessage(error), getArticleCreateFocusField(error))
   } finally {
     articleSubmitting.value = false
   }
@@ -1030,6 +1049,10 @@ onBeforeUnmount(() => {
   if (articleDraftSaveTimer !== null) {
     window.clearTimeout(articleDraftSaveTimer)
     articleDraftSaveTimer = null
+  }
+  if (articleSubmitErrorTimer !== null) {
+    window.clearTimeout(articleSubmitErrorTimer)
+    articleSubmitErrorTimer = null
   }
 })
 </script>
