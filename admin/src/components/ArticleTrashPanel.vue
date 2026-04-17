@@ -1,11 +1,11 @@
 <template>
   <section class="panel article-trash-panel">
-    <div class="article-trash-head">
+    <div class="article-manage-head article-trash-head">
       <div>
         <h3>垃圾箱</h3>
         <p class="article-trash-subtitle">这里的文章可恢复，也可彻底删除</p>
       </div>
-      <span class="article-trash-count">共 {{ deletedArticles.length }} 篇</span>
+      <span class="article-count article-trash-count">共 {{ deletedArticles.length }} 篇</span>
     </div>
 
     <p class="tips article-trash-empty" v-if="deletedArticles.length === 0">垃圾箱为空</p>
@@ -13,8 +13,8 @@
     <ul v-else class="article-trash-list">
       <li v-for="item in deletedArticles" :key="item.id" class="article-trash-row">
         <div class="article-trash-main">
-          <p class="article-trash-title">{{ item.title }}</p>
-          <small class="article-trash-meta">
+          <p class="article-row-title article-trash-title">{{ item.title }}</p>
+          <small class="article-row-meta article-trash-meta">
             <span>删除时间：{{ formatRelativeTime(item.deleted_at || item.updated_at || item.created_at) }}</span>
             <span>作者：{{ item.author?.nickname || 'admin' }}</span>
           </small>
