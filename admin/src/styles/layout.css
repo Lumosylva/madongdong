@@ -494,7 +494,7 @@
   gap: 18px;
 }
 
-.panel ul {
+.panel > ul:not(.article-manage-list):not(.article-trash-list) {
   padding-left: 18px;
   color: var(--text-soft);
   margin-bottom: 0;
