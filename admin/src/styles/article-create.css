@@ -1,6 +1,6 @@
 /*
   Managed module: article create panel styles
-  Includes title, cover picker, category/tag controls, submission actions, helper text, and save time.
+  Includes title, cover picker, category/tag controls, submission actions, helper text, save time, and submit error.
 */
 .article-create-panel {
   display: grid;
@@ -48,6 +48,16 @@
   border-radius: 999px;
   padding: 3px 10px;
   line-height: 1.2;
+}
+
+.article-create-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 13px;
+  background: rgba(227, 91, 119, 0.08);
+  border: 1px solid rgba(227, 91, 119, 0.16);
+  border-radius: 12px;
+  padding: 10px 12px;
 }
 
 .article-create-field {

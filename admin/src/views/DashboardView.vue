@@ -169,6 +169,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 const articleSubmitting = ref(false)
+const articleSubmitError = ref('')
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
@@ -383,6 +384,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         showToolbarName: isSidebarCollapsed.value,
         submitLoading: articleSubmitting.value,
         draftSavedAt: articleDraftSavedAt.value,
+        draftSessionSaved: articleDraftSessionSaved.value,
+        submitError: articleSubmitError.value,
       }
     case 'articles-category':
       return {
@@ -904,19 +907,49 @@ const clearArticleDraft = () => {
   articleDraftSessionSaved.value = false
 }
 
+const getArticleCreateErrorMessage = (error: unknown) => {
+  const rawMessage = error instanceof Error ? error.message : String(error || '')
+  const message = rawMessage.replace(/^Error:\s*/i, '')
+
+  if (message.includes('422')) {
+    if (message.includes('title') || message.includes('标题')) return '请先填写文章标题'
+    if (message.includes('content_markdown') || message.includes('正文')) return '请先填写文章正文'
+    if (message.includes('category_id') || message.includes('分类')) return '请选择文章分类'
+    return '提交内容不完整，请检查标题、正文和分类后再试'
+  }
+
+  if (message.includes('401')) return '登录已失效，请重新登录'
+  if (message.includes('403')) return '当前账号没有提交权限'
+  if (message.includes('500')) return '提交失败，服务器暂时出了点问题，请稍后重试'
+
+  return message || '提交失败，请稍后重试'
+}
+
 const createArticle = async () => {
   if (articleSubmitting.value) return
   articleSubmitting.value = true
+  articleSubmitError.value = ''
   const finalAction = isAdmin.value
     ? (action.value === 'publish' ? 'publish' : 'draft')
     : (action.value === 'submit' ? 'submit' : 'draft')
 
   try {
+    const trimmedTitle = title.value.trim()
+    const trimmedContent = contentMarkdown.value.trim()
+    if (!trimmedTitle) {
+      articleSubmitError.value = '请先填写文章标题'
+      return
+    }
+    if (!trimmedContent) {
+      articleSubmitError.value = '请先填写文章正文'
+      return
+    }
+
     const autoSummary = extractSummary(contentMarkdown.value, 120)
     const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
 
     await adminApi.createArticle({
-      title: title.value,
+      title: trimmedTitle,
       summary: autoSummary || '暂无摘要',
       content_markdown: contentMarkdown.value,
       cover_url: coverUrl.value || null,
@@ -932,6 +965,8 @@ const createArticle = async () => {
     currentView.value = 'articles'
     await nextTick()
     await loadAll()
+  } catch (error) {
+    articleSubmitError.value = getArticleCreateErrorMessage(error)
   } finally {
     articleSubmitting.value = false
   }

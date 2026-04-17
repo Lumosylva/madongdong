@@ -6,6 +6,7 @@
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
+    <p v-if="submitError" class="article-create-error">{{ submitError }}</p>
     <div class="article-create-help-row">
       <span v-if="draftSessionSaved && draftSavedAt" class="article-create-save-time">已临时保存 · {{ formatSavedTime(draftSavedAt) }}</span>
       <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 临时保存，Ctrl/Cmd + Enter 提交</p>
@@ -106,6 +107,7 @@ const props = defineProps<{
   submitLoading?: boolean
   draftSavedAt?: number | null
   draftSessionSaved?: boolean
+  submitError?: string
 }>()
 
 const emit = defineEmits<{
