@@ -104,6 +104,7 @@
   gap: 8px;
   flex: 1 1 auto;
   text-align: left;
+  justify-items: start;
 }
 
 .article-trash-title {
@@ -111,14 +112,17 @@
   font-weight: 700;
   line-height: 1.5;
   color: var(--text);
+  text-align: left;
 }
 
 .article-trash-meta {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 8px 12px;
   color: var(--text-soft);
   line-height: 1.5;
+  text-align: left;
 }
 
 .article-trash-meta::before {
@@ -129,6 +133,7 @@
 .article-trash-time-row {
   display: flex;
   justify-content: flex-start;
+  text-align: left;
 }
 
 .article-trash-time-chip {
