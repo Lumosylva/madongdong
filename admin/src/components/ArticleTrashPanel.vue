@@ -8,10 +8,10 @@
       <span class="article-count article-trash-count">共 {{ deletedArticles.length }} 篇</span>
     </div>
 
-    <p class="tips article-empty" v-if="deletedArticles.length === 0">垃圾箱为空</p>
+    <p class="tips article-empty" v-if="displayDeletedArticles.length === 0">垃圾箱为空</p>
 
     <ul v-else class="article-manage-list article-trash-list">
-      <li v-for="item in deletedArticles" :key="item.id" class="article-row article-trash-row">
+      <li v-for="item in pagedDeletedArticles" :key="item.id" class="article-row article-trash-row">
         <div class="article-row-main article-trash-main">
           <p class="article-row-title article-trash-title">{{ item.title }}</p>
           <small class="article-row-meta article-trash-meta">
@@ -31,13 +31,30 @@
         </div>
       </li>
     </ul>
+
+    <div class="article-pagination article-trash-pagination">
+      <div class="article-page-size">
+        <span>每页</span>
+        <select v-model="pageSize" @change="changePageSize">
+          <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+        </select>
+        <span>篇</span>
+      </div>
+      <span class="article-page-indicator article-page-indicator-center">{{ formatPageLabel }}</span>
+      <div class="article-page-controls">
+        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
+        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+
 import '../styles/article-trash.css'
 
-defineProps<{
+const props = defineProps<{
   deletedArticles: any[]
 }>()
 
@@ -45,6 +62,34 @@ defineEmits<{
   restore: [articleId: number]
   'remove-permanently': [articleId: number]
 }>()
+
+const pageSizeOptions = [10, 20, 50]
+const pageSize = ref(10)
+const currentPage = ref(1)
+
+const displayDeletedArticles = computed(() => [...(props.deletedArticles || [])])
+
+const totalPages = computed(() => Math.max(1, Math.ceil(displayDeletedArticles.value.length / pageSize.value)))
+const pagedDeletedArticles = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return displayDeletedArticles.value.slice(start, start + pageSize.value)
+})
+
+const canGoPrev = computed(() => currentPage.value > 1)
+const canGoNext = computed(() => currentPage.value < totalPages.value)
+const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
+
+const changePageSize = () => {
+  currentPage.value = 1
+}
+
+const goPrevPage = () => {
+  if (canGoPrev.value) currentPage.value -= 1
+}
+
+const goNextPage = () => {
+  if (canGoNext.value) currentPage.value += 1
+}
 
 const parseDateTime = (value: string) => {
   const text = String(value || '').trim()
