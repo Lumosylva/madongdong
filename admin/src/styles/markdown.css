@@ -27,7 +27,6 @@
   max-width: 100%;
 }
 
-.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-wrapper),
 .article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-wrapper) {
   overflow-x: auto !important;
   overflow-y: hidden !important;
@@ -51,13 +50,10 @@
   flex: 0 0 auto !important;
 }
 
-.article-markdown-workspace :deep(.md-editor-toolbar-item),
-.article-markdown-workspace :deep(.md-editor-toolbar-item.active),
-.article-markdown-workspace :deep(.md-editor-toolbar-item:hover),
-.article-markdown-workspace :deep(.md-editor-toolbar-item button),
-.article-markdown-workspace :deep(.md-editor-toolbar-item button:hover),
-.article-markdown-workspace :deep(.md-editor-toolbar-item button:active),
-.article-markdown-workspace :deep(.md-editor-toolbar-item button:focus) {
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-item),
+.article-markdown-workspace :deep(.md-editor-v3 .md-toolbar-item),
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-item button),
+.article-markdown-workspace :deep(.md-editor-v3 .md-toolbar-item button) {
   background: transparent !important;
   box-shadow: none !important;
   min-width: 0 !important;
@@ -66,11 +62,11 @@
   flex: 0 0 auto !important;
 }
 
-.article-markdown-workspace :deep(.md-editor-toolbar-item-name) {
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-item-name) {
   display: none !important;
 }
 
-.article-markdown-workspace :deep(.md-editor-toolbar button) {
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar button) {
   min-height: 18px !important;
   min-width: 18px !important;
   padding: 0 !important;
@@ -80,7 +76,7 @@
   flex: 0 0 auto !important;
 }
 
-.article-markdown-workspace :deep(.md-editor-toolbar-item) {
+.article-markdown-workspace :deep(.md-editor-v3 .md-editor-toolbar-item) {
   margin-inline: 0 !important;
 }
 
