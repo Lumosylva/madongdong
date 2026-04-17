@@ -44,7 +44,7 @@
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
-          <label>正文（Markdown）</label>
+          <label>正文</label>
         </div>
       </div>
 
