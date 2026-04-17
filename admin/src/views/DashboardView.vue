@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
@@ -176,6 +176,8 @@ const categoryId = ref(1)
 const tagIdsText = ref('')
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
 const articleDraftStorageKey = 'md-admin-article-draft'
+const articleDraftSavedAt = ref<number | null>(null)
+const articleDraftSessionSaved = ref(false)
 
 const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
@@ -380,6 +382,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         media: media.value,
         showToolbarName: isSidebarCollapsed.value,
         submitLoading: articleSubmitting.value,
+        draftSavedAt: articleDraftSavedAt.value,
       }
     case 'articles-category':
       return {
@@ -571,6 +574,8 @@ const logout = async () => {
 const persistArticleDraft = () => {
   if (!title.value && !coverUrl.value && !contentMarkdown.value && !tagIdsText.value) {
     localStorage.removeItem(articleDraftStorageKey)
+    articleDraftSavedAt.value = null
+    articleDraftSessionSaved.value = false
     return
   }
   localStorage.setItem(
@@ -584,6 +589,8 @@ const persistArticleDraft = () => {
       action: action.value,
     }),
   )
+  articleDraftSavedAt.value = Date.now()
+  articleDraftSessionSaved.value = true
 }
 
 let articleDraftSaveTimer: number | null = null
@@ -891,6 +898,12 @@ const resolveTagIdsByNames = async (rawInput: string) => {
   return resolvedIds
 }
 
+const clearArticleDraft = () => {
+  localStorage.removeItem(articleDraftStorageKey)
+  articleDraftSavedAt.value = null
+  articleDraftSessionSaved.value = false
+}
+
 const createArticle = async () => {
   if (articleSubmitting.value) return
   articleSubmitting.value = true
@@ -915,8 +928,9 @@ const createArticle = async () => {
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
-    localStorage.removeItem(articleDraftStorageKey)
+    clearArticleDraft()
     currentView.value = 'articles'
+    await nextTick()
     await loadAll()
   } finally {
     articleSubmitting.value = false
@@ -952,6 +966,8 @@ onMounted(async () => {
       if (typeof savedDraft.categoryId === 'number') categoryId.value = savedDraft.categoryId
       if (typeof savedDraft.tagIdsText === 'string') tagIdsText.value = savedDraft.tagIdsText
       if (savedDraft.action) action.value = savedDraft.action
+      articleDraftSavedAt.value = null
+      articleDraftSessionSaved.value = false
     } catch {
       localStorage.removeItem(articleDraftStorageKey)
     }

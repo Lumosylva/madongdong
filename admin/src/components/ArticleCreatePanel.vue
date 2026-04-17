@@ -6,7 +6,10 @@
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
-    <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 临时保存，Ctrl/Cmd + Enter 提交</p>
+    <div class="article-create-help-row">
+      <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 临时保存，Ctrl/Cmd + Enter 提交</p>
+      <span v-if="draftSessionSaved && draftSavedAt" class="article-create-save-time">已临时保存 · {{ formatSavedTime(draftSavedAt) }}</span>
+    </div>
 
     <div class="article-create-field">
       <label>标题</label>
@@ -101,6 +104,8 @@ const props = defineProps<{
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
   showToolbarName?: boolean
   submitLoading?: boolean
+  draftSavedAt?: number | null
+  draftSessionSaved?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -130,6 +135,12 @@ const imageMedia = computed(() =>
     (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
   ),
 )
+
+const formatSavedTime = (timestamp: number) => {
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
 
 const previewUrl = (url: string) => fullUrl(url)
 
