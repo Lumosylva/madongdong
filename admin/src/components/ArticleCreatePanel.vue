@@ -13,39 +13,20 @@
     </div>
 
     <div class="article-create-field">
-      <label>标题</label>
-      <input id="article-title-input" ref="titleInputRef" :value="title" placeholder="请输入文章标题" @input="emit('update:title', ($event.target as HTMLInputElement).value)" />
-    </div>
-
-    <div class="article-create-field">
-      <label>封面图</label>
-      <div class="article-cover-row">
-        <input :value="coverUrl" placeholder="封面图 URL（可选）" @input="emit('update:coverUrl', ($event.target as HTMLInputElement).value)" />
-        <button type="button" class="article-cover-pick-btn" @click="showCoverPicker = !showCoverPicker">从媒体库选择</button>
-      </div>
-      <p class="article-create-hint">从媒体库选择图片后会自动填入封面地址</p>
-      <transition name="cover-picker-fade">
-        <div v-if="showCoverPicker" class="article-cover-picker">
-          <button
-            v-for="item in imageMedia"
-            :key="item.id"
-            type="button"
-            class="article-cover-thumb"
-            :class="{ selected: item.url === coverUrl }"
-            @click="selectCover(item.url)"
-          >
-            <img :src="previewUrl(item.url)" :alt="item.original_name" />
-            <span>{{ item.original_name }}</span>
-          </button>
-          <p v-if="!imageMedia.length" class="article-create-hint">暂无可用图片，请先到媒体库上传图片。</p>
-        </div>
-      </transition>
+      <label for="article-title-input">标题</label>
+      <input
+        id="article-title-input"
+        ref="titleInputRef"
+        :value="title"
+        placeholder="请输入文章标题"
+        @input="emit('update:title', ($event.target as HTMLInputElement).value)"
+      />
     </div>
 
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
-          <label>正文</label>
+          <label for="article-content-input">正文</label>
         </div>
       </div>
 
@@ -64,21 +45,63 @@
       </div>
     </div>
 
+    <div class="article-create-field">
+      <label for="article-cover-url-input">封面图</label>
+      <div class="article-cover-combo">
+        <div class="article-cover-row">
+          <input
+            id="article-cover-url-input"
+            :value="coverUrl"
+            placeholder="封面图 URL（可选）"
+            @input="emit('update:coverUrl', ($event.target as HTMLInputElement).value)"
+          />
+          <button type="button" class="article-cover-pick-btn" @click="showCoverPicker = !showCoverPicker">从媒体库选择</button>
+        </div>
+        <p class="article-create-hint">从媒体库选择图片后会自动填入封面地址</p>
+        <transition name="cover-picker-fade">
+          <div v-if="showCoverPicker" class="article-cover-picker">
+            <button
+              v-for="item in imageMedia"
+              :key="item.id"
+              type="button"
+              class="article-cover-thumb"
+              :class="{ selected: item.url === coverUrl }"
+              @click="selectCover(item.url)"
+            >
+              <img :src="previewUrl(item.url)" :alt="item.original_name" />
+              <span>{{ item.original_name }}</span>
+            </button>
+            <p v-if="!imageMedia.length" class="article-create-hint">暂无可用图片，请先到媒体库上传图片。</p>
+          </div>
+        </transition>
+      </div>
+    </div>
+
     <div class="article-create-actions">
       <div class="article-create-actions-grid">
-        <select :value="categoryId" @change="emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
-          <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
-        </select>
-        <input
-          :value="tagIdsText"
-          placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
-          @input="emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
-        />
-        <select :value="action" @change="emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">
-          <option value="draft">保存草稿</option>
-          <option v-if="!isAdmin" value="submit">提交审核</option>
-          <option v-if="isAdmin" value="publish">直接发布</option>
-        </select>
+        <div class="article-create-field article-create-select-field">
+          <label for="article-category-select">分类</label>
+          <select id="article-category-select" :value="categoryId" @change="emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
+            <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
+          </select>
+        </div>
+        <div class="article-create-field article-create-tag-field">
+          <label for="article-tags-input">标签</label>
+          <input
+            id="article-tags-input"
+            :value="tagIdsText"
+            placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
+            @input="emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
+          />
+        </div>
+        <div class="article-create-field article-create-status-field">
+          <label for="article-action-select">发布状态</label>
+          <select id="article-action-select" :value="action" @change="emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">
+            <option value="draft">保存草稿</option>
+            <option v-if="!isAdmin" value="submit">提交审核</option>
+            <option v-if="isAdmin" value="publish">直接发布</option>
+          </select>
+        </div>
       </div>
       <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? '提交中...' : '提交' }}</button>
     </div>
@@ -128,18 +151,10 @@ const editorId = 'article-create-md-editor'
 const scrollElement = '.article-markdown-preview'
 const toolbarsExclude: ToolbarNames[] = ['save', 'htmlPreview', 'catalog', 'pageFullscreen']
 const titleInputRef = ref<HTMLInputElement | null>(null)
-const markdownWorkspaceRef = ref<HTMLElement | null>(null)
 const focusFirstMissingField = async (missingField?: 'title' | 'content') => {
   await nextTick()
   if (missingField === 'title') {
     titleInputRef.value?.focus()
-    titleInputRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    return
-  }
-  if (missingField === 'content') {
-    markdownWorkspaceRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    const editorRoot = markdownWorkspaceRef.value?.querySelector<HTMLElement>('.cm-content[contenteditable="true"]')
-    editorRoot?.focus()
   }
 }
 
