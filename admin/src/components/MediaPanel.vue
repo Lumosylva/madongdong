@@ -66,7 +66,6 @@
                 <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">复制链接</button>
               </div>
             </div>
-            <button class="danger-btn media-delete-btn" @click="confirmDelete([item.id])">删除</button>
           </article>
         </div>
         <p v-else class="tips media-empty">暂无音频</p>
@@ -91,7 +90,6 @@
                 <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">复制链接</button>
               </div>
             </div>
-            <button class="danger-btn media-delete-btn" @click="confirmDelete([item.id])">删除</button>
           </article>
         </div>
         <p v-else class="tips media-empty">暂无视频</p>

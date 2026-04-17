@@ -201,6 +201,10 @@
   overflow: hidden;
 }
 
+.media-card-file .media-card-body {
+  padding-top: 4px;
+}
+
 .media-card-checkbox {
   position: absolute;
   top: 10px;
@@ -210,6 +214,10 @@
   margin: 0;
   accent-color: var(--accent);
   z-index: 2;
+}
+
+.media-card-file {
+  padding-left: 40px;
 }
 
 .media-card-thumb {
@@ -295,6 +303,10 @@
 
 .media-delete-btn {
   align-self: center;
+}
+
+.media-card-file {
+  padding-bottom: 44px;
 }
 
 .media-empty {
