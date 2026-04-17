@@ -136,6 +136,11 @@
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
 }
 
+:root[data-theme='dark'] .media-group-count {
+  border-color: rgba(56, 189, 248, 0.14);
+  background: rgba(56, 189, 248, 0.08);
+}
+
 .media-group-head {
   display: flex;
   align-items: center;
@@ -152,8 +157,9 @@
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(14, 165, 164, 0.06);
-  border: 1px solid rgba(14, 165, 164, 0.14);
+  background: rgba(14, 165, 164, 0.08);
+  border: 1px solid rgba(14, 165, 164, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
 
 .media-list {
