@@ -14,7 +14,7 @@
 
     <div class="article-create-field">
       <label>标题</label>
-      <input :value="title" placeholder="请输入文章标题" @input="emit('update:title', ($event.target as HTMLInputElement).value)" />
+      <input id="article-title-input" ref="titleInputRef" :value="title" placeholder="请输入文章标题" @input="emit('update:title', ($event.target as HTMLInputElement).value)" />
     </div>
 
     <div class="article-create-field">
@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <div class="article-markdown-workspace">
+      <div ref="markdownWorkspaceRef" class="article-markdown-workspace">
         <MdEditor
           v-model="contentMarkdownLocal"
           :style="{ height: '640px' }"
@@ -80,13 +80,13 @@
           <option v-if="isAdmin" value="publish">直接发布</option>
         </select>
       </div>
-      <button class="article-create-submit" :disabled="submitLoading" @click="emit('submit')">{{ submitLoading ? '提交中...' : '提交' }}</button>
+      <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? '提交中...' : '提交' }}</button>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { MdEditor, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import 'md-editor-v3/lib/preview.css'
@@ -108,6 +108,7 @@ const props = defineProps<{
   draftSavedAt?: number | null
   draftSessionSaved?: boolean
   submitError?: string
+  submitFocusField?: 'title' | 'content' | null
 }>()
 
 const emit = defineEmits<{
@@ -126,6 +127,37 @@ const previewTheme = ref<'default' | 'github'>('github')
 const editorId = 'article-create-md-editor'
 const scrollElement = '.article-markdown-preview'
 const toolbarsExclude: ToolbarNames[] = ['save', 'htmlPreview', 'catalog', 'pageFullscreen']
+const titleInputRef = ref<HTMLInputElement | null>(null)
+const markdownWorkspaceRef = ref<HTMLElement | null>(null)
+const focusFirstMissingField = async (missingField?: 'title' | 'content') => {
+  await nextTick()
+  if (missingField === 'title') {
+    titleInputRef.value?.focus()
+    titleInputRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    return
+  }
+  if (missingField === 'content') {
+    markdownWorkspaceRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const editorRoot = markdownWorkspaceRef.value?.querySelector<HTMLElement>('.cm-content[contenteditable="true"]')
+    editorRoot?.focus()
+  }
+}
+
+const triggerSubmit = async () => {
+  emit('submit')
+}
+
+watch(
+  () => props.submitFocusField,
+  async (value) => {
+    if (!value) return
+    await focusFirstMissingField(value)
+  },
+)
+
+onBeforeUnmount(() => {
+  // no-op placeholder for future cleanup hooks
+})
 
 const contentMarkdownLocal = computed({
   get: () => props.contentMarkdown,

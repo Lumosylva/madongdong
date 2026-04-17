@@ -170,6 +170,7 @@ const errorMessage = ref('')
 
 const articleSubmitting = ref(false)
 const articleSubmitError = ref('')
+const articleSubmitFocusField = ref<'title' | 'content' | null>(null)
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
@@ -386,6 +387,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         draftSavedAt: articleDraftSavedAt.value,
         draftSessionSaved: articleDraftSessionSaved.value,
         submitError: articleSubmitError.value,
+        submitFocusField: articleSubmitFocusField.value,
       }
     case 'articles-category':
       return {
@@ -908,6 +910,23 @@ const clearArticleDraft = () => {
 }
 
 const getArticleCreateErrorMessage = (error: unknown) => {
+  const raw = error instanceof Error ? error.message : String(error || '')
+  const normalized = raw.replace(/^Error:\s*/i, '')
+  if (normalized.includes('422')) {
+    return '提交内容不完整，请检查标题、正文和分类后再试'
+  }
+  return normalized || '提交失败，请稍后重试'
+}
+
+const getArticleCreateFocusField = (error: unknown) => {
+  const raw = error instanceof Error ? error.message : String(error || '')
+  if (raw.includes('标题')) return 'title'
+  if (raw.includes('正文') || raw.includes('content')) return 'content'
+  if (raw.includes('422')) return 'title'
+  return null
+}
+
+const getArticleCreateErrorMessage = (error: unknown) => {
   const rawMessage = error instanceof Error ? error.message : String(error || '')
   const message = rawMessage.replace(/^Error:\s*/i, '')
 
@@ -938,10 +957,12 @@ const createArticle = async () => {
     const trimmedContent = contentMarkdown.value.trim()
     if (!trimmedTitle) {
       articleSubmitError.value = '请先填写文章标题'
+      articleSubmitFocusField.value = 'title'
       return
     }
     if (!trimmedContent) {
       articleSubmitError.value = '请先填写文章正文'
+      articleSubmitFocusField.value = 'content'
       return
     }
 
@@ -967,6 +988,7 @@ const createArticle = async () => {
     await loadAll()
   } catch (error) {
     articleSubmitError.value = getArticleCreateErrorMessage(error)
+    articleSubmitFocusField.value = getArticleCreateFocusField(error)
   } finally {
     articleSubmitting.value = false
   }
