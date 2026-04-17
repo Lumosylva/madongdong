@@ -18,6 +18,12 @@
       <button class="media-upload-btn" :disabled="uploading" @click="triggerUpload">{{ uploading ? '上传中...' : '上传媒体' }}</button>
     </div>
 
+    <div class="media-bulk-bar" v-if="selectedIds.size">
+      <span>已选择 {{ selectedIds.size }} 项</span>
+      <button type="button" class="media-bulk-clear-btn" @click="clearSelection">清空</button>
+      <button type="button" class="media-bulk-delete-btn" @click="confirmDelete([...selectedIds])">批量删除</button>
+    </div>
+
     <div class="media-section-grid">
       <section class="panel media-group-panel">
         <div class="media-group-head">
@@ -94,12 +100,6 @@
         </div>
         <p v-else class="tips media-empty">暂无视频</p>
       </section>
-    </div>
-
-    <div class="media-bulk-bar" v-if="selectedIds.size">
-      <span>已选择 {{ selectedIds.size }} 项</span>
-      <button type="button" class="media-bulk-clear-btn" @click="clearSelection">清空</button>
-      <button type="button" class="media-bulk-delete-btn" @click="confirmDelete([...selectedIds])">批量删除</button>
     </div>
 
     <teleport to="body">

@@ -101,6 +101,10 @@
   gap: 12px;
 }
 
+.media-section-grid .media-group-panel:first-child {
+  margin-top: 0;
+}
+
 .media-group-panel {
   display: grid;
   gap: 12px;
@@ -182,6 +186,11 @@
   box-shadow: 0 0 0 1px rgba(14, 165, 164, 0.12) inset, 0 10px 22px rgba(16, 35, 63, 0.06);
 }
 
+.media-card.selected .media-card-checkbox {
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.12);
+  border-radius: 4px;
+}
+
 .media-card:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(16, 35, 63, 0.06);
@@ -214,10 +223,15 @@
   margin: 0;
   accent-color: var(--accent);
   z-index: 2;
+  cursor: pointer;
 }
 
 .media-card-file {
   padding-left: 40px;
+}
+
+.media-card-file .media-card-checkbox {
+  top: 12px;
 }
 
 .media-card-thumb {
@@ -493,11 +507,12 @@
   justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 12px 14px;
+  padding: 10px 12px;
+  margin: 6px 0 8px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 6px 16px rgba(16, 35, 63, 0.04);
+  box-shadow: 0 4px 12px rgba(16, 35, 63, 0.035);
 }
 
 :root[data-theme='dark'] .media-bulk-bar {
