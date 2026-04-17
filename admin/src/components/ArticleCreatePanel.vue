@@ -109,6 +109,7 @@ const props = defineProps<{
   draftSessionSaved?: boolean
   submitError?: string
   submitFocusField?: 'title' | 'content' | null
+  submitFocusNonce?: number
 }>()
 
 const emit = defineEmits<{
@@ -149,9 +150,9 @@ const triggerSubmit = async () => {
 
 watch(
   () => props.submitFocusField,
-  async (value) => {
-    if (!value) return
-    await focusFirstMissingField(value)
+  async (field) => {
+    if (!field) return
+    await focusFirstMissingField(field)
   },
 )
 

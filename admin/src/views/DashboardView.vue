@@ -171,6 +171,7 @@ const errorMessage = ref('')
 const articleSubmitting = ref(false)
 const articleSubmitError = ref('')
 const articleSubmitFocusField = ref<'title' | 'content' | null>(null)
+const articleSubmitFocusNonce = ref(0)
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
@@ -388,6 +389,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         draftSessionSaved: articleDraftSessionSaved.value,
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
+        submitFocusNonce: articleSubmitFocusNonce.value,
       }
     case 'articles-category':
       return {
@@ -910,23 +912,6 @@ const clearArticleDraft = () => {
 }
 
 const getArticleCreateErrorMessage = (error: unknown) => {
-  const raw = error instanceof Error ? error.message : String(error || '')
-  const normalized = raw.replace(/^Error:\s*/i, '')
-  if (normalized.includes('422')) {
-    return '提交内容不完整，请检查标题、正文和分类后再试'
-  }
-  return normalized || '提交失败，请稍后重试'
-}
-
-const getArticleCreateFocusField = (error: unknown) => {
-  const raw = error instanceof Error ? error.message : String(error || '')
-  if (raw.includes('标题')) return 'title'
-  if (raw.includes('正文') || raw.includes('content')) return 'content'
-  if (raw.includes('422')) return 'title'
-  return null
-}
-
-const getArticleCreateErrorMessage = (error: unknown) => {
   const rawMessage = error instanceof Error ? error.message : String(error || '')
   const message = rawMessage.replace(/^Error:\s*/i, '')
 
@@ -944,6 +929,14 @@ const getArticleCreateErrorMessage = (error: unknown) => {
   return message || '提交失败，请稍后重试'
 }
 
+const getArticleCreateFocusField = (error: unknown) => {
+  const raw = error instanceof Error ? error.message : String(error || '')
+  if (raw.includes('标题') || raw.includes('title') || raw.includes('422')) return 'title'
+  if (raw.includes('正文') || raw.includes('content')) return 'content'
+  if (raw.includes('category_id') || raw.includes('分类')) return 'title'
+  return null
+}
+
 const createArticle = async () => {
   if (articleSubmitting.value) return
   articleSubmitting.value = true
@@ -958,11 +951,13 @@ const createArticle = async () => {
     if (!trimmedTitle) {
       articleSubmitError.value = '请先填写文章标题'
       articleSubmitFocusField.value = 'title'
+      articleSubmitFocusNonce.value += 1
       return
     }
     if (!trimmedContent) {
       articleSubmitError.value = '请先填写文章正文'
       articleSubmitFocusField.value = 'content'
+      articleSubmitFocusNonce.value += 1
       return
     }
 
@@ -989,6 +984,7 @@ const createArticle = async () => {
   } catch (error) {
     articleSubmitError.value = getArticleCreateErrorMessage(error)
     articleSubmitFocusField.value = getArticleCreateFocusField(error)
+    articleSubmitFocusNonce.value += 1
   } finally {
     articleSubmitting.value = false
   }

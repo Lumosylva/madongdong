@@ -1,6 +1,6 @@
 /*
   Managed module: article create panel styles
-  Includes title, cover picker, category/tag controls, submission actions, helper text, save time, and submit error.
+  Includes title, cover picker, category/tag controls, submission actions, helper text, save time, submit error, and focus states.
 */
 .article-create-panel {
   display: grid;
@@ -68,6 +68,31 @@
 .article-create-field label {
   color: var(--text-soft);
   font-size: 13px;
+}
+
+.article-create-field input:focus,
+.article-create-field select:focus,
+.article-create-field textarea:focus {
+  outline: none;
+  border-color: rgba(14, 165, 164, 0.58);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.14);
+}
+
+#article-title-input,
+.article-markdown-workspace :deep(.md-editor),
+.article-markdown-workspace :deep(.md-editor-v3) {
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+#article-title-input:focus {
+  border-color: rgba(14, 165, 164, 0.58);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.14);
+}
+
+.article-markdown-workspace.is-focus-highlight :deep(.md-editor),
+.article-markdown-workspace.is-focus-highlight :deep(.md-editor-v3) {
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.14);
+  border-color: rgba(14, 165, 164, 0.58) !important;
 }
 
 .article-cover-row {
