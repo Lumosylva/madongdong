@@ -171,7 +171,6 @@ const errorMessage = ref('')
 const articleSubmitting = ref(false)
 const articleSubmitError = ref('')
 const articleSubmitFocusField = ref<'title' | 'content' | null>(null)
-const articleSubmitFocusNonce = ref(0)
 const title = ref('')
 const coverUrl = ref('')
 const contentMarkdown = ref('')
@@ -389,7 +388,6 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         draftSessionSaved: articleDraftSessionSaved.value,
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
-        submitFocusNonce: articleSubmitFocusNonce.value,
       }
     case 'articles-category':
       return {
@@ -951,13 +949,11 @@ const createArticle = async () => {
     if (!trimmedTitle) {
       articleSubmitError.value = '请先填写文章标题'
       articleSubmitFocusField.value = 'title'
-      articleSubmitFocusNonce.value += 1
       return
     }
     if (!trimmedContent) {
       articleSubmitError.value = '请先填写文章正文'
       articleSubmitFocusField.value = 'content'
-      articleSubmitFocusNonce.value += 1
       return
     }
 
@@ -984,7 +980,6 @@ const createArticle = async () => {
   } catch (error) {
     articleSubmitError.value = getArticleCreateErrorMessage(error)
     articleSubmitFocusField.value = getArticleCreateFocusField(error)
-    articleSubmitFocusNonce.value += 1
   } finally {
     articleSubmitting.value = false
   }

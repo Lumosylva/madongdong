@@ -109,7 +109,6 @@ const props = defineProps<{
   draftSessionSaved?: boolean
   submitError?: string
   submitFocusField?: 'title' | 'content' | null
-  submitFocusNonce?: number
 }>()
 
 const emit = defineEmits<{
