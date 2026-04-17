@@ -1,7 +1,7 @@
 <template>
   <section class="panel article-trash-panel">
     <div class="article-manage-head article-trash-head">
-      <div>
+      <div class="article-trash-head-main">
         <h3>垃圾箱</h3>
         <p class="article-trash-subtitle">这里的文章可恢复，也可彻底删除</p>
       </div>
@@ -15,9 +15,15 @@
         <div class="article-trash-main">
           <p class="article-row-title article-trash-title">{{ item.title }}</p>
           <small class="article-row-meta article-trash-meta">
-            <span>删除时间：{{ formatRelativeTime(item.deleted_at || item.updated_at || item.created_at) }}</span>
+            <span>分类：{{ item.category?.name || '未分类' }}</span>
             <span>作者：{{ item.author?.nickname || 'admin' }}</span>
+            <span>发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
+            <span>浏览：{{ item.view_count || 0 }}</span>
+            <span>评论：{{ item.comment_count || 0 }}</span>
           </small>
+          <div class="article-trash-time-row">
+            <span class="article-trash-time-chip">删除时间：{{ formatRelativeTime(item.deleted_at || item.updated_at || item.created_at) }}</span>
+          </div>
         </div>
         <div class="article-trash-actions">
           <button class="article-trash-restore-btn" @click="$emit('restore', item.id)">恢复</button>
