@@ -92,14 +92,14 @@
       </div>
     </div>
 
-    <div v-if="rejectConfirmOpen || bulkDeleteConfirmOpen" class="comment-modal-backdrop" @click.self="closeRejectConfirm">
+    <div v-if="rejectConfirmOpen || bulkDeleteConfirmOpen" class="comment-modal-backdrop" @click.self="closeActiveConfirm">
       <div class="comment-modal">
         <div class="comment-modal-head">
           <div>
             <p class="comment-modal-eyebrow">{{ bulkDeleteConfirmOpen ? '确认删除' : '确认拒绝' }}</p>
             <h4>{{ bulkDeleteConfirmOpen ? '是否彻底删除所选已拒绝评论？' : '是否拒绝这条评论？' }}</h4>
           </div>
-          <button type="button" class="comment-modal-close" aria-label="关闭弹窗" @click="closeRejectConfirm">×</button>
+          <button type="button" class="comment-modal-close" aria-label="关闭弹窗" @click="closeActiveConfirm">×</button>
         </div>
 
         <p class="comment-modal-text">
@@ -117,7 +117,7 @@
         </div>
 
         <div class="comment-modal-actions">
-          <button type="button" class="comment-modal-cancel" @click="closeRejectConfirm">取消</button>
+          <button type="button" class="comment-modal-cancel" @click="closeActiveConfirm">取消</button>
           <button v-if="bulkDeleteConfirmOpen" type="button" class="comment-modal-confirm danger-btn" @click="confirmBulkDelete">确认删除</button>
           <button v-else type="button" class="comment-modal-confirm danger-btn" @click="confirmReject">确认拒绝</button>
         </div>
@@ -300,14 +300,6 @@ const openBulkDeleteConfirm = () => {
   bulkDeleteConfirmOpen.value = true
 }
 
-const confirmBulkDelete = () => {
-  const targets = selectedRejectedIds.value
-  if (!targets.length) return
-  emit('bulk-delete', targets)
-  selectedIds.value = selectedIds.value.filter((id) => !targets.includes(id))
-  closeRejectConfirm()
-}
-
 const goPrevPage = () => {
   if (canGoPrev.value) currentPage.value -= 1
 }
@@ -325,13 +317,29 @@ const openRejectConfirm = (item: CommentItem) => {
 
 const closeRejectConfirm = () => {
   rejectConfirmOpen.value = false
-  bulkDeleteConfirmOpen.value = false
   rejectTarget.value = null
+}
+
+const closeBulkDeleteConfirm = () => {
+  bulkDeleteConfirmOpen.value = false
+}
+
+const closeActiveConfirm = () => {
+  closeRejectConfirm()
+  closeBulkDeleteConfirm()
 }
 
 const confirmReject = () => {
   if (!rejectTarget.value) return
   emit('reject', rejectTarget.value.id)
   closeRejectConfirm()
+}
+
+const confirmBulkDelete = () => {
+  const targets = selectedRejectedIds.value
+  if (!targets.length) return
+  emit('bulk-delete', targets)
+  selectedIds.value = selectedIds.value.filter((id) => !targets.includes(id))
+  closeBulkDeleteConfirm()
 }
 </script>
