@@ -54,11 +54,8 @@
         <h4>站点信息</h4>
         <label class="settings-field">
           <span>备案信息</span>
-          <textarea class="settings-input settings-textarea" :value="icpBeian" placeholder="请输入备案 HTML 代码" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
-        </label>
-        <label class="settings-field">
-          <span>版权信息</span>
-          <input class="settings-input" :value="copyrightText" placeholder="请输入版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
+          <textarea class="settings-input settings-textarea" :value="icpBeian" placeholder="请输入页脚HTML代码" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">页脚HTML代码，用于网站底部展示</p>
         </label>
 
         <div class="save-row">
@@ -94,7 +91,6 @@ const emit = defineEmits<{
   'update:siteTitle': [value: string]
   'update:siteSubtitle': [value: string]
   'update:icpBeian': [value: string]
-  'update:copyrightText': [value: string]
   'select-logo': [file: File]
   save: []
 }>()
