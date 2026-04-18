@@ -64,6 +64,21 @@
   font-size: 13px;
 }
 
+.category-form-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.category-field {
+  display: grid;
+  gap: 8px;
+}
+
+.category-field span {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
 .category-action-row,
 .category-edit-row {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;

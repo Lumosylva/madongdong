@@ -13,10 +13,19 @@
         <h4>创建分类</h4>
         <span class="category-form-tip">自动生成 slug，也可以手动修改</span>
       </div>
-      <div class="action-row category-action-row">
-        <input class="category-input" v-model="newName" placeholder="分类名称" />
-        <input class="category-input" v-model="newSlug" placeholder="分类标识（slug）" @input="slugTouched = true" />
-        <input class="category-input" v-model="newDescription" placeholder="分类描述（可选）" />
+      <div class="category-form-stack">
+        <label class="category-field">
+          <span>名称是它在您网站上的显示方式。</span>
+          <input class="category-input" v-model="newName" placeholder="请输入名称" />
+        </label>
+        <label class="category-field">
+          <span>slug是名称的 URL 友好版本。它通常都是小写的，并且只包含字母、数字和连字符-，例如sui-bi。</span>
+          <input class="category-input" v-model="newSlug" placeholder="请输入标识（slug）" @input="slugTouched = true" />
+        </label>
+        <label class="category-field">
+          <span>描述默认不显示，它是对分类的说明。</span>
+          <input class="category-input" v-model="newDescription" placeholder="请输入描述（可选）" />
+        </label>
         <button class="category-create-btn" :disabled="duplicatedSlug" @click="create">创建分类</button>
       </div>
       <p v-if="duplicatedSlug" class="error-message category-error">slug 已存在，请修改后再创建</p>
@@ -59,10 +68,19 @@
         </div>
         <button class="category-edit-close" type="button" @click="editing = false">关闭</button>
       </div>
-      <div class="action-row category-edit-row">
-        <input class="category-input" v-model="editName" placeholder="分类名称" />
-        <input class="category-input" v-model="editSlug" placeholder="分类标识（slug）" />
-        <input class="category-input" v-model="editDescription" placeholder="分类描述（可选）" />
+      <div class="category-form-stack">
+        <label class="category-field">
+          <span>分类名称</span>
+          <input class="category-input" v-model="editName" placeholder="请输入分类名称" />
+        </label>
+        <label class="category-field">
+          <span>分类标识</span>
+          <input class="category-input" v-model="editSlug" placeholder="请输入分类标识（slug）" />
+        </label>
+        <label class="category-field">
+          <span>分类描述</span>
+          <input class="category-input" v-model="editDescription" placeholder="请输入分类描述（可选）" />
+        </label>
         <button class="category-save-btn" @click="saveEdit">保存修改</button>
       </div>
     </div>
