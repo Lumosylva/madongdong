@@ -50,6 +50,17 @@
   gap: 10px;
 }
 
+.settings-field {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-field > span {
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .logo-dropzone {
   display: grid;
   gap: 10px;
@@ -155,6 +166,21 @@
   padding: 0 14px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 6px 16px rgba(16, 35, 63, 0.04);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+
+.settings-textarea {
+  min-height: 94px;
+  padding: 12px 14px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: rgba(14, 165, 164, 0.6);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.16);
+  transform: translateY(-1px);
 }
 
 .settings-input:hover {

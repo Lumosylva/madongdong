@@ -11,8 +11,8 @@ class SiteSettingUpdate(BaseModel):
     site_title: str = Field(min_length=1, max_length=200)
     site_logo: str | None = Field(default=None, max_length=500)
     site_subtitle: str | None = Field(default=None, max_length=255)
-    icp_beian: str | None = Field(default=None, max_length=255)
-    copyright_text: str | None = Field(default=None, max_length=255)
+    icp_beian: str | None = Field(default=None, max_length=1000)
+    copyright_text: str | None = Field(default=None, max_length=1000)
     homepage_page_size: int = Field(default=10, ge=1, le=50)
     comment_requires_review: bool = True
 

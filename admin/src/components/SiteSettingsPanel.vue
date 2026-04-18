@@ -40,14 +40,26 @@
           </button>
         </div>
 
-        <input class="settings-input" :value="siteTitle" placeholder="网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
-        <input class="settings-input" :value="siteSubtitle" placeholder="副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
+        <label class="settings-field">
+          <span>网站标题</span>
+          <input class="settings-input" :value="siteTitle" placeholder="请输入网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
+        </label>
+        <label class="settings-field">
+          <span>副标题</span>
+          <input class="settings-input" :value="siteSubtitle" placeholder="请输入副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
+        </label>
       </section>
 
       <section class="settings-card">
         <h4>站点信息</h4>
-        <input class="settings-input" :value="icpBeian" placeholder="备案信息" @input="$emit('update:icpBeian', ($event.target as HTMLInputElement).value)" />
-        <input class="settings-input" :value="copyrightText" placeholder="版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
+        <label class="settings-field">
+          <span>备案信息</span>
+          <textarea class="settings-input settings-textarea" :value="icpBeian" placeholder="请输入备案 HTML 代码" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+        </label>
+        <label class="settings-field">
+          <span>版权信息</span>
+          <input class="settings-input" :value="copyrightText" placeholder="请输入版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
+        </label>
 
         <div class="save-row">
           <button :disabled="logoUploading" @click="$emit('save')">
