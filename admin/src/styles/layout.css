@@ -460,6 +460,7 @@
 .comments-panel {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .comments-head {
@@ -480,6 +481,15 @@
   border-radius: 999px;
   background: rgba(14, 165, 164, 0.06);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+}
+
+.comments-filter-row {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+}
+
+.comments-search-input,
+.comments-filter-select {
+  min-height: 46px;
 }
 
 .comments-list {
@@ -523,22 +533,17 @@
 .comments-content {
   margin: 0;
   color: var(--text);
-  line-height: 1.65;
+  line-height: 1.75;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
-.comments-content-separator {
-  margin: 0 6px;
-  color: var(--text-soft);
-}
-
-.comments-article-link {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.comments-article-link:hover {
-  text-decoration: underline;
+.comments-article-title {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 .comments-meta {
@@ -567,6 +572,20 @@
   padding: 0 12px;
 }
 
+.comments-pagination {
+  margin-top: 4px;
+}
+
+.comments-empty {
+  margin: 0;
+  padding: 18px 16px;
+  text-align: center;
+  color: var(--text-soft);
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: transparent;
+}
+
 :root[data-theme='dark'] .comments-card {
   background: rgba(17, 24, 39, 0.96);
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
@@ -587,6 +606,10 @@
 @media (max-width: 900px) {
   .comments-card {
     flex-direction: column;
+  }
+
+  .comments-filter-row {
+    grid-template-columns: 1fr;
   }
 }
 
