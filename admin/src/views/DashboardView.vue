@@ -680,7 +680,6 @@ const approveComment = async (commentId: number) => {
 const rejectComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'REJECTED') return
-  if (!confirm('确认拒绝该评论吗？')) return
   await adminApi.rejectComment(commentId)
   await loadAll()
 }

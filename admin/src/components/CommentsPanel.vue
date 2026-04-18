@@ -55,7 +55,7 @@
         </div>
         <div class="comments-actions">
           <button v-if="!isApproved(item.status) && !isRejected(item.status)" type="button" @click="$emit('approve', item.id)">通过</button>
-          <button v-if="!isRejected(item.status)" type="button" class="danger-btn" @click="$emit('reject', item.id)">拒绝</button>
+          <button v-if="!isRejected(item.status)" type="button" class="danger-btn" @click="openRejectConfirm(item)">拒绝</button>
         </div>
       </article>
 
@@ -74,6 +74,34 @@
       <div class="article-page-controls">
         <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
         <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
+      </div>
+    </div>
+
+    <div v-if="rejectConfirmOpen" class="comment-modal-backdrop" @click.self="closeRejectConfirm">
+      <div class="comment-modal">
+        <div class="comment-modal-head">
+          <div>
+            <p class="comment-modal-eyebrow">确认拒绝</p>
+            <h4>是否拒绝这条评论？</h4>
+          </div>
+          <button type="button" class="comment-modal-close" aria-label="关闭弹窗" @click="closeRejectConfirm">×</button>
+        </div>
+
+        <p class="comment-modal-text">拒绝后，这条评论将被标记为拒绝状态，并不会在前台展示。</p>
+
+        <div class="comment-modal-preview">
+          <div class="comment-modal-label">评论内容</div>
+          <div class="comment-modal-content">{{ rejectTarget?.content }}</div>
+          <div v-if="rejectTarget?.article?.id" class="comment-modal-article">
+            关联文章：
+            <a :href="webArticleUrl(rejectTarget.article.id)" target="_blank" rel="noreferrer">{{ truncateText(rejectTarget.article.title, 80) }}</a>
+          </div>
+        </div>
+
+        <div class="comment-modal-actions">
+          <button type="button" class="comment-modal-cancel" @click="closeRejectConfirm">取消</button>
+          <button type="button" class="comment-modal-confirm danger-btn" @click="confirmReject">确认拒绝</button>
+        </div>
       </div>
     </div>
   </section>
@@ -98,7 +126,7 @@ const props = defineProps<{
   formatCommentStatus: (status: string) => string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   approve: [commentId: number]
   reject: [commentId: number]
 }>()
@@ -109,6 +137,8 @@ const sortOrder = ref<'newest' | 'oldest'>('newest')
 const pageSizeOptions = [10, 20, 50]
 const pageSize = ref(10)
 const currentPage = ref(1)
+const rejectConfirmOpen = ref(false)
+const rejectTarget = ref<CommentItem | null>(null)
 
 const isApproved = (status: string) => String(status || '').toUpperCase() === 'APPROVED'
 const isRejected = (status: string) => String(status || '').toUpperCase() === 'REJECTED'
@@ -202,4 +232,20 @@ const goNextPage = () => {
 }
 
 const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
+
+const openRejectConfirm = (item: CommentItem) => {
+  rejectTarget.value = item
+  rejectConfirmOpen.value = true
+}
+
+const closeRejectConfirm = () => {
+  rejectConfirmOpen.value = false
+  rejectTarget.value = null
+}
+
+const confirmReject = () => {
+  if (!rejectTarget.value) return
+  emit('reject', rejectTarget.value.id)
+  closeRejectConfirm()
+}
 </script>
