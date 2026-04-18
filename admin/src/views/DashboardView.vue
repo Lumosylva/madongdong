@@ -26,9 +26,13 @@
       <aside class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
         <div class="sidebar-head">
           <button type="button" class="sidebar-toggle" :aria-label="sidebarToggleLabel" @click="toggleSidebar">
-            <span aria-hidden="true">{{ isSidebarCollapsed ? '☰' : '⇤' }}</span>
+            <svg v-if="isSidebarCollapsed" class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg v-else class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
           </button>
-          <span class="sidebar-title">菜单</span>
         </div>
 
         <nav class="sidebar-nav">

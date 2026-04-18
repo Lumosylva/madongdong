@@ -13,11 +13,19 @@
   theme-toggle
   响应式布局
 */
-.admin-page,
-.login-wrap {
-  width: min(1500px, calc(100% - 12px));
-  margin: 0 auto;
+.admin-page {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
   padding: 0 0 48px;
+  overflow-x: hidden;
+}
+
+.login-wrap {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
@@ -58,6 +66,12 @@
 
 .topbar-login {
   margin-bottom: 28px;
+}
+
+.admin-page .topbar {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .brand-block {
@@ -260,6 +274,12 @@
   place-items: center;
   padding: 0;
   flex: 0 0 auto;
+}
+
+.sidebar-toggle-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .sidebar-toggle:hover {
