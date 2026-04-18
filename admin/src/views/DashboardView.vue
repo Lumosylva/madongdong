@@ -208,9 +208,9 @@ const mainMenus: MainMenuItem[] = [
 
 const articleSubMenus: ArticleSubMenuItem[] = [
   { key: 'manage', label: '所有文章', contentKey: 'articles-manage' },
-  { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
   { key: 'create', label: '创建文章', contentKey: 'articles-create' },
   { key: 'category', label: '文章分类', contentKey: 'articles-category' },
+  { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
 ]
 
 const menuIconMap: Record<ViewType, string> = {
