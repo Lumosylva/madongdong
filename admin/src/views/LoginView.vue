@@ -3,29 +3,61 @@
     <header class="topbar topbar-login">
       <div class="brand-block">
         <span class="brand-mark">MD</span>
-        <h1>MaDongDong Admin</h1>
+        <div>
+          <h1>MaDongDong Admin</h1>
+          <p class="login-topbar-subtitle">内容管理后台</p>
+        </div>
       </div>
-      <nav class="nav">
-        <a href="javascript:void(0)">控制台</a>
-        <a href="javascript:void(0)">内容</a>
-        <a href="javascript:void(0)">设置</a>
-      </nav>
       <div class="topbar-actions">
-        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
+        <button type="button" class="theme-toggle login-theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
           <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
         </button>
       </div>
     </header>
 
-    <form class="login-card" @submit.prevent="submit">
-      <p class="eyebrow">MaDongDong Admin</p>
-      <h2>后台登录</h2>
-      <input v-model="username" placeholder="用户名" />
-      <input v-model="password" type="password" placeholder="密码" />
-      <button type="submit" :disabled="loading">{{ loading ? '登录中...' : '登录管理台' }}</button>
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <p class="tips">默认账号：admin / admin123456</p>
-    </form>
+    <div class="login-shell">
+      <aside class="login-hero">
+        <p class="eyebrow">MaDongDong Admin</p>
+        <h2>欢迎回到后台</h2>
+        <p class="login-hero-text">统一管理文章、媒体、分类与评论，保持内容生产与审核流程清晰、高效。</p>
+        <div class="login-hero-points">
+          <div class="login-hero-point">
+            <strong>文章管理</strong>
+            <span>发布、草稿、垃圾箱一站式处理</span>
+          </div>
+          <div class="login-hero-point">
+            <strong>媒体管理</strong>
+            <span>上传、预览、批量删除更顺手</span>
+          </div>
+          <div class="login-hero-point">
+            <strong>分类与评论</strong>
+            <span>快速维护内容结构与互动质量</span>
+          </div>
+        </div>
+      </aside>
+
+      <form class="login-card" @submit.prevent="submit">
+        <div class="login-card-head">
+          <p class="eyebrow">安全登录</p>
+          <h2>进入管理台</h2>
+          <p class="login-card-subtitle">请输入你的管理员账号与密码</p>
+        </div>
+
+        <label class="login-field">
+          <span>用户名</span>
+          <input v-model="username" placeholder="请输入用户名" autocomplete="username" />
+        </label>
+
+        <label class="login-field">
+          <span>密码</span>
+          <input v-model="password" type="password" placeholder="请输入密码" autocomplete="current-password" />
+        </label>
+
+        <button type="submit" class="login-submit-btn" :disabled="loading">{{ loading ? '登录中...' : '登录管理台' }}</button>
+        <p v-if="errorMessage" class="error-message login-error">{{ errorMessage }}</p>
+        <p class="tips login-tips">默认账号：admin / admin123456</p>
+      </form>
+    </div>
   </section>
 </template>
 

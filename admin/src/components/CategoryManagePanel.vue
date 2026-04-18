@@ -22,21 +22,34 @@
       <p v-if="duplicatedSlug" class="error-message category-error">slug 已存在，请修改后再创建</p>
     </div>
 
-    <ul class="category-list">
-      <li v-for="item in categories" :key="item.id" class="article-row category-row" :class="{ 'category-row-default': isDefaultCategory(item) }">
-        <div class="category-row-main">
-          <p class="category-row-title">
-            <span>{{ item.name }}</span>
-            <span v-if="isDefaultCategory(item)" class="category-badge">默认</span>
-          </p>
-          <small class="category-row-meta">slug：{{ item.slug }} ｜ {{ item.description || '无描述' }}</small>
+    <div class="category-toolbar">
+      <div class="category-toolbar-left">
+        <span class="category-toolbar-selected">已选择：{{ selectedCategory ? selectedCategory.name : '未选择' }}</span>
+        <span v-if="selectedCategory && isDefaultCategory(selectedCategory)" class="category-badge category-badge-locked">默认</span>
+      </div>
+      <div class="category-toolbar-actions">
+        <button :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="openEditSelected">编辑选中</button>
+        <button class="danger-btn" :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="deleteSelected">删除选中</button>
+      </div>
+    </div>
+
+    <div class="category-grid">
+      <button
+        v-for="item in categories"
+        :key="item.id"
+        type="button"
+        class="category-card"
+        :class="{ selected: selectedCategoryId === item.id, 'category-card-default': isDefaultCategory(item) }"
+        @click="selectCategory(item)"
+      >
+        <div class="category-card-head">
+          <strong>{{ item.name }}</strong>
+          <span v-if="isDefaultCategory(item)" class="category-badge category-badge-locked">锁定</span>
         </div>
-        <div class="row-actions category-row-actions">
-          <button :disabled="isDefaultCategory(item)" @click="startEdit(item)">编辑</button>
-          <button class="danger-btn" :disabled="isDefaultCategory(item)" @click="$emit('delete', item.id)">删除</button>
-        </div>
-      </li>
-    </ul>
+        <small class="category-card-meta">slug：{{ item.slug }}</small>
+        <p class="category-card-desc">{{ item.description || '无描述' }}</p>
+      </button>
+    </div>
 
     <div v-if="editing" class="category-edit-panel">
       <div class="category-edit-head">
@@ -86,6 +99,9 @@ const editId = ref<number | null>(null)
 const editName = ref('')
 const editSlug = ref('')
 const editDescription = ref('')
+const selectedCategoryId = ref<number | null>(null)
+
+const selectedCategory = computed(() => props.categories.find((item) => item.id === selectedCategoryId.value) || null)
 
 const slugify = (value: string) =>
   value
@@ -131,6 +147,10 @@ const isDefaultCategory = (item: CategoryItem) => {
   return name === '未分类' || slug === 'uncategorized'
 }
 
+const selectCategory = (item: CategoryItem) => {
+  selectedCategoryId.value = item.id
+}
+
 const startEdit = (item: CategoryItem) => {
   if (isDefaultCategory(item)) return
   editing.value = true
@@ -138,6 +158,16 @@ const startEdit = (item: CategoryItem) => {
   editName.value = item.name
   editSlug.value = item.slug
   editDescription.value = item.description || ''
+}
+
+const openEditSelected = () => {
+  if (!selectedCategory.value || isDefaultCategory(selectedCategory.value)) return
+  startEdit(selectedCategory.value)
+}
+
+const deleteSelected = () => {
+  if (!selectedCategory.value || isDefaultCategory(selectedCategory.value)) return
+  emit('delete', selectedCategory.value.id)
 }
 
 const saveEdit = () => {
