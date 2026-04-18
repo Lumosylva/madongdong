@@ -4,8 +4,7 @@
       <div class="brand-block">
         <span class="brand-mark">MD</span>
         <div>
-          <h1>MaDongDong Admin</h1>
-          <p class="login-topbar-subtitle">内容管理后台</p>
+          <h1>MaDongDong仪表盘</h1>
         </div>
       </div>
       <div class="topbar-actions">
@@ -21,7 +20,7 @@
           <div class="login-hero-orb orb-a"></div>
           <div class="login-hero-orb orb-b"></div>
         </div>
-        <h2>进入内容管理中枢</h2>
+        <h2>欢迎进入仪表盘</h2>
         <p class="login-hero-text">统一管理文章、媒体、分类与评论，保持内容生产与审核流程清晰、高效。</p>
         <div class="login-hero-points">
           <div class="login-hero-point">
@@ -41,9 +40,8 @@
 
       <form class="login-card" @submit.prevent="submit">
         <div class="login-card-head">
-          <p class="eyebrow">安全登录</p>
-          <h2>进入管理台</h2>
-          <p class="login-card-subtitle">请输入你的管理员账号与密码</p>
+          <h2>进入仪表盘</h2>
+          <p class="login-card-subtitle">请输入管理员账号与密码</p>
         </div>
 
         <label class="login-field">
@@ -53,12 +51,16 @@
 
         <label class="login-field">
           <span>密码</span>
-          <input v-model="password" type="password" placeholder="请输入密码" autocomplete="current-password" />
+          <div class="login-password-row">
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" autocomplete="current-password" />
+            <button type="button" class="login-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
+              <span aria-hidden="true" class="login-password-icon">{{ showPassword ? '◔' : '◕' }}</span>
+            </button>
+          </div>
         </label>
 
-        <button type="submit" class="login-submit-btn" :disabled="loading">{{ loading ? '登录中...' : '登录管理台' }}</button>
+        <button type="submit" class="login-submit-btn" :disabled="loading">{{ loading ? '登录中...' : '登录' }}</button>
         <p v-if="errorMessage" class="error-message login-error">{{ errorMessage }}</p>
-        <p class="tips login-tips">默认账号：admin / admin123456</p>
       </form>
     </div>
   </section>
@@ -77,6 +79,7 @@ const username = ref('admin')
 const password = ref('admin123456')
 const loading = ref(false)
 const errorMessage = ref('')
+const showPassword = ref(false)
 const theme = ref<ThemeMode>('light')
 
 const applyTheme = (value: ThemeMode) => {
