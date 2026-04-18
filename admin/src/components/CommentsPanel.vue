@@ -34,7 +34,10 @@
         ]"
       >
         <div class="comments-card-main">
-          <p class="comments-content">{{ item.content }}</p>
+          <div class="comments-card-headline">
+            <p class="comments-content">{{ item.content }}</p>
+            <span class="comments-status-badge" :class="`status-${normalizeStatus(item.status)}`">{{ formatCommentStatus(item.status) }}</span>
+          </div>
           <a
             v-if="item.article?.id"
             class="comments-article-link comments-article-title"
@@ -48,7 +51,6 @@
             <span>昵称：{{ item.user?.nickname || item.guest_nickname || '匿名访客' }}</span>
             <span>邮箱：{{ item.guest_email || '-' }}</span>
             <span>时间：<span :title="formatDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</span></span>
-            <span class="comments-status">状态：{{ formatCommentStatus(item.status) }}</span>
           </div>
         </div>
         <div class="comments-actions">
