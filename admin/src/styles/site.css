@@ -101,7 +101,7 @@
 }
 
 .logo-file-button {
-  min-height: 40px;
+  min-height: 44px;
   border-radius: 12px;
   padding: 0 14px;
   border: 1px solid rgba(14, 165, 164, 0.2);
@@ -157,9 +157,9 @@
 }
 
 .settings-save-button {
-  min-height: 44px;
+  min-height: 38px;
   border-radius: 12px;
-  padding: 0 16px;
+  padding: 0 14px;
   border: 1px solid rgba(14, 165, 164, 0.2);
   background: linear-gradient(135deg, rgba(14, 165, 164, 0.14), rgba(56, 189, 248, 0.08));
   color: var(--text);

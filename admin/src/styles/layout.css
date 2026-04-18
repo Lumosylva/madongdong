@@ -980,6 +980,19 @@
   padding: 12px 14px;
   border-radius: 14px;
   margin-bottom: -2px;
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
 }
 
 .toast-success {
