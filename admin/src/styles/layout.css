@@ -509,6 +509,7 @@
 .comments-checkbox-wrap {
   display: grid;
   place-items: start center;
+  justify-self: start;
   padding-top: 4px;
 }
 
@@ -569,10 +570,10 @@
 
 .comments-card {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 14px 16px;
+  padding: 14px 16px 14px 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
@@ -681,10 +682,11 @@
 }
 
 .comments-actions {
-  display: inline-flex;
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .comments-actions button {
@@ -733,6 +735,15 @@
 @media (max-width: 900px) {
   .comments-card {
     grid-template-columns: 1fr;
+  }
+
+  .comments-checkbox-wrap {
+    justify-self: start;
+  }
+
+  .comments-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .comments-card-headline {
