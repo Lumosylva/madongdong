@@ -1,7 +1,7 @@
 <template>
   <section class="panel article-manage-panel">
     <div class="article-manage-head">
-      <h3>文章管理</h3>
+      <h3>所有文章</h3>
       <span class="article-count">共 {{ displayArticles.length }} 篇</span>
     </div>
 
