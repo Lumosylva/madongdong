@@ -15,7 +15,7 @@
       </div>
     </header>
 
-    <div class="login-shell">
+    <div class="login-stage">
       <aside class="login-hero">
         <div class="login-hero-visual" aria-hidden="true">
           <div class="login-hero-orb orb-a"></div>
