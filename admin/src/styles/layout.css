@@ -573,7 +573,7 @@
   grid-template-columns: 20px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
-  padding: 14px 16px 14px 12px;
+  padding: 14px 14px 14px 10px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.72);
@@ -687,6 +687,7 @@
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .comments-actions button {

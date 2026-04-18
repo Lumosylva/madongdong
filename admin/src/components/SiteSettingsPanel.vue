@@ -29,21 +29,25 @@
 
           <input
             ref="fileInputRef"
+            class="logo-file-input"
             type="file"
             accept="image/png,image/jpeg,image/svg+xml"
             :disabled="logoUploading"
             @change="onSelectLogo"
           />
+          <button type="button" class="logo-file-button" :disabled="logoUploading" @click="fileInputRef?.click()">
+            {{ logoUploading ? '上传中...' : '选择文件' }}
+          </button>
         </div>
 
-        <input :value="siteTitle" placeholder="网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
-        <input :value="siteSubtitle" placeholder="副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
+        <input class="settings-input" :value="siteTitle" placeholder="网站标题" @input="$emit('update:siteTitle', ($event.target as HTMLInputElement).value)" />
+        <input class="settings-input" :value="siteSubtitle" placeholder="副标题" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
       </section>
 
       <section class="settings-card">
         <h4>站点信息</h4>
-        <input :value="icpBeian" placeholder="备案信息" @input="$emit('update:icpBeian', ($event.target as HTMLInputElement).value)" />
-        <input :value="copyrightText" placeholder="版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
+        <input class="settings-input" :value="icpBeian" placeholder="备案信息" @input="$emit('update:icpBeian', ($event.target as HTMLInputElement).value)" />
+        <input class="settings-input" :value="copyrightText" placeholder="版权信息" @input="$emit('update:copyrightText', ($event.target as HTMLInputElement).value)" />
 
         <div class="save-row">
           <button :disabled="logoUploading" @click="$emit('save')">
