@@ -23,6 +23,18 @@
       <button class="article-reset-btn" type="button" @click="resetFilters">重置筛选</button>
     </div>
 
+    <div class="comments-toolbar">
+      <label class="comments-select-all">
+        <input type="checkbox" :checked="allVisibleSelected" :indeterminate.prop="indeterminateVisibleSelected" @change="toggleSelectAllVisible" />
+        <span>全选当前页</span>
+      </label>
+      <div class="comments-bulk-actions">
+        <button type="button" :disabled="!hasSelectedPending" @click="bulkApproveSelected">批量通过</button>
+        <button type="button" class="danger-btn" :disabled="!hasSelectedPending" @click="bulkRejectSelected">批量拒绝</button>
+        <button v-if="statusFilter === 'REJECTED'" type="button" class="danger-btn" :disabled="!hasSelectedRejected" @click="openBulkDeleteConfirm">批量删除</button>
+      </div>
+    </div>
+
     <div class="comments-list">
       <article
         v-for="item in pagedComments"
@@ -33,6 +45,9 @@
           { 'is-approved': isApproved(item.status), 'is-rejected': isRejected(item.status), 'is-pending': isPending(item.status) },
         ]"
       >
+        <label class="comments-checkbox-wrap">
+          <input type="checkbox" :checked="selectedIdsSet.has(item.id)" @change="toggleSelectItem(item.id)" />
+        </label>
         <div class="comments-card-main">
           <div class="comments-card-headline">
             <p class="comments-content">{{ item.content }}</p>
@@ -77,22 +92,25 @@
       </div>
     </div>
 
-    <div v-if="rejectConfirmOpen" class="comment-modal-backdrop" @click.self="closeRejectConfirm">
+    <div v-if="rejectConfirmOpen || bulkDeleteConfirmOpen" class="comment-modal-backdrop" @click.self="closeRejectConfirm">
       <div class="comment-modal">
         <div class="comment-modal-head">
           <div>
-            <p class="comment-modal-eyebrow">确认拒绝</p>
-            <h4>是否拒绝这条评论？</h4>
+            <p class="comment-modal-eyebrow">{{ bulkDeleteConfirmOpen ? '确认删除' : '确认拒绝' }}</p>
+            <h4>{{ bulkDeleteConfirmOpen ? '是否彻底删除所选已拒绝评论？' : '是否拒绝这条评论？' }}</h4>
           </div>
           <button type="button" class="comment-modal-close" aria-label="关闭弹窗" @click="closeRejectConfirm">×</button>
         </div>
 
-        <p class="comment-modal-text">拒绝后，这条评论将被标记为拒绝状态，并不会在前台展示。</p>
+        <p class="comment-modal-text">
+          {{ bulkDeleteConfirmOpen ? '删除后将从数据库中彻底清除，无法恢复。' : '拒绝后，这条评论将被标记为拒绝状态，并不会在前台展示。' }}
+        </p>
 
         <div class="comment-modal-preview">
-          <div class="comment-modal-label">评论内容</div>
-          <div class="comment-modal-content">{{ rejectTarget?.content }}</div>
-          <div v-if="rejectTarget?.article?.id" class="comment-modal-article">
+          <div class="comment-modal-label">{{ bulkDeleteConfirmOpen ? '删除数量' : '评论内容' }}</div>
+          <div v-if="bulkDeleteConfirmOpen" class="comment-modal-content">已选择 {{ selectedRejectedIds.length }} 条已拒绝评论</div>
+          <div v-else class="comment-modal-content">{{ rejectTarget?.content }}</div>
+          <div v-if="!bulkDeleteConfirmOpen && rejectTarget?.article?.id" class="comment-modal-article">
             关联文章：
             <a :href="webArticleUrl(rejectTarget.article.id)" target="_blank" rel="noreferrer">{{ truncateText(rejectTarget.article.title, 80) }}</a>
           </div>
@@ -100,7 +118,8 @@
 
         <div class="comment-modal-actions">
           <button type="button" class="comment-modal-cancel" @click="closeRejectConfirm">取消</button>
-          <button type="button" class="comment-modal-confirm danger-btn" @click="confirmReject">确认拒绝</button>
+          <button v-if="bulkDeleteConfirmOpen" type="button" class="comment-modal-confirm danger-btn" @click="confirmBulkDelete">确认删除</button>
+          <button v-else type="button" class="comment-modal-confirm danger-btn" @click="confirmReject">确认拒绝</button>
         </div>
       </div>
     </div>
@@ -129,6 +148,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   approve: [commentId: number]
   reject: [commentId: number]
+  'bulk-approve': [commentIds: number[]]
+  'bulk-reject': [commentIds: number[]]
+  'bulk-delete': [commentIds: number[]]
 }>()
 
 const keyword = ref('')
@@ -137,7 +159,9 @@ const sortOrder = ref<'newest' | 'oldest'>('newest')
 const pageSizeOptions = [10, 20, 50]
 const pageSize = ref(10)
 const currentPage = ref(1)
+const selectedIds = ref<number[]>([])
 const rejectConfirmOpen = ref(false)
+const bulkDeleteConfirmOpen = ref(false)
 const rejectTarget = ref<CommentItem | null>(null)
 
 const isApproved = (status: string) => String(status || '').toUpperCase() === 'APPROVED'
@@ -209,6 +233,21 @@ const pagedComments = computed(() => {
   return displayComments.value.slice(start, start + pageSize.value)
 })
 
+const visibleIds = computed(() => pagedComments.value.map((item) => item.id))
+const selectedIdsSet = computed(() => new Set(selectedIds.value))
+const visibleSelectedIds = computed(() => visibleIds.value.filter((id) => selectedIdsSet.value.has(id)))
+const allVisibleSelected = computed(() => visibleIds.value.length > 0 && visibleSelectedIds.value.length === visibleIds.value.length)
+const indeterminateVisibleSelected = computed(() => visibleSelectedIds.value.length > 0 && visibleSelectedIds.value.length < visibleIds.value.length)
+const selectedPendingIds = computed(() => selectedIds.value.filter((id) => {
+  const item = displayComments.value.find((comment) => comment.id === id)
+  return item ? isPending(item.status) : false
+}))
+const selectedRejectedIds = computed(() => selectedIds.value.filter((id) => {
+  const item = displayComments.value.find((comment) => comment.id === id)
+  return item ? isRejected(item.status) : false
+}))
+const hasSelectedPending = computed(() => selectedPendingIds.value.length > 0)
+const hasSelectedRejected = computed(() => selectedRejectedIds.value.length > 0)
 const canGoPrev = computed(() => currentPage.value > 1)
 const canGoNext = computed(() => currentPage.value < totalPages.value)
 
@@ -217,10 +256,56 @@ const resetFilters = () => {
   statusFilter.value = 'all'
   sortOrder.value = 'newest'
   currentPage.value = 1
+  selectedIds.value = []
 }
 
 const changePageSize = () => {
   currentPage.value = 1
+}
+
+const toggleSelectItem = (id: number) => {
+  if (selectedIds.value.includes(id)) {
+    selectedIds.value = selectedIds.value.filter((item) => item !== id)
+    return
+  }
+  selectedIds.value = [...selectedIds.value, id]
+}
+
+const toggleSelectAllVisible = () => {
+  if (allVisibleSelected.value) {
+    selectedIds.value = selectedIds.value.filter((id) => !visibleIds.value.includes(id))
+    return
+  }
+  const merged = new Set([...selectedIds.value, ...visibleIds.value])
+  selectedIds.value = Array.from(merged)
+}
+
+const bulkApproveSelected = () => {
+  const targets = selectedPendingIds.value
+  if (!targets.length) return
+  emit('bulk-approve', targets)
+  selectedIds.value = selectedIds.value.filter((id) => !targets.includes(id))
+}
+
+const bulkRejectSelected = () => {
+  const targets = selectedPendingIds.value
+  if (!targets.length) return
+  emit('bulk-reject', targets)
+  selectedIds.value = selectedIds.value.filter((id) => !targets.includes(id))
+}
+
+const openBulkDeleteConfirm = () => {
+  const targets = selectedRejectedIds.value
+  if (!targets.length) return
+  bulkDeleteConfirmOpen.value = true
+}
+
+const confirmBulkDelete = () => {
+  const targets = selectedRejectedIds.value
+  if (!targets.length) return
+  emit('bulk-delete', targets)
+  selectedIds.value = selectedIds.value.filter((id) => !targets.includes(id))
+  closeRejectConfirm()
 }
 
 const goPrevPage = () => {
@@ -240,6 +325,7 @@ const openRejectConfirm = (item: CommentItem) => {
 
 const closeRejectConfirm = () => {
   rejectConfirmOpen.value = false
+  bulkDeleteConfirmOpen.value = false
   rejectTarget.value = null
 }
 

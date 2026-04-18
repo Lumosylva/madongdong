@@ -120,6 +120,12 @@ export const adminApi = {
       method: 'POST',
     })
   },
+  deleteComments(commentIds: number[]): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/comments/delete', {
+      method: 'POST',
+      body: JSON.stringify({ comment_ids: commentIds }),
+    })
+  },
   getSiteSettings(): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/site/settings')
   },

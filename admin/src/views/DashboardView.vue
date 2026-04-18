@@ -474,6 +474,9 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
       return {
         approve: approveComment,
         reject: rejectComment,
+        'bulk-approve': bulkApproveComments,
+        'bulk-reject': bulkRejectComments,
+        'bulk-delete': bulkDeleteComments,
       }
     case 'articles-category':
       return {
@@ -677,10 +680,40 @@ const approveComment = async (commentId: number) => {
   await loadAll()
 }
 
+const bulkApproveComments = async (commentIds: number[]) => {
+  const targets = commentIds.filter((commentId) => {
+    const item = comments.value.find((comment) => comment.id === commentId)
+    return item && String(item.status).toUpperCase() !== 'APPROVED'
+  })
+  if (!targets.length) return
+  await Promise.all(targets.map((commentId) => adminApi.approveComment(commentId)))
+  await loadAll()
+}
+
 const rejectComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'REJECTED') return
   await adminApi.rejectComment(commentId)
+  await loadAll()
+}
+
+const bulkRejectComments = async (commentIds: number[]) => {
+  const targets = commentIds.filter((commentId) => {
+    const item = comments.value.find((comment) => comment.id === commentId)
+    return item && String(item.status).toUpperCase() !== 'REJECTED'
+  })
+  if (!targets.length) return
+  await Promise.all(targets.map((commentId) => adminApi.rejectComment(commentId)))
+  await loadAll()
+}
+
+const bulkDeleteComments = async (commentIds: number[]) => {
+  const targets = commentIds.filter((commentId) => {
+    const item = comments.value.find((comment) => comment.id === commentId)
+    return item && String(item.status).toUpperCase() === 'REJECTED'
+  })
+  if (!targets.length) return
+  await adminApi.deleteComments(targets)
   await loadAll()
 }
 

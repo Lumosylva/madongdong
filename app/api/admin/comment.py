@@ -7,10 +7,16 @@ from app.core.database import get_db_session
 from app.core.security import require_any_role
 from app.models.auth import User
 from app.schemas.comment import CommentResponse
-from app.services.comment import approve_comment, list_comments, reject_comment
+from pydantic import BaseModel
+
+from app.services.comment import approve_comment, delete_comments, list_comments, reject_comment
 from app.utils.response import success_response
 
 router = APIRouter(prefix="/admin/comments", tags=["admin-comments"])
+
+
+class CommentDeletePayload(BaseModel):
+    comment_ids: list[int]
 
 
 @router.get("", summary="查询评论列表")
@@ -40,3 +46,13 @@ async def reject_comment_endpoint(
 ) -> dict[str, object]:
     comment = await reject_comment(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())
+
+
+@router.post("/delete", summary="彻底删除评论")
+async def delete_comments_endpoint(
+    payload: CommentDeletePayload,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    deleted_count = await delete_comments(session, payload.comment_ids)
+    return success_response({"deleted_count": deleted_count})

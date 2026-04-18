@@ -80,6 +80,32 @@ async def reject_comment(session: AsyncSession, comment_id: int) -> Comment:
     return comment
 
 
+async def delete_comments(session: AsyncSession, comment_ids: list[int]) -> int:
+    """彻底删除评论。"""
+
+    if not comment_ids:
+        return 0
+
+    result = await session.execute(select(Comment).where(Comment.id.in_(comment_ids)))
+    comments = list(result.scalars().unique().all())
+    if not comments:
+        return 0
+
+    article_ids = {comment.article_id for comment in comments}
+    for comment in comments:
+        await session.delete(comment)
+
+    for article_id in article_ids:
+        count = await count_article_comments(session, article_id)
+        article_result = await session.execute(select(Article).where(Article.id == article_id))
+        article = article_result.scalar_one_or_none()
+        if article is not None:
+            article.comment_count = count
+
+    await session.commit()
+    return len(comments)
+
+
 async def get_comment_or_404(session: AsyncSession, comment_id: int) -> Comment:
     """获取评论。"""
 
