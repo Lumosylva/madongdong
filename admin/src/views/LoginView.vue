@@ -53,8 +53,26 @@
           <span>密码</span>
           <div class="login-password-row">
             <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" autocomplete="current-password" />
-            <button type="button" class="login-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
-              <span aria-hidden="true" class="login-password-icon">{{ showPassword ? '◔' : '◕' }}</span>
+            <button
+              type="button"
+              class="login-password-toggle"
+              :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+              @pointerdown.prevent="showPassword = true"
+              @pointerup.prevent="showPassword = false"
+              @pointerleave.prevent="showPassword = false"
+              @pointercancel.prevent="showPassword = false"
+              @blur="showPassword = false"
+            >
+              <svg v-if="showPassword" class="login-password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              </svg>
+              <svg v-else class="login-password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M10.6 10.6a3 3 0 0 0 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7.8 7.8C4.9 9.4 3 12 3 12s3.5 6 9 6c1.1 0 2.1-.2 3-.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.2 6.1C18 7.1 21 12 21 12s-.8 1.4-2.4 3.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </button>
           </div>
         </label>

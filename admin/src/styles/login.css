@@ -261,9 +261,16 @@
   box-shadow: 0 8px 18px rgba(16, 35, 63, 0.06);
 }
 
+.login-password-toggle:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(16, 35, 63, 0.04);
+}
+
 .login-password-icon {
-  font-size: 18px;
-  line-height: 1;
+  width: 20px;
+  height: 20px;
+  display: block;
+  color: currentColor;
 }
 
 .login-password-row input {
