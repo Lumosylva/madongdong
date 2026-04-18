@@ -1,31 +1,41 @@
 <template>
-  <section class="panel">
-    <h3>评论管理</h3>
-    <ul>
-      <li v-for="item in comments" :key="item.id" class="article-row">
-        <div>
-          <p>
+  <section class="panel comments-panel">
+    <div class="article-manage-head comments-head">
+      <div>
+        <h3>评论管理</h3>
+        <p class="comments-subtitle">集中审核文章评论，维护社区内容质量</p>
+      </div>
+      <span class="article-count comments-count">共 {{ comments.length }} 条</span>
+    </div>
+
+    <div class="comments-list">
+      <article v-for="item in comments" :key="item.id" class="comments-card" :class="[
+        `status-${String(item.status || '').toLowerCase()}`,
+        { 'is-approved': isApproved(item.status), 'is-rejected': isRejected(item.status), 'is-pending': !isApproved(item.status) && !isRejected(item.status) },
+      ]">
+        <div class="comments-card-main">
+          <p class="comments-content">
             {{ item.content }}
             <template v-if="item.article?.id">
-              -
-              <a :href="webArticleUrl(item.article.id)" target="_blank" rel="noreferrer">
+              <span class="comments-content-separator">·</span>
+              <a class="comments-article-link" :href="webArticleUrl(item.article.id)" target="_blank" rel="noreferrer">
                 {{ truncateText(item.article.title, 50) }}
               </a>
             </template>
           </p>
-          <small>
-            昵称：{{ item.user?.nickname || item.guest_nickname || '匿名访客' }}
-            ｜ 邮箱：{{ item.guest_email || '-' }}
-            ｜ 时间：<span :title="formatDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</span>
-            ｜ 状态：{{ formatCommentStatus(item.status) }}
-          </small>
+          <div class="comments-meta">
+            <span>昵称：{{ item.user?.nickname || item.guest_nickname || '匿名访客' }}</span>
+            <span>邮箱：{{ item.guest_email || '-' }}</span>
+            <span>时间：<span :title="formatDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</span></span>
+            <span class="comments-status">状态：{{ formatCommentStatus(item.status) }}</span>
+          </div>
         </div>
-        <div class="row-actions">
-          <button :disabled="isApproved(item.status)" @click="$emit('approve', item.id)">通过</button>
-          <button class="danger-btn" :disabled="isRejected(item.status)" @click="$emit('reject', item.id)">拒绝</button>
+        <div class="comments-actions">
+          <button v-if="!isApproved(item.status) && !isRejected(item.status)" @click="$emit('approve', item.id)">通过</button>
+          <button v-if="!isRejected(item.status)" class="danger-btn" @click="$emit('reject', item.id)">拒绝</button>
         </div>
-      </li>
-    </ul>
+      </article>
+    </div>
   </section>
 </template>
 
