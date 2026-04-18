@@ -51,77 +51,34 @@
 .login-hero {
   position: absolute;
   inset: 0;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 18px;
-  padding: 26px clamp(24px, 4vw, 48px);
-  padding-right: min(44vw, 500px);
+  padding: 26px clamp(32px, 5vw, 72px) 26px clamp(64px, 8vw, 132px);
+  padding-right: min(42vw, 480px);
   border: none;
   border-radius: 0;
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 164, 0.14), transparent 28%),
-    radial-gradient(circle at 18% 20%, rgba(56, 189, 248, 0.16), transparent 22%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(14, 165, 164, 0.06));
+    radial-gradient(circle at 20% 24%, rgba(56, 189, 248, 0.14), transparent 26%),
+    radial-gradient(circle at 82% 16%, rgba(14, 165, 164, 0.16), transparent 30%),
+    radial-gradient(circle at 72% 78%, rgba(251, 191, 36, 0.08), transparent 22%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(14, 165, 164, 0.06));
   box-shadow: 0 18px 46px rgba(16, 35, 63, 0.08);
   overflow: hidden;
-  justify-content: center;
-}
-
-.login-hero::after {
-  content: '';
-  position: absolute;
-  inset: auto -20% -30% auto;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(14, 165, 164, 0.16), transparent 68%);
-  pointer-events: none;
 }
 
 :root[data-theme='dark'] .login-hero {
   background:
-    radial-gradient(circle at top right, rgba(14, 165, 164, 0.16), transparent 28%),
-    radial-gradient(circle at 18% 20%, rgba(56, 189, 248, 0.16), transparent 22%),
+    radial-gradient(circle at 20% 24%, rgba(56, 189, 248, 0.14), transparent 26%),
+    radial-gradient(circle at 82% 16%, rgba(14, 165, 164, 0.18), transparent 30%),
+    radial-gradient(circle at 72% 78%, rgba(251, 191, 36, 0.1), transparent 22%),
     linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(14, 165, 164, 0.08));
-}
-
-:root[data-theme='dark'] .login-hero {
-  background: linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(14, 165, 164, 0.08));
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
 }
 
 .login-hero-visual {
-  position: relative;
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 6px 0 14px;
-}
-
-.login-hero-orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(0.2px);
-}
-
-.login-hero-orb.orb-a {
-  width: 92px;
-  height: 92px;
-  right: 18px;
-  top: 8px;
-  background: linear-gradient(135deg, rgba(14, 165, 164, 0.8), rgba(56, 189, 248, 0.18));
-  opacity: 0.72;
-}
-
-.login-hero-orb.orb-b {
-  width: 58px;
-  height: 58px;
-  right: 92px;
-  top: 58px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.72), rgba(227, 91, 119, 0.16));
-  opacity: 0.66;
+  display: none;
 }
 
 .login-hero-chip {
@@ -150,9 +107,17 @@
 
 .login-hero-text {
   margin: 0;
-  max-width: 54ch;
+  max-width: 68ch;
   color: var(--text-soft);
   line-height: 1.75;
+  white-space: nowrap;
+}
+
+@media (max-width: 1200px) {
+  .login-hero-text {
+    white-space: normal;
+    max-width: 54ch;
+  }
 }
 
 .login-hero-points {
@@ -163,14 +128,15 @@
 .login-hero-point {
   display: grid;
   gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(255, 255, 255, 0.58);
+  padding: 10px 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 :root[data-theme='dark'] .login-hero-point {
-  background: rgba(17, 24, 39, 0.72);
+  background: transparent;
 }
 
 .login-hero-point strong {

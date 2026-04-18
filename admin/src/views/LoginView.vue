@@ -20,12 +20,8 @@
         <div class="login-hero-visual" aria-hidden="true">
           <div class="login-hero-orb orb-a"></div>
           <div class="login-hero-orb orb-b"></div>
-          <div class="login-hero-chip">内容工作台</div>
-          <div class="login-hero-chip">发布流程</div>
-          <div class="login-hero-chip">审核协作</div>
         </div>
-        <p class="eyebrow">MaDongDong Admin</p>
-        <h2>欢迎回到后台</h2>
+        <h2>进入内容管理中枢</h2>
         <p class="login-hero-text">统一管理文章、媒体、分类与评论，保持内容生产与审核流程清晰、高效。</p>
         <div class="login-hero-points">
           <div class="login-hero-point">
