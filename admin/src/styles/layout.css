@@ -973,6 +973,48 @@
   gap: 18px;
 }
 
+.toast-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: -2px;
+}
+
+.toast-success {
+  border-color: rgba(16, 185, 129, 0.24);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(255, 255, 255, 0.74));
+}
+
+.toast-error {
+  border-color: rgba(227, 91, 119, 0.24);
+  background: linear-gradient(135deg, rgba(227, 91, 119, 0.12), rgba(255, 255, 255, 0.74));
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+}
+
+.toast-text {
+  color: var(--text);
+  font-size: 14px;
+}
+
+:root[data-theme='dark'] .toast-success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(17, 24, 39, 0.96));
+}
+
+:root[data-theme='dark'] .toast-error {
+  background: linear-gradient(135deg, rgba(227, 91, 119, 0.18), rgba(17, 24, 39, 0.96));
+}
+
 .panel > ul:not(.article-manage-list):not(.article-trash-list) {
   padding-left: 18px;
   color: var(--text-soft);

@@ -22,6 +22,11 @@
       </div>
     </header>
 
+    <div v-if="siteToastMessage" class="panel toast-panel" :class="`toast-${siteToastStatus}`">
+      <span class="toast-icon" aria-hidden="true">{{ siteToastStatus === 'success' ? '✓' : '!' }}</span>
+      <span class="toast-text">{{ siteToastMessage }}</span>
+    </div>
+
     <div class="dashboard-shell" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <aside class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
         <div class="sidebar-head">
@@ -194,6 +199,9 @@ const logoUploading = ref(false)
 const logoUploadMessage = ref('')
 const logoUploadStatus = ref<'success' | 'error' | ''>('')
 const logoCropApplied = ref(false)
+const siteToastMessage = ref('')
+const siteToastStatus = ref<'success' | 'error' | ''>('')
+let siteToastTimer: number | null = null
 const mediaUploading = ref(false)
 const mediaToastMessage = ref('')
 const mediaToastStatus = ref<'success' | 'error' | ''>('')
@@ -854,17 +862,35 @@ const handleSiteLogoSelect = async (file: File) => {
   }
 }
 
+const showSiteToast = (message: string, status: 'success' | 'error') => {
+  siteToastMessage.value = message
+  siteToastStatus.value = status
+  if (siteToastTimer !== null) {
+    window.clearTimeout(siteToastTimer)
+  }
+  siteToastTimer = window.setTimeout(() => {
+    siteToastMessage.value = ''
+    siteToastStatus.value = ''
+    siteToastTimer = null
+  }, 3000)
+}
+
 const saveSite = async () => {
-  await adminApi.updateSiteSettings({
-    site_title: siteTitle.value,
-    site_logo: siteLogo.value || null,
-    site_subtitle: siteSubtitle.value,
-    icp_beian: icpBeian.value,
-    copyright_text: copyrightText.value,
-    homepage_page_size: 10,
-    comment_requires_review: true,
-  })
-  await loadAll()
+  try {
+    await adminApi.updateSiteSettings({
+      site_title: siteTitle.value,
+      site_logo: siteLogo.value || null,
+      site_subtitle: siteSubtitle.value,
+      icp_beian: icpBeian.value,
+      copyright_text: copyrightText.value,
+      homepage_page_size: 10,
+      comment_requires_review: true,
+    })
+    await loadAll()
+    showSiteToast('设置保存成功', 'success')
+  } catch (error) {
+    showSiteToast(error instanceof Error ? error.message : '设置保存失败', 'error')
+  }
 }
 
 const tagSlugify = (value: string) =>
@@ -1093,6 +1119,10 @@ onBeforeUnmount(() => {
   if (articleSubmitErrorTimer !== null) {
     window.clearTimeout(articleSubmitErrorTimer)
     articleSubmitErrorTimer = null
+  }
+  if (siteToastTimer !== null) {
+    window.clearTimeout(siteToastTimer)
+    siteToastTimer = null
   }
 })
 </script>

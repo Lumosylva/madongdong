@@ -51,15 +51,14 @@
       </section>
 
       <section class="settings-card">
-        <h4>站点信息</h4>
+        <h4>页脚信息</h4>
         <label class="settings-field">
-          <span>备案信息</span>
-          <textarea class="settings-input settings-textarea" :value="icpBeian" placeholder="请输入页脚HTML代码" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
-          <p class="tips">页脚HTML代码，用于网站底部展示</p>
+          <textarea class="settings-input settings-textarea" :value="icpBeian" placeholder="请输入页脚 HTML 代码" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">支持 HTML 片段，用于网站底部展示</p>
         </label>
 
         <div class="save-row">
-          <button :disabled="logoUploading" @click="$emit('save')">
+          <button type="button" class="settings-save-button" :disabled="logoUploading" @click="$emit('save')">
             {{ logoUploading ? 'Logo 上传中...' : '保存设置' }}
           </button>
         </div>
