@@ -1,31 +1,31 @@
 .userPanelRoot {
   display: grid;
-  gap: 30px;
+  gap: 20px;
   min-width: 0;
-  padding: 10px 0 12px;
+  padding: 8px 0 10px;
 }
 
 .user-hero {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   align-items: flex-start;
-  padding: 6px 2px 2px;
-  margin-bottom: 2px;
+  padding: 2px 2px 0;
+  margin-bottom: 0;
 }
 
 .user-hero h3 {
   margin: 0;
   font-size: 22px;
   letter-spacing: 0.01em;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .user-hero p {
-  margin: 10px 0 0;
+  margin: 4px 0 0;
   color: var(--text-soft);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.45;
 }
 
 .user-heroCount {
@@ -44,7 +44,7 @@
 .toolbarRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px auto;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -75,11 +75,11 @@
 .bulkBar {
   display: flex;
   justify-content: space-between;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.64);
 }
 
@@ -99,15 +99,15 @@
 
 .userList {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .userCard {
   display: grid;
   grid-template-columns: 28px 54px minmax(0, 1fr) auto;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
-  padding: 18px 18px;
+  padding: 16px 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.74);
@@ -144,7 +144,7 @@
 .userMain {
   min-width: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cardHead {
@@ -181,7 +181,7 @@
 
 .actionRow {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -246,9 +246,9 @@
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
-  padding: 24px;
+  padding: 26px;
   display: grid;
-  gap: 20px;
+  gap: 22px;
 }
 
 .modalHead {
