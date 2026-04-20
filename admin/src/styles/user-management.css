@@ -1,0 +1,324 @@
+.userPanelRoot {
+  display: grid;
+  gap: 30px;
+  min-width: 0;
+  padding: 10px 0 12px;
+}
+
+.user-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 6px 2px 2px;
+  margin-bottom: 2px;
+}
+
+.user-hero h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+.user-hero p {
+  margin: 10px 0 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.user-heroCount {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 165, 164, 0.14);
+  background: rgba(14, 165, 164, 0.06);
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.toolbarRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.fieldInput {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 13px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--text);
+  padding: 0 14px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.58) inset, 0 6px 16px rgba(16, 35, 63, 0.04);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+
+.fieldInput:hover {
+  border-color: rgba(14, 165, 164, 0.3);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: rgba(14, 165, 164, 0.6);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.16);
+  transform: translateY(-1px);
+}
+
+.bulkBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.bulkActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.userList {
+  display: grid;
+  gap: 14px;
+}
+
+.userCard {
+  display: grid;
+  grid-template-columns: 28px 54px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 6px 16px rgba(16, 35, 63, 0.04);
+}
+
+.checkWrap {
+  display: grid;
+  place-items: center;
+}
+
+.avatarWrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.16), rgba(56, 189, 248, 0.12));
+  display: grid;
+  place-items: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.userMain {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.roleList {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.roleList em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--accent);
+  background: rgba(14, 165, 164, 0.08);
+  border: 1px solid rgba(14, 165, 164, 0.12);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.metaRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.actionRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.button {
+  min-height: 40px;
+  border-radius: 12px;
+  padding: 0 14px;
+  border: 1px solid rgba(14, 165, 164, 0.2);
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.14), rgba(56, 189, 248, 0.08));
+  color: var(--text);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(14, 165, 164, 0.34);
+  box-shadow: 0 10px 22px rgba(16, 35, 63, 0.09);
+}
+
+.buttonSecondary {
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.12), rgba(56, 189, 248, 0.06));
+}
+
+.buttonPrimary {
+  min-width: 120px;
+}
+
+.buttonDanger {
+  border-color: rgba(227, 91, 119, 0.2);
+  background: linear-gradient(135deg, rgba(227, 91, 119, 0.14), rgba(255, 255, 255, 0.08));
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.emptyState {
+  margin: 0;
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--text-soft);
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.48);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: 600;
+  padding: 24px;
+}
+
+.modalCard {
+  width: min(760px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  padding: 24px;
+  display: grid;
+  gap: 20px;
+}
+
+.modalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modalHead h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modalClose {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-soft);
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.fieldBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.fieldBlock > span {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .toolbarRow,
+  .modalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bulkBar,
+  .userCard {
+    grid-template-columns: 1fr;
+  }
+
+  .actionRow {
+    justify-content: flex-start;
+  }
+
+  .bulkBar {
+    align-items: flex-start;
+  }
+}
