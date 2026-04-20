@@ -1,17 +1,17 @@
 .userPanelRoot {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   min-width: 0;
-  padding: 8px 10px 10px 0;
+  padding: 6px 10px 8px 0;
 }
 
 .user-hero {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
-  padding: 2px 2px 0;
-  margin-bottom: 0;
+  padding: 0 2px;
+  margin-bottom: -2px;
 }
 
 .user-hero h3 {
@@ -38,13 +38,13 @@
   font-size: 13px;
   line-height: 1;
   white-space: nowrap;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .toolbarRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px auto;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
 }
 
