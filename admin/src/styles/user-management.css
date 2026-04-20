@@ -246,9 +246,9 @@
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
-  padding: 26px;
+  padding: 20px 24px 18px;
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .editorHero {
@@ -261,13 +261,14 @@
 .editorHero h4 {
   margin: 0;
   font-size: 20px;
+  line-height: 1.15;
 }
 
 .editorHero p:last-child {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--text-soft);
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .modalClose {
@@ -281,19 +282,19 @@
 
 .editorGrid {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
 }
 
 .avatarPanel,
 .formPanel {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .avatarPanel {
-  padding: 18px;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: rgba(248, 250, 252, 0.72);
@@ -317,14 +318,14 @@
 }
 
 .avatarPreviewFallback {
-  font-size: 56px;
+  font-size: 48px;
   font-weight: 800;
   color: #0f172a;
 }
 
 .avatarPanelActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -336,7 +337,7 @@
   margin: 0;
   color: var(--text-soft);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.45;
 }
 
 .fieldBlock {

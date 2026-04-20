@@ -68,7 +68,7 @@
       <div class="editorPage">
         <div class="editorHero">
           <div>
-            <p class="eyebrow">{{ editingUser?.id ? '编辑用户' : '添加用户' }}</p>
+            <p class="eyebrow">{{ editingUser?.id ? '编辑用户' : '新建用户' }}</p>
             <h4>{{ editingUser?.id ? '修改用户信息' : '新建用户' }}</h4>
             <p>头像支持上传预览，布局与个人中心保持一致。</p>
           </div>
