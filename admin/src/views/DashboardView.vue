@@ -136,11 +136,12 @@ import CommentsPanel from '../components/CommentsPanel.vue'
 import MediaPanel from '../components/MediaPanel.vue'
 import OverviewPanel from '../components/OverviewPanel.vue'
 import SiteSettingsPanel from '../components/SiteSettingsPanel.vue'
+import UserManagementPanel from '../components/UserManagementPanel.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
 import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
-type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site' | 'profile'
+type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'users' | 'profile' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create' | 'category'
 type ContentViewKey =
   | 'overview'
@@ -150,6 +151,7 @@ type ContentViewKey =
   | 'articles-category'
   | 'media'
   | 'comments'
+  | 'users'
   | 'site'
 
 type MainMenuItem = {
@@ -176,6 +178,7 @@ const deletedArticles = ref<any[]>([])
 const categories = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
+const users = ref<any[]>([])
 const siteTitle = ref('')
 const siteSubtitle = ref('')
 const siteLogo = ref('')
@@ -218,6 +221,7 @@ const mainMenus: MainMenuItem[] = [
   { key: 'articles', label: '文章' },
   { key: 'media', label: '媒体', adminOnly: true },
   { key: 'comments', label: '评论' },
+  { key: 'users', label: '用户管理', adminOnly: true },
   { key: 'profile', label: '个人中心' },
   { key: 'site', label: '设置', adminOnly: true },
 ]
@@ -234,6 +238,7 @@ const menuIconMap: Record<ViewType, string> = {
   articles: '✎',
   media: '◫',
   comments: '☍',
+  users: '⚑',
   site: '⚙',
   profile: '◉',
 }
@@ -356,6 +361,7 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'overview') return 'overview'
   if (currentView.value === 'media') return 'media'
   if (currentView.value === 'comments') return 'comments'
+  if (currentView.value === 'users') return 'users'
   if (currentView.value === 'site') return 'site'
   return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
 })
@@ -368,6 +374,7 @@ const panelComponentMap: Record<ContentViewKey, unknown> = {
   'articles-category': CategoryManagePanel,
   media: MediaPanel,
   comments: CommentsPanel,
+  users: UserManagementPanel,
   site: SiteSettingsPanel,
 }
 
@@ -426,6 +433,10 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
       return {
         comments: comments.value,
         formatCommentStatus,
+      }
+    case 'users':
+      return {
+        users: users.value,
       }
     case 'site':
       return {
@@ -499,6 +510,13 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
         create: createCategory,
         update: updateCategory,
         delete: deleteCategory,
+      }
+    case 'users':
+      return {
+        create: createUser,
+        update: updateUser,
+        delete: deleteUsers,
+        batchChangeRole: batchChangeUsersRole,
       }
     case 'site':
       return {
@@ -643,19 +661,21 @@ const loadAll = async () => {
   try {
     const meRes = await adminApi.getMe()
     currentUser.value = meRes.data
-    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, siteRes] = await Promise.all([
+    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, siteRes, userRes] = await Promise.all([
       adminApi.getArticles(),
       adminApi.getDeletedArticles(),
       adminApi.getCategories(),
       adminApi.getMedia(),
       adminApi.getComments(),
       adminApi.getSiteSettings(),
+      isAdmin.value ? adminApi.getUsers() : Promise.resolve({ data: [] }),
     ])
     articles.value = articleRes.data
     deletedArticles.value = deletedRes.data
     categories.value = categoryRes.data
     media.value = mediaRes.data
     comments.value = commentRes.data
+    users.value = userRes.data || []
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
     siteLogo.value = normalizeAssetUrl(siteRes.data.site_logo || '')
@@ -756,6 +776,30 @@ const updateCategory = async (payload: { id: number; name: string; slug: string;
 const deleteCategory = async (categoryIdValue: number) => {
   if (!confirm('确认删除该分类吗？')) return
   await adminApi.deleteCategory(categoryIdValue)
+  await loadAll()
+}
+
+const createUser = async (payload: Record<string, unknown>) => {
+  await adminApi.createUser(payload)
+  await loadAll()
+}
+
+const updateUser = async (payload: Record<string, unknown>) => {
+  const userId = Number(payload.id)
+  await adminApi.updateUser(userId, payload)
+  await loadAll()
+}
+
+const deleteUsers = async (ids: number[]) => {
+  if (!ids.length) return
+  if (!confirm('确认删除选中的用户？')) return
+  await adminApi.batchDeleteUsers(ids)
+  await loadAll()
+}
+
+const batchChangeUsersRole = async (ids: number[], role: string) => {
+  if (!ids.length) return
+  await adminApi.batchChangeUserRole(ids, role)
   await loadAll()
 }
 

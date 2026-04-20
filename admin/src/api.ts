@@ -57,10 +57,42 @@ export const adminApi = {
   getMe(): Promise<WrappedResponse<AdminUser>> {
     return request<WrappedResponse<AdminUser>>('/admin/auth/me')
   },
-  updateMe(payload: { nickname: string; email: string; bio: string; avatar: string | null; password: string | null }): Promise<WrappedResponse<AdminUser>> {
+  updateMe(payload: { nickname: string; email: string; avatar: string | null; password: string | null }): Promise<WrappedResponse<AdminUser>> {
     return request<WrappedResponse<AdminUser>>('/admin/auth/me', {
       method: 'PUT',
       body: JSON.stringify(payload),
+    })
+  },
+  getUsers(): Promise<WrappedResponse<any[]>> {
+    return request<WrappedResponse<any[]>>('/admin/auth/users')
+  },
+  createUser(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/auth/users', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+  updateUser(userId: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/auth/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteUser(userId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/auth/users/${userId}`, {
+      method: 'DELETE',
+    })
+  },
+  batchDeleteUsers(userIds: number[]): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/auth/users/batch/delete', {
+      method: 'POST',
+      body: JSON.stringify({ user_ids: userIds }),
+    })
+  },
+  batchChangeUserRole(userIds: number[], roleName: string): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/auth/users/batch/role', {
+      method: 'POST',
+      body: JSON.stringify({ user_ids: userIds, role_name: roleName }),
     })
   },
   getArticles(): Promise<WrappedResponse<any[]>> {
