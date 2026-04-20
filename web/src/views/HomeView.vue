@@ -32,10 +32,20 @@
             <span>{{ article.comment_count }} 评论</span>
           </div>
         </article>
-        <div class="pager-meta">第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页</div>
-        <div class="pager">
-          <button v-if="page > 1" @click="changePage(page - 1)">上一页</button>
-          <button v-if="page < data.latest_articles.total_pages" @click="changePage(page + 1)">下一页</button>
+        <div class="pager-row">
+          <div class="pager-meta">
+            第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页
+            <span class="pager-size">每页
+              <select v-model.number="homePageSize" class="pager-size-select" @change="changeHomePageSize">
+                <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+              </select>
+              条
+            </span>
+          </div>
+          <div class="pager-actions">
+            <button v-if="page > 1" class="pager-prev-btn" @click="changePage(page - 1)">上一页</button>
+            <button v-if="page < data.latest_articles.total_pages" class="pager-next-btn" @click="changePage(page + 1)">下一页</button>
+          </div>
         </div>
       </section>
 
@@ -74,6 +84,8 @@ const route = useRoute()
 const data = ref<HomeResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
+const homePageSize = ref(20)
+const pageSizeOptions = [10, 20, 30, 50]
 const welcomeMessage = ref('')
 const welcomeShownKey = 'md-home-welcome-shown'
 type ThemeMode = 'light' | 'dark'
@@ -107,7 +119,7 @@ const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo:
 }
 
 const loadData = async () => {
-  data.value = await webApi.getHome(page.value)
+  data.value = await webApi.getHome(page.value, homePageSize.value)
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
@@ -144,6 +156,12 @@ const hydrateWelcomeName = async () => {
 
 const changePage = async (value: number) => {
   page.value = value
+  await loadData()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const changeHomePageSize = async () => {
+  page.value = 1
   await loadData()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }

@@ -30,14 +30,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const webApi = {
-  getHome(page = 1): Promise<HomeResponse> {
-    return request<HomeResponse>('/web/home?page=' + page)
+  getHome(page = 1, pageSize = 20): Promise<HomeResponse> {
+    return request<HomeResponse>(`/web/home?page=${page}&page_size=${pageSize}`)
   },
   getArticle(articleId: string | number): Promise<ArticlePageResponse> {
     return request<ArticlePageResponse>(`/web/articles/${articleId}`)
   },
-  search(keyword: string, page = 1): Promise<SearchResponse> {
-    return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}`)
+  search(keyword: string, page = 1, pageSize = 20): Promise<SearchResponse> {
+    return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}&page_size=${pageSize}`)
   },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {

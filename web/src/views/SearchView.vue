@@ -31,6 +31,22 @@
           <span>{{ article.comment_count }} 评论</span>
         </div>
       </article>
+
+      <div class="pager-row search-pager-row">
+        <div class="pager-meta">
+          第 {{ data.articles.page }} / {{ data.articles.total_pages }} 页
+          <span class="pager-size">每页
+            <select v-model.number="pageSize" class="pager-size-select" @change="changePageSize">
+              <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+            </select>
+            条
+          </span>
+        </div>
+        <div class="pager-actions">
+          <button v-if="data.articles.page > 1" class="pager-prev-btn" @click="changePage(data.articles.page - 1)">上一页</button>
+          <button v-if="data.articles.page < data.articles.total_pages" class="pager-next-btn" @click="changePage(data.articles.page + 1)">下一页</button>
+        </div>
+      </div>
     </section>
 
     <WebFooter :icp-beian="data.site.icp_beian" :copyright-text="data.site.copyright_text" />
@@ -50,6 +66,9 @@ const route = useRoute()
 const router = useRouter()
 const data = ref<SearchResponse | null>(null)
 const keyword = ref('')
+const page = ref(1)
+const pageSize = ref(20)
+const pageSizeOptions = [10, 20, 30, 50]
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -66,6 +85,18 @@ const toggleTheme = () => {
 const goSearch = () => {
   if (!keyword.value.trim()) return
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
+}
+
+const changePage = async (value: number) => {
+  page.value = value
+  await loadData()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const changePageSize = async () => {
+  page.value = 1
+  await loadData()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
@@ -121,11 +152,14 @@ const loadData = async () => {
   const queryKeyword = String(route.query.keyword || '')
   keyword.value = queryKeyword
   if (!queryKeyword) return
-  data.value = await webApi.search(queryKeyword)
+  data.value = await webApi.search(queryKeyword, page.value, pageSize.value)
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
-watch(() => route.query.keyword, loadData)
+watch(() => route.query.keyword, async () => {
+  page.value = 1
+  await loadData()
+})
 onMounted(() => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
