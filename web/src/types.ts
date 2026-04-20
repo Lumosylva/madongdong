@@ -106,3 +106,10 @@ export type SearchResponse = {
   tags: Tag[]
   articles: Paginated<Article>
 }
+
+export type CategoryResponse = {
+  category: Category
+  site: SiteSetting
+  nav_items: NavItem[]
+  articles: Paginated<Article>
+}

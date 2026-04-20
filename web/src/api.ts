@@ -1,4 +1,4 @@
-import type { ArticlePageResponse, HomeResponse, SearchResponse } from './types'
+import type { ArticlePageResponse, CategoryResponse, HomeResponse, SearchResponse } from './types'
 
 const API_BASE = 'http://127.0.0.1:8000/api/v1'
 const API_ORIGIN = new URL(API_BASE).origin
@@ -38,6 +38,9 @@ export const webApi = {
   },
   search(keyword: string, page = 1, pageSize = 20): Promise<SearchResponse> {
     return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}&page_size=${pageSize}`)
+  },
+  getCategory(slug: string, page = 1, pageSize = 20): Promise<CategoryResponse> {
+    return request<CategoryResponse>(`/web/categories/${encodeURIComponent(slug)}?page=${page}&page_size=${pageSize}`)
   },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {

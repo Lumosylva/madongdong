@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ArticleView from './views/ArticleView.vue'
 import HomeView from './views/HomeView.vue'
 import SearchView from './views/SearchView.vue'
+import CategoryView from './views/CategoryView.vue'
 import RegisterView from './views/RegisterView.vue'
 import LoginView from './views/LoginView.vue'
 
@@ -23,6 +24,11 @@ export const router = createRouter({
       path: '/search',
       name: 'search',
       component: SearchView,
+    },
+    {
+      path: '/category/:slug',
+      name: 'category',
+      component: CategoryView,
     },
     {
       path: '/register',
