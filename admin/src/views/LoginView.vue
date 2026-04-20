@@ -126,6 +126,8 @@ const submit = async () => {
     const message = error instanceof Error ? error.message : '登录失败，请稍后重试'
     if (message.includes('用户名或密码错误')) {
       errorMessage.value = '用户名或密码错误，请检查后重试'
+    } else if (message.includes('仅系统管理员和内容作者可登录后台')) {
+      errorMessage.value = '无后台访问权限，请联系管理员分配角色'
     } else {
       errorMessage.value = message || '登录失败，请稍后重试'
     }
