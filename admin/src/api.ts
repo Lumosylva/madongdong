@@ -26,7 +26,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     if (response.status === 401) {
       clearToken()
     }
-    throw new Error(await response.text())
+
+    const rawText = await response.text()
+    try {
+      const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
+      if (typeof parsed.detail === 'string') {
+        throw new Error(parsed.detail)
+      }
+      if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
+        const first = parsed.detail[0]
+        throw new Error(first?.msg || '请求失败')
+      }
+    } catch {
+      // ignore JSON parse errors and fall through to raw text
+    }
+
+    throw new Error(rawText || '请求失败')
   }
 
   return response.json() as Promise<T>
@@ -137,12 +152,6 @@ export const adminApi = {
   },
   updateSiteSettings(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/site/settings', {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    })
-  },
-  updateMe(payload: { nickname: string; email: string; avatar: string | null; password: string | null }): Promise<WrappedResponse<any>> {
-    return request<WrappedResponse<any>>('/admin/auth/me', {
       method: 'PUT',
       body: JSON.stringify(payload),
     })

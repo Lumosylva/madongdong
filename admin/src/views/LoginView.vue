@@ -123,7 +123,12 @@ const submit = async () => {
     localStorage.setItem('blog_admin_token', response.data.access_token)
     await router.push('/')
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '登录失败，请稍后重试'
+    const message = error instanceof Error ? error.message : '登录失败，请稍后重试'
+    if (message.includes('用户名或密码错误')) {
+      errorMessage.value = '用户名或密码错误，请检查后重试'
+    } else {
+      errorMessage.value = message || '登录失败，请稍后重试'
+    }
   } finally {
     loading.value = false
   }
