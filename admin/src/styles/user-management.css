@@ -2,7 +2,7 @@
   display: grid;
   gap: 20px;
   min-width: 0;
-  padding: 8px 0 10px;
+  padding: 8px 0px 10px 0;
 }
 
 .user-hero {
