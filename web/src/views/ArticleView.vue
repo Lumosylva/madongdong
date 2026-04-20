@@ -17,7 +17,20 @@
 
     <article class="article-panel">
       <div class="article-head">
-        <p class="article-breadcrumb">首页 / {{ data.article.category?.name || '未分类' }} / 正文</p>
+        <p class="article-breadcrumb">
+          <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
+          <span class="breadcrumb-sep">/</span>
+          <RouterLink
+            v-if="data.article.category?.name"
+            :to="`/search?keyword=${encodeURIComponent(data.article.category.name)}`"
+            class="breadcrumb-link"
+          >
+            {{ data.article.category.name }}
+          </RouterLink>
+          <span v-else>未分类</span>
+          <span class="breadcrumb-sep">/</span>
+          <span>正文</span>
+        </p>
         <div class="article-head-divider"></div>
         <div class="article-head-row">
           <h1>{{ data.article.title }}</h1>

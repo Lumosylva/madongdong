@@ -987,6 +987,22 @@ a {
   margin-top: 14px;
 }
 
+.breadcrumb-link {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 0.18s ease;
+}
+
+.breadcrumb-link:hover {
+  opacity: 0.82;
+  text-decoration: underline;
+}
+
+.breadcrumb-sep {
+  margin: 0 8px;
+  color: var(--text-soft);
+}
+
 .pager-meta {
   display: flex;
   align-items: center;
