@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.core.security import create_access_token, get_current_user, verify_password
 from app.models.auth import User
-from app.schemas.auth import CurrentUserResponse, LoginRequest, TokenResponse
-from app.services.auth import get_user_by_username
+from app.schemas.auth import CurrentUserResponse, LoginRequest, ProfileUpdateRequest, TokenResponse
+from app.services.auth import get_user_by_username, update_current_user_profile
 from app.utils.response import success_response
 
 router = APIRouter(prefix="/admin/auth", tags=["admin-auth"])
@@ -41,3 +41,22 @@ async def me(current_user: User = Depends(get_current_user)) -> dict[str, object
     """返回当前登录用户信息。"""
 
     return success_response(CurrentUserResponse.model_validate(current_user).model_dump())
+
+
+@router.put("/me", summary="更新当前登录用户资料")
+async def update_me(
+    payload: ProfileUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, object]:
+    """更新当前登录用户资料。"""
+
+    user = await update_current_user_profile(
+        session,
+        current_user,
+        nickname=payload.nickname,
+        email=payload.email,
+        avatar=payload.avatar,
+        password=payload.password,
+    )
+    return success_response(CurrentUserResponse.model_validate(user).model_dump())

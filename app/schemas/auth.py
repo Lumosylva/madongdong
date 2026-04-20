@@ -66,3 +66,12 @@ class CurrentUserResponse(BaseModel):
     avatar: str | None = None
     is_active: bool
     roles: list[RoleOut] = []
+
+
+class ProfileUpdateRequest(BaseModel):
+    """个人资料更新请求。"""
+
+    nickname: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    avatar: str | None = Field(default=None, max_length=100000)
+    password: str | None = Field(default=None, min_length=6, max_length=128)

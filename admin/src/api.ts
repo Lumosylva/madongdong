@@ -42,6 +42,12 @@ export const adminApi = {
   getMe(): Promise<WrappedResponse<AdminUser>> {
     return request<WrappedResponse<AdminUser>>('/admin/auth/me')
   },
+  updateMe(payload: { nickname: string; email: string; bio: string; avatar: string | null; password: string | null }): Promise<WrappedResponse<AdminUser>> {
+    return request<WrappedResponse<AdminUser>>('/admin/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
   getArticles(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/articles')
   },
@@ -131,6 +137,12 @@ export const adminApi = {
   },
   updateSiteSettings(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/site/settings', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  updateMe(payload: { nickname: string; email: string; avatar: string | null; password: string | null }): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/auth/me', {
       method: 'PUT',
       body: JSON.stringify(payload),
     })

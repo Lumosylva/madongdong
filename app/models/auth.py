@@ -43,7 +43,7 @@ class User(TimestampMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     nickname: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    avatar: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(String(100000), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     roles: Mapped[list[Role]] = relationship(

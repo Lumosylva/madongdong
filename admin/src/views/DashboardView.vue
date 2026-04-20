@@ -16,6 +16,7 @@
             <span class="role-badge" :class="isAdmin ? 'admin' : 'author'">{{ roleLabel }}</span>
           </button>
           <div v-if="isUserMenuOpen" class="user-dropdown">
+            <button type="button" class="dropdown-item" @click="openProfile">个人中心</button>
             <button type="button" class="dropdown-item danger" @click="logout">退出登录</button>
           </div>
         </div>
@@ -111,7 +112,12 @@
       </aside>
 
       <main class="dashboard-main">
-        <component :is="activePanelComponent" v-bind="activePanelProps" v-on="activePanelListeners" />
+        <ProfilePanel
+          v-if="currentView === 'profile'"
+          :user="currentUser"
+          @save="updateProfile"
+        />
+        <component v-else :is="activePanelComponent" v-bind="activePanelProps" v-on="activePanelListeners" />
       </main>
     </div>
   </div>
@@ -130,10 +136,11 @@ import CommentsPanel from '../components/CommentsPanel.vue'
 import MediaPanel from '../components/MediaPanel.vue'
 import OverviewPanel from '../components/OverviewPanel.vue'
 import SiteSettingsPanel from '../components/SiteSettingsPanel.vue'
+import ProfilePanel from '../components/ProfilePanel.vue'
 import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
-type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site'
+type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'site' | 'profile'
 type ArticleSubView = 'manage' | 'trash' | 'create' | 'category'
 type ContentViewKey =
   | 'overview'
@@ -211,6 +218,7 @@ const mainMenus: MainMenuItem[] = [
   { key: 'articles', label: '文章' },
   { key: 'media', label: '媒体', adminOnly: true },
   { key: 'comments', label: '评论' },
+  { key: 'profile', label: '个人中心' },
   { key: 'site', label: '设置', adminOnly: true },
 ]
 
@@ -227,6 +235,7 @@ const menuIconMap: Record<ViewType, string> = {
   media: '◫',
   comments: '☍',
   site: '⚙',
+  profile: '◉',
 }
 
 const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧边菜单' : '收起侧边菜单'))
@@ -348,7 +357,6 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'media') return 'media'
   if (currentView.value === 'comments') return 'comments'
   if (currentView.value === 'site') return 'site'
-
   return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
 })
 
@@ -503,9 +511,6 @@ const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(
         'update:icpBeian': (value: string) => {
           icpBeian.value = value
         },
-        'update:copyrightText': (value: string) => {
-          copyrightText.value = value
-        },
         'select-logo': handleSiteLogoSelect,
         save: saveSite,
       }
@@ -586,6 +591,11 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && !isEditable) {
     articleFlyoutOpen.value = false
   }
+}
+
+const openProfile = async () => {
+  isUserMenuOpen.value = false
+  currentView.value = 'profile'
 }
 
 const logout = async () => {
@@ -873,6 +883,17 @@ const showSiteToast = (message: string, status: 'success' | 'error') => {
     siteToastStatus.value = ''
     siteToastTimer = null
   }, 3000)
+}
+
+const updateProfile = async (payload: { nickname: string; email: string; avatar: string | null; password: string | null }) => {
+  try {
+    const res = await adminApi.updateMe(payload)
+    currentUser.value = res.data as AdminUser
+    showSiteToast('个人资料已更新', 'success')
+  } catch (error) {
+    showSiteToast(error instanceof Error ? error.message : '个人资料更新失败', 'error')
+    throw error
+  }
 }
 
 const saveSite = async () => {
