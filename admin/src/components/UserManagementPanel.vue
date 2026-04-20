@@ -32,7 +32,7 @@
     </div>
 
     <div class="userList">
-      <article v-for="item in filteredUsers" :key="item.id" class="userCard">
+      <article v-for="item in pagedUsers" :key="item.id" class="userCard">
         <label class="checkWrap">
           <input type="checkbox" :checked="selectedIds.includes(item.id)" @change="toggleSelect(item.id)" />
         </label>
@@ -61,7 +61,22 @@
         </div>
       </article>
 
-      <p v-if="!filteredUsers.length" class="emptyState">暂无符合条件的用户</p>
+      <p v-if="!pagedUsers.length" class="emptyState">暂无符合条件的用户</p>
+    </div>
+
+    <div class="paginationBar">
+      <div class="pageSizeControl">
+        <span>每页</span>
+        <select v-model="pageSize" class="fieldInput pageSizeSelect" @change="changePageSize">
+          <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
+        </select>
+        <span>条</span>
+      </div>
+      <span class="pageIndicator">当前 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+      <div class="pageControls">
+        <button type="button" class="button buttonSecondary" :disabled="!canGoPrev" @click="goPrevPage">上一页</button>
+        <button type="button" class="button buttonSecondary" :disabled="!canGoNext" @click="goNextPage">下一页</button>
+      </div>
     </div>
 
     <div v-if="editorOpen" class="editorBackdrop" @click.self="closeEditor">
@@ -148,6 +163,9 @@ const emit = defineEmits<{
 
 const keyword = ref('')
 const roleFilter = ref<'all' | 'admin' | 'author' | 'reader'>('all')
+const pageSizeOptions = [10, 20, 50]
+const pageSize = ref(10)
+const currentPage = ref(1)
 const selectedIds = ref<number[]>([])
 const editorOpen = ref(false)
 const editingUser = ref<UserRow | null>(null)
@@ -171,7 +189,14 @@ const filteredUsers = computed(() => {
   })
 })
 
-const allSelected = computed(() => filteredUsers.value.length > 0 && filteredUsers.value.every((item) => selectedIds.value.includes(item.id)))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / pageSize.value)))
+const pagedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredUsers.value.slice(start, start + pageSize.value)
+})
+const canGoPrev = computed(() => currentPage.value > 1)
+const canGoNext = computed(() => currentPage.value < totalPages.value)
+const allSelected = computed(() => pagedUsers.value.length > 0 && pagedUsers.value.every((item) => selectedIds.value.includes(item.id)))
 const indeterminateSelected = computed(() => selectedIds.value.length > 0 && !allSelected.value)
 
 const avatarLetter = (value: string) => (value || 'U').slice(0, 1).toUpperCase()
@@ -237,7 +262,25 @@ const toggleSelect = (id: number) => {
 }
 
 const toggleSelectAll = () => {
-  selectedIds.value = allSelected.value ? [] : filteredUsers.value.map((item) => item.id)
+  const currentPageIds = pagedUsers.value.map((item) => item.id)
+  if (allSelected.value) {
+    selectedIds.value = selectedIds.value.filter((id) => !currentPageIds.includes(id))
+    return
+  }
+  const merged = new Set([...selectedIds.value, ...currentPageIds])
+  selectedIds.value = Array.from(merged)
+}
+
+const changePageSize = () => {
+  currentPage.value = 1
+}
+
+const goPrevPage = () => {
+  if (canGoPrev.value) currentPage.value -= 1
+}
+
+const goNextPage = () => {
+  if (canGoNext.value) currentPage.value += 1
 }
 
 const bulkDelete = () => emit('delete', selectedIds.value)
@@ -271,6 +314,8 @@ const closeEditor = () => {
   editorOpen.value = false
   if (avatarFileInputRef.value) avatarFileInputRef.value.value = ''
 }
+
+const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
 
 const submitEditor = () => {
   const payload = {

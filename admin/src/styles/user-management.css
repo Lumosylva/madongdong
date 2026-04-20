@@ -102,6 +102,52 @@
   gap: 10px;
 }
 
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 6px 16px rgba(16, 35, 63, 0.04);
+}
+
+.pageSizeControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.pageSizeSelect {
+  width: 86px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 11px;
+}
+
+.pageIndicator {
+  color: var(--text-soft);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.pageControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pageControls .button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 11px;
+}
+
 .userCard {
   display: grid;
   grid-template-columns: 28px 54px minmax(0, 1fr) auto;
@@ -365,11 +411,17 @@
   }
 
   .bulkBar,
-  .userCard {
-    grid-template-columns: 1fr;
+  .userCard,
+  .paginationBar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .actionRow {
     justify-content: flex-start;
+  }
+
+  .pageControls .button {
+    width: 100%;
   }
 }
