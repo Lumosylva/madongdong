@@ -64,48 +64,60 @@
       <p v-if="!filteredUsers.length" class="emptyState">暂无符合条件的用户</p>
     </div>
 
-    <div v-if="editorOpen" class="modalBackdrop" @click.self="closeEditor">
-      <div class="modalCard">
-        <div class="modalHead">
+    <div v-if="editorOpen" class="editorBackdrop" @click.self="closeEditor">
+      <div class="editorPage">
+        <div class="editorHero">
           <div>
             <p class="eyebrow">{{ editingUser?.id ? '编辑用户' : '添加用户' }}</p>
             <h4>{{ editingUser?.id ? '修改用户信息' : '新建用户' }}</h4>
+            <p>头像支持上传预览，布局与个人中心保持一致。</p>
           </div>
           <button type="button" class="modalClose" @click="closeEditor">×</button>
         </div>
 
-        <div class="modalGrid">
-          <label class="fieldBlock">
-            <span>用户名</span>
-            <input v-model="form.username" :disabled="!!editingUser?.id" class="fieldInput" />
-          </label>
-          <label class="fieldBlock">
-            <span>昵称</span>
-            <input v-model="form.nickname" class="fieldInput" />
-          </label>
-          <label class="fieldBlock">
-            <span>邮箱</span>
-            <input v-model="form.email" class="fieldInput" />
-          </label>
-          <label class="fieldBlock">
-            <span>头像</span>
-            <input v-model="form.avatar" class="fieldInput" placeholder="头像 URL 或 base64" />
-          </label>
-          <label class="fieldBlock">
-            <span>角色</span>
-            <select v-model="form.role_name" class="fieldInput">
-              <option value="reader">普通读者</option>
-              <option value="author">内容作者</option>
-              <option value="admin">系统管理员</option>
-            </select>
-          </label>
-          <label class="fieldBlock">
-            <span>密码 {{ editingUser?.id ? '(留空则不修改)' : '' }}</span>
-            <input v-model="form.password" type="password" class="fieldInput" />
-          </label>
+        <div class="editorGrid">
+          <section class="avatarPanel">
+            <div class="avatarFrame">
+              <img v-if="avatarPreview" :src="avatarPreview" alt="头像预览" class="avatarPreviewImg" />
+              <div v-else class="avatarPreviewFallback">{{ avatarLetter(form.nickname || form.username) }}</div>
+            </div>
+            <div class="avatarPanelActions">
+              <input ref="avatarFileInputRef" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="avatarFileInput" @change="onAvatarSelect" />
+              <button type="button" class="button buttonSecondary" @click="avatarFileInputRef?.click()">更换图片</button>
+              <button type="button" class="button buttonSecondary" @click="clearAvatar">清除</button>
+            </div>
+            <p class="avatarHint">建议上传正方形图片，系统会自动裁剪居中区域并用于预览。</p>
+          </section>
+
+          <section class="formPanel">
+            <label class="fieldBlock">
+              <span>用户名</span>
+              <input v-model="form.username" :disabled="!!editingUser?.id" class="fieldInput" />
+            </label>
+            <label class="fieldBlock">
+              <span>昵称</span>
+              <input v-model="form.nickname" class="fieldInput" />
+            </label>
+            <label class="fieldBlock">
+              <span>邮箱</span>
+              <input v-model="form.email" class="fieldInput" />
+            </label>
+            <label class="fieldBlock">
+              <span>角色</span>
+              <select v-model="form.role_name" class="fieldInput">
+                <option value="reader">普通读者</option>
+                <option value="author">内容作者</option>
+                <option value="admin">系统管理员</option>
+              </select>
+            </label>
+            <label class="fieldBlock">
+              <span>密码 {{ editingUser?.id ? '(留空则不修改)' : '' }}</span>
+              <input v-model="form.password" type="password" class="fieldInput" />
+            </label>
+          </section>
         </div>
 
-        <div class="modalActions">
+        <div class="editorActions">
           <button type="button" class="button buttonSecondary" @click="closeEditor">取消</button>
           <button type="button" class="button buttonPrimary" @click="submitEditor">保存</button>
         </div>
@@ -139,6 +151,8 @@ const roleFilter = ref<'all' | 'admin' | 'author' | 'reader'>('all')
 const selectedIds = ref<number[]>([])
 const editorOpen = ref(false)
 const editingUser = ref<UserRow | null>(null)
+const avatarFileInputRef = ref<HTMLInputElement | null>(null)
+const avatarPreview = ref('')
 const form = reactive({
   username: '',
   nickname: '',
@@ -163,6 +177,61 @@ const indeterminateSelected = computed(() => selectedIds.value.length > 0 && !al
 const avatarLetter = (value: string) => (value || 'U').slice(0, 1).toUpperCase()
 const roleLabel = (value: string) => ({ admin: '系统管理员', author: '内容作者', reader: '普通读者' }[value] || value)
 
+const readFileAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('读取头像失败'))
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.readAsDataURL(file)
+  })
+
+const cropToSquare = async (dataUrl: string) => {
+  return await new Promise<string>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => {
+      try {
+        const size = Math.min(image.width, image.height)
+        const offsetX = Math.floor((image.width - size) / 2)
+        const offsetY = Math.floor((image.height - size) / 2)
+        const canvas = document.createElement('canvas')
+        const outputSize = Math.min(320, size || 320)
+        canvas.width = outputSize
+        canvas.height = outputSize
+        const context = canvas.getContext('2d')
+        if (!context) throw new Error('头像裁剪失败')
+        context.drawImage(image, offsetX, offsetY, size, size, 0, 0, outputSize, outputSize)
+        resolve(canvas.toDataURL('image/jpeg', 0.92))
+      } catch (error) {
+        reject(error)
+      }
+    }
+    image.onerror = () => reject(new Error('头像加载失败'))
+    image.src = dataUrl
+  })
+}
+
+const onAvatarSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  try {
+    const result = await readFileAsDataUrl(file)
+    const cropped = file.type === 'image/svg+xml' ? result : await cropToSquare(result)
+    avatarPreview.value = cropped
+    form.avatar = cropped
+  } catch {
+    avatarPreview.value = ''
+  } finally {
+    target.value = ''
+  }
+}
+
+const clearAvatar = () => {
+  avatarPreview.value = ''
+  form.avatar = ''
+  if (avatarFileInputRef.value) avatarFileInputRef.value.value = ''
+}
+
 const toggleSelect = (id: number) => {
   selectedIds.value = selectedIds.value.includes(id) ? selectedIds.value.filter((item) => item !== id) : [...selectedIds.value, id]
 }
@@ -182,6 +251,7 @@ const openAddUser = () => {
   form.avatar = ''
   form.role_name = 'reader'
   form.password = ''
+  avatarPreview.value = ''
   editorOpen.value = true
 }
 
@@ -193,11 +263,13 @@ const editUser = (item: UserRow) => {
   form.avatar = item.avatar || ''
   form.role_name = item.role_names[0] || 'reader'
   form.password = ''
+  avatarPreview.value = item.avatar || ''
   editorOpen.value = true
 }
 
 const closeEditor = () => {
   editorOpen.value = false
+  if (avatarFileInputRef.value) avatarFileInputRef.value.value = ''
 }
 
 const submitEditor = () => {
