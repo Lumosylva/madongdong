@@ -587,7 +587,7 @@ a {
 .layout {
   display: grid;
   grid-template-columns: 1.95fr 0.65fr;
-  gap: 16px;
+  gap: 10px;
 }
 
 .content-panel,
