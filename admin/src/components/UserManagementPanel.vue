@@ -221,63 +221,67 @@ const deleteOne = (id: number) => emit('delete', [id])
 <style scoped>
 .userPanelRoot {
   display: grid;
-  gap: 16px;
+  gap: 24px;
   min-width: 0;
-  padding: 2px 0 4px;
+  padding: 8px 0 10px;
 }
 
 .user-hero {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 18px;
   align-items: flex-start;
-  padding: 4px 2px 0;
+  padding: 4px 2px 2px;
 }
 
 .user-hero h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
 .user-hero p {
-  margin: 4px 0 0;
+  margin: 8px 0 0;
   color: var(--text-soft);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .user-heroCount {
-  padding: 6px 12px;
+  flex: 0 0 auto;
+  padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid rgba(14, 165, 164, 0.14);
   background: rgba(14, 165, 164, 0.06);
   color: var(--text-soft);
   font-size: 13px;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .toolbarRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px auto;
-  gap: 10px;
+  gap: 14px;
+  align-items: center;
 }
 
 .fieldInput {
   width: 100%;
   min-height: 42px;
-  border-radius: 12px;
+  border-radius: 13px;
   border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.74);
   color: var(--text);
   padding: 0 14px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 6px 16px rgba(16, 35, 63, 0.04);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.58) inset, 0 6px 16px rgba(16, 35, 63, 0.04);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
 }
 
 .fieldInput:hover {
   border-color: rgba(14, 165, 164, 0.3);
-  background: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .fieldInput:focus {
@@ -290,12 +294,12 @@ const deleteOne = (id: number) => emit('delete', [id])
 .bulkBar {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.64);
 }
 
 .selectAll {
@@ -314,18 +318,18 @@ const deleteOne = (id: number) => emit('delete', [id])
 
 .userList {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .userCard {
   display: grid;
   grid-template-columns: 28px 54px minmax(0, 1fr) auto;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
   box-shadow: 0 6px 16px rgba(16, 35, 63, 0.04);
 }
 
@@ -359,7 +363,7 @@ const deleteOne = (id: number) => emit('delete', [id])
 .userMain {
   min-width: 0;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cardHead {
@@ -391,6 +395,7 @@ const deleteOne = (id: number) => emit('delete', [id])
   flex-wrap: wrap;
   color: var(--text-soft);
   font-size: 13px;
+  line-height: 1.45;
 }
 
 .actionRow {
@@ -436,7 +441,7 @@ const deleteOne = (id: number) => emit('delete', [id])
 
 .emptyState {
   margin: 0;
-  padding: 18px 16px;
+  padding: 20px 16px;
   text-align: center;
   color: var(--text-soft);
   border: 1px dashed var(--line);
@@ -460,9 +465,9 @@ const deleteOne = (id: number) => emit('delete', [id])
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
-  padding: 20px;
+  padding: 22px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .modalHead {
@@ -498,7 +503,7 @@ const deleteOne = (id: number) => emit('delete', [id])
 .modalGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 14px 16px;
 }
 
 .fieldBlock {
