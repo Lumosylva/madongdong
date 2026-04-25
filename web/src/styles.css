@@ -795,6 +795,14 @@ a {
   font-weight: 700;
 }
 
+.card-title {
+  font-family: 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
+}
+
+.card-summary {
+  font-family: 'SimSun', 'Songti SC', 'Noto Serif CJK SC', serif;
+}
+
 .unified-list-card .search-title {
   margin: 0 0 8px;
   font-size: 22px;
