@@ -19,6 +19,7 @@
       <div class="article-head">
         <div class="article-breadcrumb-row">
           <p class="article-breadcrumb">
+            现在位置：
             <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
             <span class="breadcrumb-sep">/</span>
             <RouterLink
