@@ -1,5 +1,5 @@
 <template>
-  <div class="search-page" v-if="data">
+  <div class="search-page unified-list-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
@@ -14,19 +14,20 @@
       @search="goSearch"
     />
 
-    <header class="search-header">
-      <RouterLink to="/" class="back-link">← 首页</RouterLink>
-      <div>
-        <h1>分类：{{ data.category.name }}</h1>
-        <p v-if="data.category.description" class="search-subtitle">{{ data.category.description }}</p>
+    <header class="list-page-header">
+      <RouterLink to="/" class="back-link list-page-back">← 首页</RouterLink>
+      <div class="list-page-title-wrap">
+        <p class="list-page-eyebrow">分类文章</p>
+        <h1 class="list-page-title">{{ data.category.name }}</h1>
+        <p v-if="data.category.description" class="list-page-subtitle">{{ data.category.description }}</p>
       </div>
     </header>
 
-    <section class="search-result-panel">
-      <article v-for="article in data.articles.items" :key="article.id" class="search-card">
+    <section class="search-result-panel unified-list-panel">
+      <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
         <RouterLink :to="`/article/${article.id}`" class="search-title">{{ article.title }}</RouterLink>
         <p>{{ article.summary }}</p>
-        <div class="search-meta">
+        <div class="search-meta unified-list-meta">
           <span>{{ article.author?.nickname || 'admin' }}</span>
           <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
           <span>{{ article.view_count }} 浏览</span>
@@ -34,7 +35,7 @@
         </div>
       </article>
 
-      <div class="pager-row search-pager-row">
+      <div class="pager-row unified-pager-row">
         <div class="pager-meta">
           第 {{ data.articles.page }} / {{ data.articles.total_pages }} 页
           <span class="pager-size">

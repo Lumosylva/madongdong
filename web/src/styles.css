@@ -746,6 +746,10 @@ a {
   color: var(--text-soft);
 }
 
+.unified-list-meta {
+  gap: 10px 14px;
+}
+
 .card-meta {
   margin-top: 8px;
   gap: 14px;
@@ -779,6 +783,23 @@ a {
   margin: 10px 0;
   font-size: 24px;
   font-weight: 700;
+}
+
+.unified-list-card .search-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.unified-list-card p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.unified-list-meta {
+  margin-top: 10px;
+  font-size: 13px;
 }
 
 .hot-link strong {
@@ -1065,11 +1086,62 @@ a {
   padding: 18px 6px 0;
 }
 
+.list-page-header,
 .search-header {
   display: flex;
   align-items: center;
   gap: 18px;
   margin-bottom: 16px;
+}
+
+.list-page-header {
+  align-items: flex-start;
+}
+
+.list-page-back {
+  flex: 0 0 auto;
+}
+
+.list-page-title-wrap {
+  min-width: 0;
+}
+
+.list-page-eyebrow {
+  margin: 0 0 6px;
+  color: var(--text-soft);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.list-page-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.list-page-subtitle,
+.search-subtitle {
+  margin: 6px 0 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.unified-list-panel {
+  padding: 20px;
+}
+
+.unified-list-card {
+  padding: 18px 0;
+}
+
+.unified-list-meta {
+  gap: 10px 14px;
+}
+
+.unified-pager-row {
+  margin-top: 14px;
 }
 
 .drawer-mask {
@@ -1169,6 +1241,12 @@ a {
   .topbar,
   .layout {
     grid-template-columns: 1fr;
+  }
+
+  .list-page-header,
+  .search-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .topbar {
