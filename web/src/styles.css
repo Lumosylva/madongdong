@@ -144,6 +144,15 @@ a {
   backdrop-filter: blur(16px);
 }
 
+:root:not([data-theme='dark']) .article-panel,
+:root:not([data-theme='dark']) .comment-panel {
+  background: #f2f2f2;
+}
+
+:root:not([data-theme='dark']) .article-page {
+  background: #e0e0e0;
+}
+
 .topbar {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.86), rgba(244, 247, 251, 0.76), rgba(255, 255, 255, 0.86));
   border-left: none;
