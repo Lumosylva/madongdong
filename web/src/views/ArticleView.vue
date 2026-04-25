@@ -1,5 +1,5 @@
 <template>
-  <div class="article-page" v-if="data">
+  <div class="article-page" v-if="data" ref="articlePageRef">
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || ''"
@@ -164,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 
@@ -202,9 +202,21 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
+const syncTopbarOffset = () => {
+  const topbar = document.querySelector('.topbar') as HTMLElement | null
+  if (!topbar || !articlePageRef.value) return
+  const topbarRect = topbar.getBoundingClientRect()
+  const pageRect = articlePageRef.value.getBoundingClientRect()
+  const offset = Math.max(0, Math.round(topbarRect.height - Math.max(0, pageRect.top)))
+  document.documentElement.style.setProperty('--web-topbar-offset', `${topbarRect.height}px`)
+  document.documentElement.style.setProperty('--article-page-top-offset', `${offset}px`)
+}
+
 const nicknameInputRef = ref<HTMLInputElement | null>(null)
 const emailInputRef = ref<HTMLInputElement | null>(null)
 const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const topbarResizeObserver = ref<ResizeObserver | null>(null)
+const articlePageRef = ref<HTMLElement | null>(null)
 
 const hasMoreTags = computed(() => (data.value?.article.tags?.length || 0) > 6)
 const visibleTags = computed(() => {
@@ -353,5 +365,13 @@ onMounted(async () => {
 
   await hydrateCurrentUser()
   await loadData()
+  syncTopbarOffset()
+  topbarResizeObserver.value = new ResizeObserver(() => syncTopbarOffset())
+  const topbar = document.querySelector('.topbar')
+  if (topbar) topbarResizeObserver.value.observe(topbar)
+})
+
+onBeforeUnmount(() => {
+  topbarResizeObserver.value?.disconnect()
 })
 </script>

@@ -74,6 +74,11 @@ a {
   --web-topbar-offset: 76px;
 }
 
+:root[data-theme='dark'] {
+  background: radial-gradient(circle at top left, rgba(94, 234, 212, 0.12), transparent 32%), radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 28%), linear-gradient(180deg, #020814 0%, #07111f 100%);
+}
+
+
 .scroll-top-btn {
   position: fixed;
   right: 18px;
