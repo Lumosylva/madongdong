@@ -68,12 +68,12 @@
   font-family: 'SimSun', 'Songti SC', 'Noto Serif CJK SC', serif;
 }
 
-.article-extra {
+:root:not([data-theme='dark']) .article-extra {
   margin-top: 22px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--bg-soft);
+  background: #f2f2f2;
   display: grid;
   gap: 16px;
 }
