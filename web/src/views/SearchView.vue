@@ -43,8 +43,8 @@
           </span>
         </div>
         <div class="pager-actions">
-          <button v-if="data.articles.page > 1" class="pager-prev-btn" @click="changePage(data.articles.page - 1)">上一页</button>
-          <button v-if="data.articles.page < data.articles.total_pages" class="pager-next-btn" @click="changePage(data.articles.page + 1)">下一页</button>
+          <button v-if="hasPrevPage" class="pager-prev-btn" @click="changePage(page - 1)">上一页</button>
+          <button v-if="hasNextPage" class="pager-next-btn" @click="changePage(page + 1)">下一页</button>
         </div>
       </div>
     </section>
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -69,6 +69,7 @@ const keyword = ref('')
 const page = ref(1)
 const pageSize = ref(20)
 const pageSizeOptions = [10, 20, 30, 50]
+const totalPages = computed(() => data.value?.articles.total_pages || 1)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
@@ -92,6 +93,9 @@ const changePage = async (value: number) => {
   await loadData()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
+
+const hasPrevPage = computed(() => page.value > 1)
+const hasNextPage = computed(() => page.value < totalPages.value)
 
 const changePageSize = async () => {
   page.value = 1

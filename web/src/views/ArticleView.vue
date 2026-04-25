@@ -21,8 +21,8 @@
           <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
           <span class="breadcrumb-sep">/</span>
           <RouterLink
-            v-if="data.article.category?.name"
-            :to="`/search?keyword=${encodeURIComponent(data.article.category.name)}`"
+            v-if="data.article.category?.slug"
+            :to="`/category/${encodeURIComponent(data.article.category.slug)}`"
             class="breadcrumb-link"
           >
             {{ data.article.category.name }}
@@ -250,8 +250,6 @@ const loadData = async () => {
 }
 
 const hydrateCurrentUser = async () => {
-  const token = localStorage.getItem('md_web_token')
-  if (!token) return
   try {
     const currentUser = await webApi.getCurrentWebUser()
     if (currentUser?.nickname) guestNickname.value = currentUser.nickname

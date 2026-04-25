@@ -16,7 +16,10 @@
 
     <header class="search-header">
       <RouterLink to="/" class="back-link">← 首页</RouterLink>
-      <h1>分类：{{ data?.category?.name || '未分类' }}</h1>
+      <div>
+        <h1>分类：{{ data.category.name }}</h1>
+        <p v-if="data.category.description" class="search-subtitle">{{ data.category.description }}</p>
+      </div>
     </header>
 
     <section class="search-result-panel">
@@ -141,7 +144,7 @@ const formatRelativeTime = (value: string) => {
 const loadData = async () => {
   const slug = String(route.params.slug || '')
   if (!slug) return
-  data.value = await webApi.getCategory(slug, page.value, pageSize.value)
+  data.value = await webApi.getCategoryArticles(slug, page.value, pageSize.value)
   keyword.value = data.value.category.name
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }

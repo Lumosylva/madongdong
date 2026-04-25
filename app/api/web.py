@@ -9,10 +9,11 @@ from app.models.auth import User
 from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
-from app.schemas.web import ArticlePageResponse, HomeResponse, SearchResponse
+from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
+    get_category_page_data,
     get_homepage_data,
     get_prev_next_published_articles,
     get_published_article_detail,
@@ -62,6 +63,22 @@ async def search_articles(
 ) -> SearchResponse:
     data = await get_search_page_data(session, keyword, page)
     return SearchResponse.model_validate(data)
+
+
+@router.get("/categories/{slug}/articles", summary="获取分类文章")
+async def category_articles(
+    slug: str,
+    page: int = Query(default=1, ge=1),
+    page_size: int | None = Query(default=None, ge=1, le=100),
+    session: AsyncSession = Depends(get_db_session),
+) -> CategoryArticlesResponse:
+    try:
+        data = await get_category_page_data(session, slug, page, page_size)
+    except ValueError as exc:
+        if str(exc) == "category_not_found":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="分类不存在") from exc
+        raise
+    return CategoryArticlesResponse.model_validate(data)
 
 
 @router.post("/comments", summary="提交评论")

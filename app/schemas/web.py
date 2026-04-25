@@ -53,3 +53,12 @@ class SearchResponse(BaseModel):
     categories: list[CategoryResponse]
     tags: list[TagResponse]
     articles: PaginatedResponse[ArticleSummaryResponse]
+
+
+class CategoryArticlesResponse(BaseModel):
+    """分类文章响应。"""
+
+    category: CategoryResponse
+    site: SiteSettingResponse
+    nav_items: list[NavItemResponse]
+    articles: PaginatedResponse[ArticleSummaryResponse]

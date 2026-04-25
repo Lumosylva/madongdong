@@ -39,8 +39,8 @@ export const webApi = {
   search(keyword: string, page = 1, pageSize = 20): Promise<SearchResponse> {
     return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}&page_size=${pageSize}`)
   },
-  getCategory(slug: string, page = 1, pageSize = 20): Promise<CategoryResponse> {
-    return request<CategoryResponse>(`/web/categories/${encodeURIComponent(slug)}?page=${page}&page_size=${pageSize}`)
+  getCategoryArticles(slug: string, page = 1, pageSize = 20): Promise<CategoryResponse> {
+    return request<CategoryResponse>(`/web/categories/${encodeURIComponent(slug)}/articles?page=${page}&page_size=${pageSize}`)
   },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {
@@ -61,10 +61,15 @@ export const webApi = {
     })
   },
   async getCurrentWebUser() {
+    const token = getToken()
+    if (!token) {
+      throw new Error('未登录')
+    }
+
     const response = await fetch(`${API_BASE}/web/auth/me`, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: getToken() ? `Bearer ${getToken()}` : '',
+        Authorization: `Bearer ${token}`,
       },
     })
 
