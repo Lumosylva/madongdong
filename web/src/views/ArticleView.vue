@@ -17,24 +17,25 @@
 
     <article class="article-panel">
       <div class="article-head">
-        <p class="article-breadcrumb">
-          <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
-          <span class="breadcrumb-sep">/</span>
-          <RouterLink
-            v-if="data.article.category?.slug"
-            :to="`/category/${encodeURIComponent(data.article.category.slug)}`"
-            class="breadcrumb-link"
-          >
-            {{ data.article.category.name }}
-          </RouterLink>
-          <span v-else>未分类</span>
-          <span class="breadcrumb-sep">/</span>
-          <span>正文</span>
-        </p>
+        <div class="article-breadcrumb-row">
+          <p class="article-breadcrumb">
+            <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
+            <span class="breadcrumb-sep">/</span>
+            <RouterLink
+              v-if="data.article.category?.slug"
+              :to="`/category/${encodeURIComponent(data.article.category.slug)}`"
+              class="breadcrumb-link"
+            >
+              {{ data.article.category.name }}
+            </RouterLink>
+            <span v-else>未分类</span>
+            <span class="breadcrumb-sep">/</span>
+            <span>正文</span>
+          </p>
+        </div>
         <div class="article-head-divider"></div>
         <div class="article-head-row">
           <h1>{{ data.article.title }}</h1>
-          <button type="button" class="jump-comment-btn" @click="goToCommentSection">去评论</button>
         </div>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
@@ -199,21 +200,6 @@ const toggleTheme = () => {
 const nicknameInputRef = ref<HTMLInputElement | null>(null)
 const emailInputRef = ref<HTMLInputElement | null>(null)
 const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
-
-const goToCommentSection = async () => {
-  const el = document.querySelector('#comment-section')
-  if (el instanceof HTMLElement) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    el.classList.add('section-highlight')
-    window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
-    await nextTick()
-    if (isLoggedIn.value) {
-      commentTextareaRef.value?.focus()
-    } else {
-      nicknameInputRef.value?.focus()
-    }
-  }
-}
 
 const hasMoreTags = computed(() => (data.value?.article.tags?.length || 0) > 6)
 const visibleTags = computed(() => {
