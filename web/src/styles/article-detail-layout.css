@@ -1,5 +1,7 @@
 :root:not([data-theme='dark']) .article-page {
   background: #e0e0e0;
+  width: 100%;
+  max-width: none;
 }
 
 :root:not([data-theme='dark']) .article-panel,

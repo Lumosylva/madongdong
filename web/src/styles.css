@@ -131,6 +131,11 @@ a {
   padding: 0 0 36px;
 }
 
+:root:not([data-theme='dark']) .article-page {
+  width: 100%;
+  max-width: none;
+}
+
 .topbar,
 .mini-topbar,
 .search-result-panel,
