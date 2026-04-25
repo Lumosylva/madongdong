@@ -90,7 +90,7 @@
 .article-tags,
 .article-nav-links {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .article-nav-links {
@@ -108,7 +108,7 @@
 .article-tags-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -143,12 +143,33 @@
 .tag-list {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
 .tag-list.collapsed {
   max-height: 60px;
   overflow: hidden;
+}
+
+.tag-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #f2f2f2;
+  color: var(--text-soft);
+  flex: 0 0 auto;
+}
+
+.tag-icon-svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  display: block;
 }
 
 .tag-item {

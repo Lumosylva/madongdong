@@ -59,7 +59,6 @@
       <section class="article-extra">
         <div class="article-tags">
           <div class="article-tags-head">
-            <span class="meta-label">标签</span>
             <button v-if="hasMoreTags" type="button" class="tag-expand-btn" @click="showAllTags = !showAllTags">
               <span class="tag-expand-icon" :class="{ rotated: showAllTags }">▾</span>
               {{ showAllTags ? '收起标签' : '展开更多标签' }}
@@ -67,13 +66,18 @@
           </div>
           <div class="tag-list" :class="{ collapsed: hasMoreTags && !showAllTags }">
             <span v-if="!data.article.tags?.length" class="tag-item muted">无标签</span>
+            <span v-else class="tag-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" class="tag-icon-svg" focusable="false" aria-hidden="true">
+                <path d="M3 11.5V5.75A2.75 2.75 0 0 1 5.75 3H11.5c.73 0 1.42.29 1.94.81l7.75 7.75a2.75 2.75 0 0 1 0 3.89l-5.5 5.5a2.75 2.75 0 0 1-3.89 0L3.81 13.44A2.75 2.75 0 0 1 3 11.5Zm3.75-5.75a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
+              </svg>
+            </span>
             <RouterLink
               v-for="tag in visibleTags"
               :key="tag.id"
               :to="`/tag/${encodeURIComponent(tag.slug)}`"
               class="tag-item"
             >
-              # {{ tag.name }}
+              {{ tag.name }}
             </RouterLink>
           </div>
         </div>
