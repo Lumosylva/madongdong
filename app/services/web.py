@@ -210,6 +210,59 @@ async def get_category_page_data(session: AsyncSession, slug: str, page: int, pa
     }
 
 
+async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_size: int | None = None) -> dict:
+    """获取标签页数据。"""
+
+    site = await get_or_create_site_setting(session)
+    nav_items = await list_nav_items(session, visible_only=True)
+    tag_result = await session.execute(select(Tag).where(Tag.slug == slug))
+    tag = tag_result.scalar_one_or_none()
+    if tag is None:
+        raise ValueError("tag_not_found")
+
+    effective_page_size = page_size or site.homepage_page_size
+    statement = (
+        select(Article)
+        .join(Article.tags)
+        .where(
+            Article.status == ArticleStatus.PUBLISHED,
+            Tag.id == tag.id,
+        )
+    )
+    count_statement = (
+        select(func.count(func.distinct(Article.id)))
+        .select_from(Article)
+        .join(Article.tags)
+        .where(
+            Article.status == ArticleStatus.PUBLISHED,
+            Tag.id == tag.id,
+        )
+    )
+    statement = statement.order_by(Article.published_at.desc(), Article.id.desc())
+    offset = (page - 1) * effective_page_size
+    statement = statement.offset(offset).limit(effective_page_size)
+
+    result = await session.execute(statement)
+    total_result = await session.execute(count_statement)
+    items = list(result.scalars().unique().all())
+    total = int(total_result.scalar_one())
+    total_pages = ceil(total / effective_page_size) if total else 1
+
+    articles = PaginatedResponse[Article](
+        items=items,
+        total=total,
+        page=page,
+        page_size=effective_page_size,
+        total_pages=total_pages,
+    )
+    return {
+        "tag": tag,
+        "site": site,
+        "nav_items": nav_items,
+        "articles": articles,
+    }
+
+
 async def list_public_categories(session: AsyncSession) -> list[Category]:
     """查询分类列表。"""
 

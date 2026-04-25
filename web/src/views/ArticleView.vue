@@ -68,7 +68,7 @@
             <RouterLink
               v-for="tag in visibleTags"
               :key="tag.id"
-              :to="`/search?keyword=${encodeURIComponent(tag.name)}`"
+              :to="`/tag/${encodeURIComponent(tag.slug)}`"
               class="tag-item"
             >
               # {{ tag.name }}

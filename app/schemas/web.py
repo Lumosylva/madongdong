@@ -62,3 +62,12 @@ class CategoryArticlesResponse(BaseModel):
     site: SiteSettingResponse
     nav_items: list[NavItemResponse]
     articles: PaginatedResponse[ArticleSummaryResponse]
+
+
+class TagArticlesResponse(BaseModel):
+    """标签文章响应。"""
+
+    tag: TagResponse
+    site: SiteSettingResponse
+    nav_items: list[NavItemResponse]
+    articles: PaginatedResponse[ArticleSummaryResponse]

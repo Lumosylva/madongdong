@@ -9,7 +9,7 @@ from app.models.auth import User
 from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
-from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse
+from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
@@ -18,6 +18,7 @@ from app.services.web import (
     get_prev_next_published_articles,
     get_published_article_detail,
     get_search_page_data,
+    get_tag_page_data,
     list_approved_comments_by_article,
 )
 
@@ -79,6 +80,22 @@ async def category_articles(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="分类不存在") from exc
         raise
     return CategoryArticlesResponse.model_validate(data)
+
+
+@router.get("/tags/{slug}/articles", summary="获取标签文章")
+async def tag_articles(
+    slug: str,
+    page: int = Query(default=1, ge=1),
+    page_size: int | None = Query(default=None, ge=1, le=100),
+    session: AsyncSession = Depends(get_db_session),
+) -> TagArticlesResponse:
+    try:
+        data = await get_tag_page_data(session, slug, page, page_size)
+    except ValueError as exc:
+        if str(exc) == "tag_not_found":
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="标签不存在") from exc
+        raise
+    return TagArticlesResponse.model_validate(data)
 
 
 @router.post("/comments", summary="提交评论")

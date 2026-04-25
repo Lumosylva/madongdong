@@ -107,8 +107,15 @@ export type SearchResponse = {
   articles: Paginated<Article>
 }
 
-export type CategoryResponse = {
+export type CategoryArticlesResponse = {
   category: Category
+  site: SiteSetting
+  nav_items: NavItem[]
+  articles: Paginated<Article>
+}
+
+export type TagArticlesResponse = {
+  tag: Tag
   site: SiteSetting
   nav_items: NavItem[]
   articles: Paginated<Article>
