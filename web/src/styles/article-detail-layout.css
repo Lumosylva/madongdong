@@ -50,6 +50,8 @@
   color: var(--text);
   line-height: 1.9;
   margin: 22px 0 28px;
+  font-size: 20px;
+  font-family: 'SimSun', 'Songti SC', 'Noto Serif CJK SC', serif;
 }
 
 .article-extra {
