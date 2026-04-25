@@ -807,12 +807,14 @@ a {
   margin: 0 0 8px;
   font-size: 22px;
   line-height: 1.25;
+  font-family: 'SimHei', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif;
 }
 
 .unified-list-card p {
   margin: 0;
   color: var(--text-soft);
   line-height: 1.7;
+  font-family: 'SimSun', 'Songti SC', 'Noto Serif CJK SC', serif;
 }
 
 .unified-list-meta {
