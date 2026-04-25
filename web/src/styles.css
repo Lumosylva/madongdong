@@ -67,6 +67,11 @@ a {
 
 #app {
   min-height: 100vh;
+  padding-top: var(--web-topbar-offset);
+}
+
+:root {
+  --web-topbar-offset: 76px;
 }
 
 .scroll-top-btn {
@@ -170,6 +175,11 @@ a {
   margin: 0 calc(50% - 50vw) var(--app-topbar-margin-bottom);
   padding-inline: var(--app-topbar-padding-inline);
   border-radius: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 500;
 }
 
 .brand-block {
@@ -1279,6 +1289,10 @@ a {
 }
 
 @media (max-width: 960px) {
+  :root {
+    --web-topbar-offset: 88px;
+  }
+
   .topbar,
   .layout {
     grid-template-columns: 1fr;
