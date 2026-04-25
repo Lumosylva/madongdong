@@ -602,11 +602,13 @@ a {
 .article-panel {
   width: min(960px, 100%);
   margin: 0 auto;
+  padding: 28px 28px 30px;
 }
 
 .comment-panel {
   width: min(960px, 100%);
   margin: 0 auto;
+  padding: 28px 28px 30px;
 }
 
 .article-head-row {
@@ -1405,6 +1407,7 @@ a {
   .article-panel,
   .comment-panel {
     width: min(100%, calc(100% - 8px));
+    padding: 16px;
   }
 
   .pager-row {
