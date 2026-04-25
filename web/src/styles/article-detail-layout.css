@@ -1,14 +1,9 @@
-.article-panel {
-  width: min(960px, 100%);
-  margin: 0 auto;
-  padding: 28px 28px 30px;
-  background: #f2f2f2;
+:root:not([data-theme='dark']) .article-page {
+  background: #e0e0e0;
 }
 
-.comment-panel {
-  width: min(960px, 100%);
-  margin: 0 auto;
-  padding: 28px 28px 30px;
+:root:not([data-theme='dark']) .article-panel,
+:root:not([data-theme='dark']) .comment-panel {
   background: #f2f2f2;
 }
 
