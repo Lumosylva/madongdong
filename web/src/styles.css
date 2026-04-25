@@ -776,7 +776,7 @@ a {
 .comment-item,
 .hot-link {
   display: block;
-  padding: 16px 0;
+  padding: 20px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1159,7 +1159,7 @@ a {
 }
 
 .unified-list-card {
-  padding: 18px 0;
+  padding: 22px 0;
 }
 
 .unified-list-meta {
