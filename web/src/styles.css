@@ -133,8 +133,6 @@ a {
 
 .topbar,
 .mini-topbar,
-.article-panel,
-.comment-panel,
 .search-result-panel,
 .sidebar-card,
 .content-panel {
@@ -142,15 +140,6 @@ a {
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
-}
-
-:root:not([data-theme='dark']) .article-panel,
-:root:not([data-theme='dark']) .comment-panel {
-  background: #f2f2f2;
-}
-
-:root:not([data-theme='dark']) .article-page {
-  background: #e0e0e0;
 }
 
 .topbar {

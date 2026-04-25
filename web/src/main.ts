@@ -4,6 +4,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import { router } from './router'
 import './styles.css'
+import './styles/article-detail-layout.css'
+import './styles/article-detail-comments.css'
 
 const app = createApp(App)
 
