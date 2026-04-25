@@ -45,6 +45,15 @@
   font-size: 13px;
 }
 
+.article-breadcrumb .breadcrumb-link {
+  color: var(--text-soft);
+}
+
+.article-breadcrumb .breadcrumb-link:hover {
+  color: var(--text-soft);
+  opacity: 0.88;
+}
+
 .article-head-divider {
   margin: 8px 0 12px;
   border-top: 1px solid var(--line);
