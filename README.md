@@ -107,6 +107,42 @@ admin/      后台 Vue 应用
 
 ---
 
+## 预览
+
+![](E:\Project\madongdong\assets\images\01.png)
+
+![](E:\Project\madongdong\assets\images\02.png)
+
+![](E:\Project\madongdong\assets\images\03.png)
+
+![](E:\Project\madongdong\assets\images\04.png)
+
+![](E:\Project\madongdong\assets\images\05.png)
+
+![](E:\Project\madongdong\assets\images\06.png)
+
+![](E:\Project\madongdong\assets\images\07.png)
+
+![](E:\Project\madongdong\assets\images\08.png)
+
+![](E:\Project\madongdong\assets\images\09.png)
+
+![](E:\Project\madongdong\assets\images\10.png)
+
+![](E:\Project\madongdong\assets\images\11.png)
+
+![](E:\Project\madongdong\assets\images\12.png)
+
+![](E:\Project\madongdong\assets\images\13.png)
+
+![](E:\Project\madongdong\assets\images\14.png)
+
+![](E:\Project\madongdong\assets\images\15.png)
+
+![](E:\Project\madongdong\assets\images\16.png)
+
+![](E:\Project\madongdong\assets\images\17.png)
+
 ## 本地开发启动
 
 ### 1) 启动后端
