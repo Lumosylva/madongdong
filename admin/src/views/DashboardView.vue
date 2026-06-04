@@ -1,11 +1,18 @@
 <template>
   <div class="admin-page">
     <header class="topbar">
-      <div class="brand-block">
+      <a
+        class="brand-block brand-link"
+        :href="webEntryUrl"
+        :title="siteTitle ? `查看站点：${siteTitle}` : '查看站点'"
+      >
         <img v-if="siteLogo" :src="siteLogo" class="brand-logo" alt="site logo" />
         <span v-else class="brand-mark">MD</span>
-        <h1>仪表盘</h1>
-      </div>
+        <div class="brand-text">
+          <h1>{{ siteTitle || '仪表盘' }}</h1>
+          <p>查看站点</p>
+        </div>
+      </a>
       <div class="topbar-actions">
         <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
           <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
@@ -333,6 +340,13 @@ const isAuthor = computed(() =>
 )
 
 const displayName = computed(() => currentUser.value?.nickname || currentUser.value?.username || '未登录用户')
+const webEntryUrl = computed(() => {
+  const baseUrl = (import.meta.env.VITE_WEB_BASE_URL as string | undefined)?.trim()
+  if (baseUrl) {
+    return baseUrl.replace(/\/$/, '')
+  }
+  return window.location.origin
+})
 
 const roleLabel = computed(() => {
   if (isAdmin.value) return '系统管理员'
