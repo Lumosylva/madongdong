@@ -406,13 +406,186 @@ VITE_WEB_BASE_PATH=/
 
 ---
 
-## 部署建议
+## Ubuntu + Nginx 生产部署指南
 
-- 后端使用 `uvicorn`（生产建议配合进程守护）
-- 前后台执行 `npm run build` 后由 `Nginx` 托管静态资源
-- `Nginx` 反向代理 `/api` 到 FastAPI
-- 上传目录需做持久化
-- 生产环境请通过 `.env` 覆盖 `secret_key` 等敏感配置
+下面以 **Ubuntu + Nginx + FastAPI + Vue 3** 的方式说明如何部署本项目。该方案与 WordPress 的部署体验接近，前台、后台和安装页都使用同一套域名与端口，仅通过路径区分。
+
+### 1. 推荐访问路径
+
+- 前台首页：`/`
+- 首次安装页：`/install`
+- 后台登录页：`/admin/login`
+- 后台控制台：`/admin/`
+- 后端接口：`/api/v1/`
+- 上传文件：`/uploads/`
+
+### 2. 生产环境目录规划
+
+建议在服务器上准备如下目录：
+
+```text
+/var/www/madongdong/web/dist
+/var/www/madongdong/admin/dist
+/var/www/madongdong/backend
+/var/www/madongdong/uploads
+```
+
+其中：
+
+- `web/dist`：前台打包产物
+- `admin/dist`：后台打包产物
+- `backend`：FastAPI 后端代码
+- `uploads`：上传文件持久化目录
+
+### 3. 后端部署
+
+#### 3.1 安装依赖
+
+进入后端目录后安装 Python 依赖：
+
+```bash
+cd /var/www/madongdong/backend
+uv sync
+```
+
+如果你使用的是虚拟环境，也可以按你的项目习惯激活后执行对应安装命令。
+
+#### 3.2 配置环境变量
+
+在后端目录准备 `.env`，至少建议配置：
+
+```env
+APP_NAME=MaDongDong Blog
+DEBUG=false
+SECRET_KEY=请替换为强随机密钥
+DATABASE_URL=sqlite+aiosqlite:///./madongdong.db
+UPLOAD_DIR=app/static/uploads
+API_V1_PREFIX=/api/v1
+```
+
+说明：
+
+- `SECRET_KEY` 一定要在生产环境更换
+- `UPLOAD_DIR` 建议指向持久化目录
+- 如果后续你切换成 MySQL/PostgreSQL，只需要改 `DATABASE_URL`
+
+#### 3.3 启动后端
+
+推荐使用 `uvicorn` 配合系统守护进程（例如 `systemd`）运行：
+
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+如果需要长期运行，建议把它做成 `systemd` 服务，避免手工保持终端开启。
+
+### 4. 前台与后台构建
+
+#### 4.1 Web 前台
+
+进入 `web` 目录，先准备生产环境变量，然后构建：
+
+```env
+# web/.env.production
+VITE_API_BASE=/api/v1
+VITE_APP_NAME=MadongDong
+VITE_ADMIN_BASE_PATH=/admin
+```
+
+构建命令：
+
+```bash
+cd /var/www/madongdong/web
+npm install
+npm run build
+```
+
+构建后生成：
+
+- `/var/www/madongdong/web/dist`
+
+#### 4.2 Admin 后台
+
+进入 `admin` 目录，准备生产环境变量并构建：
+
+```env
+# admin/.env.production
+VITE_API_BASE=/api/v1
+VITE_APP_NAME=MadongDong Admin
+VITE_WEB_BASE_PATH=/
+```
+
+构建命令：
+
+```bash
+cd /var/www/madongdong/admin
+npm install
+npm run build
+```
+
+构建后生成：
+
+- `/var/www/madongdong/admin/dist`
+
+### 5. Nginx 配置示例
+
+下面是一个推荐的同域名同端口部署方式，前台和后台通过路径区分：
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    # 前台站点
+    location / {
+        root /var/www/madongdong/web/dist;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 首次安装页与后台
+    location /admin/ {
+        alias /var/www/madongdong/admin/dist/;
+        try_files $uri $uri/ /admin/index.html;
+    }
+
+    # API
+    location /api/v1/ {
+        proxy_pass http://127.0.0.1:8000/api/v1/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 上传文件
+    location /uploads/ {
+        proxy_pass http://127.0.0.1:8000/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+}
+```
+
+### 6. 首次安装流程
+
+首次部署时，数据库为空或未初始化完成，访问前台站点后会自动进入安装向导：
+
+1. 打开 `http://your-domain.com/`
+2. 如果系统未安装，自动跳转到 `http://your-domain.com/install`
+3. 填写站点标题、管理员账号、邮箱等信息
+4. 点击“确认并安装”
+5. 后端初始化默认角色、权限、站点配置和导航
+6. 安装完成后自动跳转到 `http://your-domain.com/admin/login`
+7. 使用刚创建的管理员账号登录后台
+
+### 7. 生产环境注意事项
+
+- `.env` 文件主要用于**构建阶段**与**后端运行阶段**，不会打进前端 `dist`
+- 前端 `dist` 只需要上传到服务器即可
+- `web` 和 `admin` 都建议使用 `/api/v1` 作为 API 前缀，由 Nginx 统一反代到 FastAPI
+- 上传目录需要持久化，避免容器重建或服务器清理后丢失文件
+- 生产环境务必替换 `SECRET_KEY`，不要使用默认值
 
 ## 后续
 

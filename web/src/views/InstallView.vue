@@ -107,11 +107,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 import { webApi } from '../api'
 
-const router = useRouter()
 const submitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
