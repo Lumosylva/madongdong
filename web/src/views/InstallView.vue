@@ -5,33 +5,33 @@
         <div class="install-brand">
           <span class="install-brand-mark">MD</span>
           <div>
-            <p class="install-eyebrow">首次安装向导</p>
-            <h1>初始化你的博客</h1>
+            <p class="install-eyebrow">欢迎使用</p>
+            <h1>开始安装 MaDongDong Blog</h1>
           </div>
         </div>
 
         <p class="install-lead">
-          只需填写站点信息与管理员账号，系统会自动完成数据库初始化、默认角色权限配置与首页导航生成。
+          这是一个简洁的安装向导。接下来只需填写站点信息和管理员账号，系统会自动完成初始化，准备好后即可开始使用。
         </p>
 
         <div class="install-checklist">
           <div class="install-check-item">
             <span class="install-check-dot"></span>
-            <span>自动创建角色、权限与默认站点配置</span>
+            <span>下一步将自动创建角色、权限与默认站点配置</span>
           </div>
           <div class="install-check-item">
             <span class="install-check-dot"></span>
-            <span>自动生成首页、搜索等基础导航</span>
+            <span>系统会自动生成首页、搜索等基础导航</span>
           </div>
           <div class="install-check-item">
             <span class="install-check-dot"></span>
-            <span>自动创建管理员账户，安装后即可登录</span>
+            <span>安装完成后可直接使用管理员账号登录后台</span>
           </div>
         </div>
 
         <div class="install-tip-card">
-          <strong>建议</strong>
-          <p>生产环境请先确认数据库、上传目录和后端服务均已可用，再执行安装。</p>
+          <strong>开始之前</strong>
+          <p>请先确认数据库、上传目录和后端服务已经可用，然后继续下一步。</p>
         </div>
       </aside>
 
