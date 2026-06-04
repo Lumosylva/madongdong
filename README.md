@@ -169,16 +169,35 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 
 默认地址：`http://127.0.0.1:5174`（或 Vite 自动分配端口）
 
-### 4) Admin 环境变量（可选）
+### 4) 前端环境变量模板说明
 
-为保证 admin 中“评论所属文章标题”跳转到正确的 web 地址，可在 `admin/.env` 中配置：
+当前 `web` 与 `admin` 前端都已统一采用“环境变量 + 开发代理”的方式，建议按下面的模板分别配置。
+
+#### `web/.env.example`
 
 ```env
-VITE_WEB_BASE_URL=http://127.0.0.1:5173
+VITE_API_BASE=/api/v1
+VITE_APP_NAME=MadongDong
 ```
 
-- 开发环境可保持默认值。
-- 生产环境请替换为实际 web 域名，例如：`https://your-site.com`。
+- `VITE_API_BASE`：前台接口基础路径。开发环境和生产环境都建议使用 `/api/v1`，再由 Vite 开发代理或 Nginx 反向代理转发到后端。
+- `VITE_APP_NAME`：应用名称，仅用于前端展示或后续扩展。
+
+#### `admin/.env.example`
+
+```env
+VITE_API_BASE=/api/v1
+VITE_APP_NAME=MadongDong Admin
+```
+
+- `VITE_API_BASE`：后台接口基础路径。与前台保持一致，方便统一部署。
+- `VITE_APP_NAME`：后台应用名称，仅用于前端展示或后续扩展。
+
+#### 部署建议
+
+- 本地开发时，前端分别运行在 `5173`（web）和 `5174`（admin），并通过 Vite `proxy` 代理到 `http://127.0.0.1:8000`。
+- 生产环境部署时，建议前端静态站点由 Nginx/Apache/Caddy 托管，并将 `/api/v1` 反向代理到后端服务。
+- 不建议在源码里写死 `http://127.0.0.1:8000` 之类的后端地址。
 
 ---
 
