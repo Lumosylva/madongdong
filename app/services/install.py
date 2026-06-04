@@ -177,4 +177,9 @@ async def perform_install(session: AsyncSession, payload: InstallRequest) -> Non
             ]
         )
 
+    category_result = await session.execute(select(Category).where(Category.slug == 'uncategorized'))
+    category = category_result.scalar_one_or_none()
+    if category is None:
+        session.add(Category(name='未分类', slug='uncategorized', description='系统默认文章分类'))
+
     await session.commit()
