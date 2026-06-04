@@ -178,20 +178,50 @@ cd "e:\Project\madongdong\admin"; npm install; npm run dev
 ```env
 VITE_API_BASE=/api/v1
 VITE_APP_NAME=MadongDong
+VITE_ADMIN_BASE_URL=
 ```
 
 - `VITE_API_BASE`：前台接口基础路径。开发环境和生产环境都建议使用 `/api/v1`，再由 Vite 开发代理或 Nginx 反向代理转发到后端。
-- `VITE_APP_NAME`：应用名称，仅用于前端展示或后续扩展。
+- `VITE_APP_NAME`：前台应用名称，仅用于前端展示或后续扩展。
+- `VITE_ADMIN_BASE_URL`：首次安装完成后跳转到管理员登录页的基础地址。生产环境建议填写后台实际地址；留空时默认跳转当前站点的 `/login`。
 
 #### `admin/.env.example`
 
 ```env
 VITE_API_BASE=/api/v1
 VITE_APP_NAME=MadongDong Admin
+VITE_WEB_BASE_URL=
 ```
 
 - `VITE_API_BASE`：后台接口基础路径。与前台保持一致，方便统一部署。
 - `VITE_APP_NAME`：后台应用名称，仅用于前端展示或后续扩展。
+- `VITE_WEB_BASE_URL`：后台中需要跳转到前台页面时使用的基础地址。生产环境建议填写前台实际地址；留空时按默认逻辑处理。
+
+#### 推荐写法
+
+本地开发时可以保持如下配置：
+
+```env
+# web/.env
+VITE_API_BASE=/api/v1
+VITE_ADMIN_BASE_URL=
+
+# admin/.env
+VITE_API_BASE=/api/v1
+VITE_WEB_BASE_URL=
+```
+
+生产环境建议根据实际域名填写：
+
+```env
+# web/.env
+VITE_API_BASE=/api/v1
+VITE_ADMIN_BASE_URL=https://admin.your-domain.com
+
+# admin/.env
+VITE_API_BASE=/api/v1
+VITE_WEB_BASE_URL=https://your-domain.com
+```
 
 #### 部署建议
 

@@ -132,7 +132,9 @@ const checkInstalled = async () => {
   try {
     const res = await webApi.getInstallStatus()
     if (res.data.installed) {
-      router.replace('/')
+      const adminBase = (import.meta.env.VITE_ADMIN_BASE_URL as string | undefined)?.trim() || ''
+      const target = adminBase ? `${adminBase.replace(/\/$/, '')}/login` : '/login'
+      window.location.assign(target)
     }
   } catch {
     errorMessage.value = '无法获取安装状态，请确认后端已启动。'
@@ -145,9 +147,11 @@ const submitInstall = async () => {
   successMessage.value = ''
   try {
     await webApi.installSite({ ...form })
-    successMessage.value = '初始化完成，正在跳转...'
+    successMessage.value = '初始化完成，正在跳转到管理员登录页...'
     window.setTimeout(() => {
-      router.replace('/login')
+      const adminBase = (import.meta.env.VITE_ADMIN_BASE_URL as string | undefined)?.trim() || ''
+      const target = adminBase ? `${adminBase.replace(/\/$/, '')}/login` : '/login'
+      window.location.assign(target)
     }, 900)
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '安装失败'
