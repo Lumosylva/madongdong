@@ -97,7 +97,7 @@
           </div>
 
           <div class="actions">
-            <button type="submit" :disabled="submitting">{{ submitting ? '初始化中...' : '开始安装' }}</button>
+            <button type="submit" :disabled="submitting">{{ submitting ? '正在初始化...' : '确认并安装' }}</button>
           </div>
         </form>
       </div>
