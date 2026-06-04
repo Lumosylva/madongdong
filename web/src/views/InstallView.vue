@@ -146,7 +146,7 @@ const checkInstalled = async () => {
       window.location.assign(getAdminLoginUrl())
     }
   } catch {
-    errorMessage.value = '无法获取安装状态，请确认后端已启动。'
+    errorMessage.value = '无法检查安装状态，请稍后重试。'
   }
 }
 
