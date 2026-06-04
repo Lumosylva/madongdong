@@ -1,13 +1,7 @@
 import type { ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
-const API_ORIGIN = (() => {
-  try {
-    return new URL(API_BASE, window.location.origin).origin
-  } catch {
-    return window.location.origin
-  }
-})()
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
+const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
 
 const getToken = () => localStorage.getItem('md_web_token') || ''
 
@@ -50,6 +44,9 @@ export const webApi = {
   },
   getTagArticles(slug: string, page = 1, pageSize = 20): Promise<TagArticlesResponse> {
     return request<TagArticlesResponse>(`/web/tags/${encodeURIComponent(slug)}/articles?page=${page}&page_size=${pageSize}`)
+  },
+  getInstallStatus(): Promise<{ success: boolean; data: { installed: boolean; initialized: boolean } }> {
+    return request('/install/status')
   },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {

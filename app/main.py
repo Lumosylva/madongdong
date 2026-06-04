@@ -12,6 +12,7 @@ from app.api.admin.auth import router as admin_auth_router
 from app.api.admin.comment import router as admin_comment_router
 from app.api.admin.media import router as admin_media_router
 from app.api.health import router as health_router
+from app.api.install import router as install_router
 from app.api.web import router as web_router
 from app.core.config import settings
 from app.core.init_db import init_db
@@ -41,6 +42,7 @@ app.add_middleware(
 app.mount(settings.upload_url_prefix, StaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(health_router)
+app.include_router(install_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_auth_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_article_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_media_router, prefix=settings.api_v1_prefix)

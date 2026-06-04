@@ -7,10 +7,16 @@ import CategoryView from './views/CategoryView.vue'
 import TagView from './views/TagView.vue'
 import RegisterView from './views/RegisterView.vue'
 import LoginView from './views/LoginView.vue'
+import InstallView from './views/InstallView.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/install',
+      name: 'install',
+      component: InstallView,
+    },
     {
       path: '/',
       name: 'home',
@@ -47,4 +53,19 @@ export const router = createRouter({
       component: LoginView,
     },
   ],
+})
+
+router.beforeEach(async (to) => {
+  if (to.name === 'install') return true
+  try {
+    const res = await fetch('/api/v1/install/status')
+    if (!res.ok) return true
+    const data = (await res.json()) as { success?: boolean; data?: { installed?: boolean } }
+    if (!data?.data?.installed) {
+      return { name: 'install' }
+    }
+  } catch {
+    return true
+  }
+  return true
 })
