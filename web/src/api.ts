@@ -48,6 +48,23 @@ export const webApi = {
   getInstallStatus(): Promise<{ success: boolean; data: { installed: boolean; initialized: boolean } }> {
     return request('/install/status')
   },
+  installSite(payload: {
+    site_title: string
+    site_subtitle: string | null
+    admin_username: string
+    admin_password: string
+    admin_nickname: string
+    admin_email: string
+    icp_beian: string | null
+    copyright_text: string | null
+    homepage_page_size: number
+    comment_requires_review: boolean
+  }) {
+    return request('/install', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
   submitComment(payload: Record<string, unknown>) {
     return request('/web/comments', {
       method: 'POST',
