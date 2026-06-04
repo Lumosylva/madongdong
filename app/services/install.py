@@ -1,10 +1,16 @@
 """首次安装业务逻辑。"""
 
-from sqlalchemy import select
+from __future__ import annotations
+
+from sqlalchemy import inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.database import engine
 from app.core.security import get_password_hash
+from app.models.article import Category
 from app.models.auth import Permission, Role, User
+from app.models.site import NavItem, SiteSetting
+from app.schemas.install import InstallRequest
 
 DEFAULT_ROLES = {
     'admin': '系统管理员',
@@ -27,21 +33,56 @@ ROLE_PERMISSION_MAP = {
     'reader': [],
 }
 
-from app.models.site import NavItem, SiteSetting
-from app.schemas.install import InstallRequest
+DEFAULT_TABLES = [
+    SiteSetting.__tablename__,
+    User.__tablename__,
+    Role.__tablename__,
+    Permission.__tablename__,
+    NavItem.__tablename__,
+    Category.__tablename__,
+]
+
+
+async def _table_exists(session: AsyncSession, table_name: str) -> bool:
+    """检查单个数据表是否存在。"""
+
+    def _check() -> bool:
+        inspector = inspect(engine.sync_engine)
+        return inspector.has_table(table_name)
+
+    return bool(await session.run_sync(lambda _: _check()))
+
+
+async def _ensure_schema_ready(session: AsyncSession) -> bool:
+    """检查安装所需表是否已准备就绪。"""
+
+    try:
+        for table_name in DEFAULT_TABLES:
+            if not await _table_exists(session, table_name):
+                return False
+        return True
+    except Exception:
+        return False
 
 
 async def get_install_state(session: AsyncSession) -> tuple[bool, bool]:
     """检查系统是否已安装。"""
 
-    site_exists = (await session.execute(select(SiteSetting.id).limit(1))).scalar_one_or_none() is not None
-    user_exists = (await session.execute(select(User.id).limit(1))).scalar_one_or_none() is not None
-    role_exists = (await session.execute(select(Role.id).limit(1))).scalar_one_or_none() is not None
-    nav_exists = (await session.execute(select(NavItem.id).limit(1))).scalar_one_or_none() is not None
+    try:
+        schema_ready = await _ensure_schema_ready(session)
+        if not schema_ready:
+            return False, False
 
-    installed = site_exists and user_exists and role_exists and nav_exists
-    initialized = site_exists or user_exists or role_exists or nav_exists
-    return installed, initialized
+        site_exists = (await session.execute(select(SiteSetting.id).limit(1))).scalar_one_or_none() is not None
+        user_exists = (await session.execute(select(User.id).limit(1))).scalar_one_or_none() is not None
+        role_exists = (await session.execute(select(Role.id).limit(1))).scalar_one_or_none() is not None
+        nav_exists = (await session.execute(select(NavItem.id).limit(1))).scalar_one_or_none() is not None
+
+        installed = site_exists and user_exists and role_exists and nav_exists
+        initialized = site_exists or user_exists or role_exists or nav_exists
+        return installed, initialized
+    except Exception:
+        return False, False
 
 
 async def _ensure_permissions(session: AsyncSession) -> dict[str, Permission]:

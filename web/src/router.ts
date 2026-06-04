@@ -59,13 +59,15 @@ router.beforeEach(async (to) => {
   if (to.name === 'install') return true
   try {
     const res = await fetch('/api/v1/install/status')
-    if (!res.ok) return true
+    if (!res.ok) {
+      return { name: 'install' }
+    }
     const data = (await res.json()) as { success?: boolean; data?: { installed?: boolean } }
     if (!data?.data?.installed) {
       return { name: 'install' }
     }
   } catch {
-    return true
+    return { name: 'install' }
   }
   return true
 })
