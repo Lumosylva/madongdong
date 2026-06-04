@@ -3,9 +3,30 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.init_db import DEFAULT_PERMISSIONS, DEFAULT_ROLES, ROLE_PERMISSION_MAP
 from app.core.security import get_password_hash
 from app.models.auth import Permission, Role, User
+
+DEFAULT_ROLES = {
+    'admin': '系统管理员',
+    'author': '内容作者',
+    'reader': '普通读者',
+}
+
+DEFAULT_PERMISSIONS = {
+    'article:create': '创建文章',
+    'article:review': '审核文章',
+    'media:manage': '管理媒体',
+    'user:manage': '管理用户',
+    'comment:review': '审核评论',
+    'site:manage': '管理站点配置',
+}
+
+ROLE_PERMISSION_MAP = {
+    'admin': list(DEFAULT_PERMISSIONS.keys()),
+    'author': ['article:create'],
+    'reader': [],
+}
+
 from app.models.site import NavItem, SiteSetting
 from app.schemas.install import InstallRequest
 
