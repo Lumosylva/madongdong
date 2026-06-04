@@ -315,8 +315,6 @@ const closeEditor = () => {
   if (avatarFileInputRef.value) avatarFileInputRef.value.value = ''
 }
 
-const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
-
 const submitEditor = () => {
   const payload = {
     id: editingUser.value?.id,

@@ -455,7 +455,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
   }
 })
 
-const activePanelListeners = computed<Record<string, (...args: any[]) => void>>(() => {
+const activePanelListeners = computed(() => {
   switch (currentContentView.value) {
     case 'articles-manage':
       return {
