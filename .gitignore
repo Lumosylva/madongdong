@@ -12,3 +12,4 @@ wheels/
 .codebuddy/
 .mypy_cache/
 .git
+.idea

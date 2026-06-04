@@ -148,7 +148,6 @@ const accountMenuRef = ref<HTMLElement | null>(null)
 const isLoggedIn = computed(() => !!localStorage.getItem('md_web_token'))
 const accountName = computed(() => localStorage.getItem('md-reader-nickname') || '已登录用户')
 const accountLabel = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
-const isOnArticlePage = computed(() => (props.currentPath || '').startsWith('/article/'))
 
 watch(
   () => props.searchKeyword,
@@ -200,16 +199,6 @@ const toggleSearch = () => {
 
 const toggleAccountMenu = () => {
   accountMenuOpen.value = !accountMenuOpen.value
-}
-
-const goToCommentSection = () => {
-  accountMenuOpen.value = false
-  const el = document.querySelector('#comment-section')
-  if (el instanceof HTMLElement) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    el.classList.add('section-highlight')
-    window.setTimeout(() => el.classList.remove('section-highlight'), 1800)
-  }
 }
 
 const logout = () => {

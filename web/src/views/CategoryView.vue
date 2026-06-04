@@ -64,11 +64,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import type { CategoryResponse } from '../types'
+import type { CategoryArticlesResponse } from '../types'
 
 const route = useRoute()
 const router = useRouter()
-const data = ref<CategoryResponse | null>(null)
+const data = ref<CategoryArticlesResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
 const pageSize = ref(20)

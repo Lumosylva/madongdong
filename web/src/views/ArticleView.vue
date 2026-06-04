@@ -212,9 +212,6 @@ const syncTopbarOffset = () => {
   document.documentElement.style.setProperty('--article-page-top-offset', `${offset}px`)
 }
 
-const nicknameInputRef = ref<HTMLInputElement | null>(null)
-const emailInputRef = ref<HTMLInputElement | null>(null)
-const commentTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const topbarResizeObserver = ref<ResizeObserver | null>(null)
 const articlePageRef = ref<HTMLElement | null>(null)
 
