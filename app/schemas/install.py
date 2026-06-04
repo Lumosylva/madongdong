@@ -15,7 +15,7 @@ class InstallRequest(BaseModel):
     admin_password: str = Field(min_length=8, max_length=128)
     admin_nickname: str = Field(min_length=1, max_length=100)
     admin_email: str = Field(min_length=5, max_length=255)
-    icp_beian: str | None = Field(default=None, max_length=255)
+    icp_beian: str | None = Field(default=None, max_length=2000)
     copyright_text: str | None = Field(default=None, max_length=255)
     homepage_page_size: int = Field(default=10, ge=1, le=100)
     comment_requires_review: bool = True

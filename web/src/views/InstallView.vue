@@ -44,6 +44,13 @@
           <p class="install-card-subtitle">带 * 的信息建议保持准确，便于后续管理与部署。</p>
         </div>
 
+        <section class="install-note">
+          <div>
+            <strong>页脚信息说明</strong>
+            <p>备案与版权信息将用于站点底部展示，支持 HTML 片段输入，建议按实际需要填写。</p>
+          </div>
+        </section>
+
         <form class="install-form" @submit.prevent="submitInstall">
           <div class="install-grid">
             <label>
@@ -70,9 +77,9 @@
               <span>管理员邮箱</span>
               <input v-model="form.admin_email" type="email" required placeholder="例如：admin@example.com" />
             </label>
-            <label>
+            <label class="install-textarea-field">
               <span>ICP备案</span>
-              <input v-model="form.icp_beian" placeholder="没有可先留空" />
+              <textarea v-model="form.icp_beian" rows="4" placeholder="请输入备案信息，可填写 HTML 片段"></textarea>
             </label>
             <label>
               <span>版权信息</span>
