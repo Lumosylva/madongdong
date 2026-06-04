@@ -2,7 +2,9 @@
   <router-view />
   <transition name="scroll-top-fade">
     <button v-if="showScrollTop" class="scroll-top-btn" type="button" aria-label="回到顶部" @click="scrollToTop">
-      ↑
+      <svg viewBox="0 0 24 24" class="scroll-top-icon" aria-hidden="true" focusable="false">
+        <path d="M12 5.5c.4 0 .75.14 1.03.42l5.78 5.78a1.5 1.5 0 1 1-2.12 2.12L13.5 10.63V18a1.5 1.5 0 0 1-3 0v-7.37l-3.19 3.19a1.5 1.5 0 0 1-2.12-2.12l5.78-5.78c.28-.28.63-.42 1.03-.42Z" />
+      </svg>
     </button>
   </transition>
 </template>
