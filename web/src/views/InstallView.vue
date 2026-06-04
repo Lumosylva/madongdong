@@ -129,8 +129,9 @@ const form = reactive({
 })
 
 const getAdminLoginUrl = () => {
-  const adminBase = (import.meta.env.VITE_ADMIN_BASE_URL as string | undefined)?.trim() || ''
-  return adminBase ? `${adminBase.replace(/\/$/, '')}/login` : '/admin/login'
+  const adminBasePath = (import.meta.env.VITE_ADMIN_BASE_PATH as string | undefined)?.trim() || '/admin'
+  const normalized = adminBasePath.startsWith('/') ? adminBasePath : `/${adminBasePath}`
+  return `${normalized.replace(/\/$/, '')}/login`
 }
 
 const checkInstalled = async () => {
