@@ -7,8 +7,10 @@ import MdEditorV3ProbeView from './views/MdEditorV3ProbeView.vue'
 
 const hasToken = () => Boolean(localStorage.getItem('blog_admin_token'))
 
+const routerBase = (import.meta.env.BASE_URL || '/admin').replace(/\/$/, '') || '/admin'
+
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(routerBase),
   routes: [
     { path: '/login', name: 'login', component: LoginView },
     { path: '/md-editor-probe', name: 'md-editor-probe', component: MdEditorV3ProbeView, meta: { requiresAuth: true } },

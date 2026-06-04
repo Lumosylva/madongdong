@@ -128,13 +128,16 @@ const form = reactive({
   comment_requires_review: true,
 })
 
+const getAdminLoginUrl = () => {
+  const adminBase = (import.meta.env.VITE_ADMIN_BASE_URL as string | undefined)?.trim() || ''
+  return adminBase ? `${adminBase.replace(/\/$/, '')}/login` : '/admin/login'
+}
+
 const checkInstalled = async () => {
   try {
     const res = await webApi.getInstallStatus()
     if (res.data.installed) {
-      const adminBase = (import.meta.env.VITE_ADMIN_BASE_URL as string | undefined)?.trim() || ''
-      const target = adminBase ? `${adminBase.replace(/\/$/, '')}/login` : '/login'
-      window.location.assign(target)
+      window.location.assign(getAdminLoginUrl())
     }
   } catch {
     errorMessage.value = '无法获取安装状态，请确认后端已启动。'
