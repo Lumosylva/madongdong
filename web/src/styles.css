@@ -1,6 +1,10 @@
-@import '../../shared/topbar.tokens.css';
-
 :root {
+  --app-topbar-padding-block: 10px;
+  --app-topbar-margin-bottom: 14px;
+  --app-topbar-content-width: min(1500px, calc(100% - 12px));
+  --app-topbar-padding-inline: max(8px, calc((100vw - var(--app-topbar-content-width)) / 2));
+  --app-topbar-padding-inline-mobile: 8px;
+  --app-topbar-min-height: 56px;
   --bg: #f4f7fb;
   --bg-panel: rgba(255, 255, 255, 0.82);
   --bg-soft: rgba(237, 242, 249, 0.92);

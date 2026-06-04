@@ -13,3 +13,5 @@ wheels/
 .mypy_cache/
 .git
 .idea
+警告处理方式.md
+madongdong.db

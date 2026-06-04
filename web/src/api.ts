@@ -1,7 +1,13 @@
 import type { ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1'
-const API_ORIGIN = new URL(API_BASE).origin
+const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
+const API_ORIGIN = (() => {
+  try {
+    return new URL(API_BASE, window.location.origin).origin
+  } catch {
+    return window.location.origin
+  }
+})()
 
 const getToken = () => localStorage.getItem('md_web_token') || ''
 
