@@ -109,7 +109,7 @@
           />
         </form>
 
-        <div class="search-overlay-result">
+        <div class="search-overlay-result" ref="searchPanelResultRef" @scroll="handleSearchResultScroll">
           <p class="search-overlay-hint">{{ searchPanelHint }}</p>
           <p v-if="searchPanelLoading" class="search-overlay-empty">正在搜索...</p>
           <div v-else-if="searchPanelResults.length" class="search-overlay-result-list">
@@ -126,6 +126,8 @@
             </RouterLink>
           </div>
           <p v-else class="search-overlay-empty">未找到匹配结果，请尝试其他关键词。</p>
+          <p v-if="searchPanelLoadingMore" class="search-overlay-empty">加载更多中...</p>
+          <p v-else-if="searchPanelResults.length && !searchPanelCanLoadMore" class="search-overlay-empty">没有更多结果了。</p>
         </div>
       </div>
     </section>
@@ -160,8 +162,12 @@ const searchPanelOpen = ref(false)
 const searchPanelKeyword = ref('')
 const searchPanelInputRef = ref<HTMLInputElement | null>(null)
 const searchPanelLoading = ref(false)
+const searchPanelLoadingMore = ref(false)
 const searchPanelArticles = ref<Article[]>([])
 const searchPanelActiveIndex = ref(0)
+const searchPanelPage = ref(1)
+const searchPanelTotalPages = ref(1)
+const searchPanelResultRef = ref<HTMLElement | null>(null)
 let searchDebounceTimer: number | null = null
 let searchRequestSeq = 0
 const accountMenuOpen = ref(false)
@@ -174,6 +180,13 @@ const accountEntryLabel = computed(() => (isLoggedIn.value ? `账户：${account
 const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
 
 const searchPanelResults = computed(() => searchPanelArticles.value)
+const searchPanelCanLoadMore = computed(() => searchPanelPage.value < searchPanelTotalPages.value)
+
+const applySearchResponse = (res: Awaited<ReturnType<typeof webApi.search>>, append = false) => {
+  searchPanelArticles.value = append ? [...searchPanelArticles.value, ...res.articles.items] : res.articles.items
+  searchPanelPage.value = res.articles.page
+  searchPanelTotalPages.value = res.articles.total_pages
+}
 
 const searchPanelHint = computed(() =>
   searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
@@ -200,11 +213,16 @@ watch(searchPanelKeyword, async (value) => {
   const keyword = value.trim()
   if (!keyword) {
     searchPanelLoading.value = false
+    searchPanelLoadingMore.value = false
     searchPanelArticles.value = []
+    searchPanelPage.value = 1
+    searchPanelTotalPages.value = 1
     return
   }
 
   searchPanelLoading.value = true
+  searchPanelLoadingMore.value = false
+  searchPanelPage.value = 1
   const requestId = ++searchRequestSeq
 
   searchDebounceTimer = window.setTimeout(async () => {
@@ -212,9 +230,13 @@ watch(searchPanelKeyword, async (value) => {
       const res = await webApi.search(keyword, 1, 20)
       if (requestId !== searchRequestSeq) return
       searchPanelArticles.value = res.articles.items
+      searchPanelPage.value = res.articles.page
+      searchPanelTotalPages.value = res.articles.total_pages
     } catch {
       if (requestId !== searchRequestSeq) return
       searchPanelArticles.value = []
+      searchPanelPage.value = 1
+      searchPanelTotalPages.value = 1
     } finally {
       if (requestId === searchRequestSeq) {
         searchPanelLoading.value = false
@@ -256,6 +278,34 @@ const closeSearchPanel = () => {
 }
 
 const focusSearchInput = () => searchPanelInputRef.value?.focus()
+
+const handleSearchResultScroll = async () => {
+  const el = searchPanelResultRef.value
+  if (!el || searchPanelLoading.value || searchPanelLoadingMore.value || !searchPanelCanLoadMore.value) return
+  const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 120
+  if (!nearBottom) return
+
+  const keyword = searchPanelKeyword.value.trim()
+  if (!keyword) return
+
+  searchPanelLoadingMore.value = true
+  const requestId = ++searchRequestSeq
+  const nextPage = searchPanelPage.value + 1
+
+  try {
+    const res = await webApi.search(keyword, nextPage, 20)
+    if (requestId !== searchRequestSeq) return
+    searchPanelArticles.value = [...searchPanelArticles.value, ...res.articles.items]
+    searchPanelPage.value = res.articles.page
+    searchPanelTotalPages.value = res.articles.total_pages
+  } catch {
+    // keep existing results
+  } finally {
+    if (requestId === searchRequestSeq) {
+      searchPanelLoadingMore.value = false
+    }
+  }
+}
 
 const toggleAccountMenu = () => {
   accountMenuOpen.value = !accountMenuOpen.value

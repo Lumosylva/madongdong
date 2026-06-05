@@ -1382,17 +1382,22 @@ a {
 
 .search-overlay-shell {
   width: 100%;
-  min-height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: 14px;
-  padding: 18px clamp(14px, 3vw, 28px) 22px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px clamp(12px, 2.8vw, 28px) 18px;
   border: none;
   border-radius: 0;
   background: var(--bg-panel);
   box-shadow: none;
   backdrop-filter: blur(18px);
-  overflow: auto;
+  overflow: hidden;
+}
+
+.search-overlay-shell > * {
+  min-width: 0;
 }
 
 .search-overlay-header {
@@ -1455,7 +1460,23 @@ a {
   display: grid;
   gap: 10px;
   align-content: start;
+  min-height: 0;
   overflow: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.search-overlay-result::-webkit-scrollbar {
+  width: 10px;
+}
+
+.search-overlay-result::-webkit-scrollbar-thumb {
+  background: rgba(94, 111, 138, 0.38);
+  border-radius: 999px;
+}
+
+.search-overlay-result::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .search-overlay-hint,
