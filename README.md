@@ -190,12 +190,13 @@ VITE_ADMIN_BASE_PATH=/admin
 ```env
 VITE_API_BASE=/api/v1
 VITE_APP_NAME=MadongDong Admin
-VITE_WEB_BASE_PATH=/
+# 可选配置，未配置时默认跳当前域名根路径
+VITE_WEB_BASE_URL=
 ```
 
 - `VITE_API_BASE`：后台接口基础路径。与前台保持一致，方便统一部署。
 - `VITE_APP_NAME`：后台应用名称，仅用于前端展示或后续扩展。
-- `VITE_WEB_BASE_PATH`：后台中需要跳转到前台时使用的路径前缀。默认使用 `/`。
+- `VITE_WEB_BASE_URL`：后台“查看站点”入口的前台地址。可选配置，未配置时默认跳当前域名根路径。
 
 #### 推荐写法
 

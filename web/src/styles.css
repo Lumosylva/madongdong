@@ -317,7 +317,7 @@ a {
 .search-box,
 .comment-form {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -325,7 +325,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .account-menu {
@@ -335,11 +335,11 @@ a {
 .account-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 8px);
-  min-width: 140px;
+  top: calc(100% + 10px);
+  min-width: 148px;
   background: var(--bg-panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
   padding: 8px;
   z-index: 220;
@@ -367,24 +367,49 @@ a {
   color: var(--danger);
 }
 
-.auth-entry {
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  border-radius: 999px;
+.auth-entry.icon-entry {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: none;
+  border-radius: 10px;
   background: transparent;
-  color: var(--text-soft);
+  color: var(--text);
   font-size: 14px;
   white-space: nowrap;
   box-shadow: none;
+  backdrop-filter: none;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
 
-.auth-entry:hover {
+.auth-entry.icon-entry:hover {
+  transform: translateY(-1px);
   color: var(--accent);
-  background: transparent;
+  background: rgba(237, 242, 249, 0.68);
+  box-shadow: none;
+}
+
+.auth-icon {
+  width: 19px;
+  height: 19px;
+  display: block;
+  fill: currentColor;
+}
+
+:root[data-theme='dark'] .auth-entry.icon-entry {
+  background: linear-gradient(135deg, rgba(14, 27, 48, 0.96), rgba(8, 20, 37, 0.92));
+  color: var(--text);
+  border-color: rgba(120, 170, 255, 0.18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+:root[data-theme='dark'] .auth-entry.icon-entry:hover {
+  background: linear-gradient(135deg, rgba(19, 36, 62, 0.98), rgba(10, 24, 44, 0.96));
+  color: var(--accent);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.32);
 }
 
 .register-page .register-main {

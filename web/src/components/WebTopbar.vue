@@ -32,8 +32,19 @@
 
     <div class="topbar-right">
       <div class="account-menu" ref="accountMenuRef">
-        <button type="button" class="auth-entry" @click="toggleAccountMenu">
-          {{ accountLabel }}
+        <button
+          type="button"
+          class="auth-entry icon-entry"
+          :aria-label="accountEntryLabel"
+          :title="accountEntryTitle"
+          @click="toggleAccountMenu"
+        >
+          <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 12c-4.418 0-8 2.91-8 6.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5C20 16.91 16.418 14 12 14Z"
+              fill="currentColor"
+            />
+          </svg>
         </button>
         <transition name="menu-pop">
           <div v-if="accountMenuOpen" class="account-dropdown">
