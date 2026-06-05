@@ -79,10 +79,6 @@
             </button>
           </div>
         </transition>
-
-        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="$emit('toggle-theme')">
-          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
-        </button>
       </form>
     </div>
   </header>

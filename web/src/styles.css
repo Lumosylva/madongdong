@@ -1366,12 +1366,14 @@ a {
     margin-left: auto;
     gap: 8px;
     flex: 0 0 auto;
+    order: 2;
   }
 
   .hamburger-btn {
     display: grid;
-    margin-left: auto;
+    margin-left: 0;
     order: 3;
+    flex: 0 0 auto;
   }
 
   .search-box {
