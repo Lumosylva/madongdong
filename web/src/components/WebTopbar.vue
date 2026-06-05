@@ -112,11 +112,19 @@
 
         <div class="search-overlay-result">
           <p class="search-overlay-hint">{{ searchPanelHint }}</p>
-          <div v-if="searchPanelResults.length" class="search-overlay-result-list">
-            <div v-for="item in searchPanelResults" :key="item.id" class="search-overlay-result-item">
+          <p v-if="searchPanelLoading" class="search-overlay-empty">正在搜索...</p>
+          <div v-else-if="searchPanelResults.length" class="search-overlay-result-list">
+            <RouterLink
+              v-for="item in searchPanelResults"
+              :key="item.id"
+              :to="`/article/${item.id}`"
+              class="search-overlay-result-item"
+              @click="closeSearchPanel"
+            >
               <strong>{{ item.title }}</strong>
-              <span>{{ item.path }}</span>
-            </div>
+              <span>{{ item.summary }}</span>
+              <em>{{ item.category?.name || '未分类' }} · {{ item.author?.nickname || 'admin' }}</em>
+            </RouterLink>
           </div>
           <p v-else class="search-overlay-empty">未找到匹配结果，请尝试其他关键词。</p>
         </div>
@@ -128,7 +136,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import type { NavItem } from '../types'
+import { webApi } from '../api'
+import type { NavItem, Article } from '../types'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -151,7 +160,11 @@ const mobileMenuOpen = ref(false)
 const searchPanelOpen = ref(false)
 const searchPanelKeyword = ref('')
 const searchPanelInputRef = ref<HTMLInputElement | null>(null)
+const searchPanelLoading = ref(false)
+const searchPanelArticles = ref<Article[]>([])
+const searchPanelActiveIndex = ref(0)
 let searchDebounceTimer: number | null = null
+let searchRequestSeq = 0
 const accountMenuOpen = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
@@ -161,11 +174,7 @@ const accountName = computed(() => localStorage.getItem('md-reader-nickname') ||
 const accountEntryLabel = computed(() => (isLoggedIn.value ? `账户：${accountName.value}` : '登录 / 注册'))
 const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
 
-const searchPanelResults = computed(() => {
-  const keyword = searchPanelKeyword.value.trim().toLowerCase()
-  if (!keyword) return props.navItems.slice(0, 5)
-  return props.navItems.filter((item) => item.title.toLowerCase().includes(keyword))
-})
+const searchPanelResults = computed(() => searchPanelArticles.value)
 
 const searchPanelHint = computed(() =>
   searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
@@ -184,13 +193,36 @@ watch(searchPanelOpen, (opened) => {
   }
 })
 
-watch(searchPanelKeyword, () => {
+watch(searchPanelKeyword, async (value) => {
   if (searchDebounceTimer) {
     window.clearTimeout(searchDebounceTimer)
   }
-  searchDebounceTimer = window.setTimeout(() => {
+
+  const keyword = value.trim()
+  if (!keyword) {
+    searchPanelLoading.value = false
+    searchPanelArticles.value = []
+    return
+  }
+
+  searchPanelLoading.value = true
+  const requestId = ++searchRequestSeq
+
+  searchDebounceTimer = window.setTimeout(async () => {
+    try {
+      const res = await webApi.search(keyword, 1, 20)
+      if (requestId !== searchRequestSeq) return
+      searchPanelArticles.value = res.articles.items
+    } catch {
+      if (requestId !== searchRequestSeq) return
+      searchPanelArticles.value = []
+    } finally {
+      if (requestId === searchRequestSeq) {
+        searchPanelLoading.value = false
+      }
+    }
     searchDebounceTimer = null
-  }, 120)
+  }, 180)
 })
 
 const splitPathAndQuery = (value: string) => {
@@ -215,6 +247,8 @@ const openSearchPanel = () => {
   accountMenuOpen.value = false
   searchPanelOpen.value = true
   searchPanelKeyword.value = ''
+  searchPanelArticles.value = []
+  searchPanelActiveIndex.value = 0
   window.setTimeout(() => searchPanelInputRef.value?.focus(), 50)
 }
 
