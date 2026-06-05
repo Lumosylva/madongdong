@@ -109,21 +109,24 @@
           />
         </form>
 
-        <div class="search-overlay-result" ref="searchPanelResultRef" @scroll="handleSearchResultScroll">
+        <div class="search-overlay-result" ref="searchPanelResultRef">
           <p class="search-overlay-hint">{{ searchPanelHint }}</p>
           <p v-if="searchPanelLoading" class="search-overlay-empty">正在搜索...</p>
           <div v-else-if="searchPanelResults.length" class="search-overlay-result-list">
             <RouterLink
-              v-for="item in searchPanelResults"
+              v-for="(item, index) in searchPanelResults"
               :key="item.id"
               :to="`/article/${item.id}`"
               class="search-overlay-result-item"
+              :class="{ active: index === searchPanelActiveIndex }"
+              @mouseenter="searchPanelActiveIndex = index"
               @click="closeSearchPanel"
             >
               <strong>{{ item.title }}</strong>
               <span>{{ item.summary }}</span>
               <em>{{ item.category?.name || '未分类' }} · {{ item.author?.nickname || 'admin' }}</em>
             </RouterLink>
+            <div ref="searchPanelLoadMoreSentinel" class="search-overlay-load-more-sentinel" aria-hidden="true"></div>
           </div>
           <p v-else class="search-overlay-empty">未找到匹配结果，请尝试其他关键词。</p>
           <p v-if="searchPanelLoadingMore" class="search-overlay-empty">加载更多中...</p>
@@ -168,8 +171,10 @@ const searchPanelActiveIndex = ref(0)
 const searchPanelPage = ref(1)
 const searchPanelTotalPages = ref(1)
 const searchPanelResultRef = ref<HTMLElement | null>(null)
+const searchPanelLoadMoreSentinel = ref<HTMLElement | null>(null)
 let searchDebounceTimer: number | null = null
 let searchRequestSeq = 0
+let searchPanelObserver: IntersectionObserver | null = null
 const accountMenuOpen = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
@@ -182,11 +187,6 @@ const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value :
 const searchPanelResults = computed(() => searchPanelArticles.value)
 const searchPanelCanLoadMore = computed(() => searchPanelPage.value < searchPanelTotalPages.value)
 
-const applySearchResponse = (res: Awaited<ReturnType<typeof webApi.search>>, append = false) => {
-  searchPanelArticles.value = append ? [...searchPanelArticles.value, ...res.articles.items] : res.articles.items
-  searchPanelPage.value = res.articles.page
-  searchPanelTotalPages.value = res.articles.total_pages
-}
 
 const searchPanelHint = computed(() =>
   searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
@@ -199,9 +199,17 @@ watch(() => props.currentFullPath, () => {
 
 watch(searchPanelOpen, (opened) => {
   document.documentElement.style.overflow = opened ? 'hidden' : ''
-  if (!opened && searchDebounceTimer) {
-    window.clearTimeout(searchDebounceTimer)
-    searchDebounceTimer = null
+  if (opened) {
+    window.setTimeout(() => setupSearchObserver(), 0)
+  } else {
+    if (searchPanelObserver) {
+      searchPanelObserver.disconnect()
+      searchPanelObserver = null
+    }
+    if (searchDebounceTimer) {
+      window.clearTimeout(searchDebounceTimer)
+      searchDebounceTimer = null
+    }
   }
 })
 
@@ -270,14 +278,19 @@ const openSearchPanel = () => {
   searchPanelKeyword.value = ''
   searchPanelArticles.value = []
   searchPanelActiveIndex.value = 0
-  window.setTimeout(() => searchPanelInputRef.value?.focus(), 50)
+  searchPanelPage.value = 1
+  searchPanelTotalPages.value = 1
+  window.setTimeout(() => {
+    searchPanelInputRef.value?.focus()
+    setupSearchObserver()
+  }, 50)
 }
 
 const closeSearchPanel = () => {
   searchPanelOpen.value = false
 }
 
-const focusSearchInput = () => searchPanelInputRef.value?.focus()
+
 
 const handleSearchResultScroll = async () => {
   const el = searchPanelResultRef.value
@@ -305,6 +318,30 @@ const handleSearchResultScroll = async () => {
       searchPanelLoadingMore.value = false
     }
   }
+}
+
+const setupSearchObserver = () => {
+  if (searchPanelObserver) {
+    searchPanelObserver.disconnect()
+    searchPanelObserver = null
+  }
+
+  if (!searchPanelResultRef.value || !searchPanelLoadMoreSentinel.value) return
+
+  searchPanelObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (!entry?.isIntersecting) return
+      void handleSearchResultScroll()
+    },
+    {
+      root: searchPanelResultRef.value,
+      rootMargin: '120px 0px 120px 0px',
+      threshold: 0.01,
+    },
+  )
+
+  searchPanelObserver.observe(searchPanelLoadMoreSentinel.value)
 }
 
 const toggleAccountMenu = () => {
