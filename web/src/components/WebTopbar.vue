@@ -40,10 +40,7 @@
           @click="toggleAccountMenu"
         >
           <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 12c-4.418 0-8 2.91-8 6.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5C20 16.91 16.418 14 12 14Z"
-              fill="currentColor"
-            />
+            <path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 12c-4.418 0-8 2.91-8 6.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5C20 16.91 16.418 14 12 14Z" fill="currentColor" />
           </svg>
         </button>
         <transition name="menu-pop">
@@ -55,31 +52,9 @@
         </transition>
       </div>
 
-      <form class="search-box" :class="{ compact: collapsibleSearch, closed: collapsibleSearch && !searchOpen }" @submit.prevent="onSubmit">
-        <button
-          v-if="collapsibleSearch && !searchOpen"
-          type="button"
-          class="search-trigger"
-          aria-label="展开搜索"
-          :aria-expanded="searchOpen"
-          @click="toggleSearch"
-        >
-          <span aria-hidden="true">⌕</span>
-        </button>
-
-        <transition name="search-fade-slide">
-          <div v-if="!collapsibleSearch || searchOpen" class="search-input-wrap">
-            <input
-              :value="searchKeyword"
-              placeholder="输入关键词回车搜索"
-              @input="onKeywordInput"
-            />
-            <button type="submit" aria-label="搜索" class="search-submit-inside">
-              <span aria-hidden="true">⌕</span>
-            </button>
-          </div>
-        </transition>
-      </form>
+      <button v-if="!isMobile" type="button" class="search-launch-btn" aria-label="打开搜索" title="搜索" @click="openSearchPanel">
+        <span aria-hidden="true">⌕</span>
+      </button>
     </div>
   </header>
 
@@ -98,22 +73,60 @@
         <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
       </div>
       <nav class="drawer-nav">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.id"
-          :to="item.path"
-          :class="{ active: isActive(item.path) }"
-          @click="mobileMenuOpen = false"
-        >
+        <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
           {{ item.title }}
         </RouterLink>
+        <button type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
       </nav>
     </aside>
+  </transition>
+
+  <transition name="search-overlay-fade">
+    <div v-if="searchPanelOpen" class="search-overlay-mask" @click="closeSearchPanel"></div>
+  </transition>
+
+  <transition name="search-overlay-slide">
+    <section v-if="searchPanelOpen" class="search-overlay-panel" role="dialog" aria-modal="true" aria-label="搜索">
+      <div class="search-overlay-shell">
+        <div class="search-overlay-header">
+          <div class="search-overlay-title-wrap">
+            <span class="brand-mark search-overlay-mark">⌕</span>
+            <div>
+              <p class="drawer-title">搜索站点内容</p>
+              <p class="drawer-subtitle">输入关键词后下方即时显示结果</p>
+            </div>
+          </div>
+          <button type="button" class="drawer-close" @click="closeSearchPanel">✕</button>
+        </div>
+
+        <form class="search-overlay-form" @submit.prevent>
+          <input
+            ref="searchPanelInputRef"
+            v-model="searchPanelKeyword"
+            class="search-overlay-input"
+            type="search"
+            placeholder="请输入文章、分类或标签关键词"
+          />
+          <button type="button" class="search-overlay-submit" @click="focusSearchInput">⌕</button>
+        </form>
+
+        <div class="search-overlay-result">
+          <p class="search-overlay-hint">{{ searchPanelHint }}</p>
+          <div v-if="searchPanelResults.length" class="search-overlay-result-list">
+            <div v-for="item in searchPanelResults" :key="item.id" class="search-overlay-result-item">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.path }}</span>
+            </div>
+          </div>
+          <p v-else class="search-overlay-empty">未找到匹配结果，请尝试其他关键词。</p>
+        </div>
+      </div>
+    </section>
   </transition>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import type { NavItem } from '../types'
 
@@ -129,80 +142,69 @@ const props = withDefaults(
     searchKeyword?: string
     currentPath?: string
     currentFullPath?: string
-    collapsibleSearch?: boolean
   }>(),
-  {
-    subtitle: '',
-    logoUrl: '',
-    searchKeyword: '',
-    currentPath: '/',
-    currentFullPath: '/',
-    collapsibleSearch: false,
-  },
+  { subtitle: '', logoUrl: '', searchKeyword: '', currentPath: '/', currentFullPath: '/' },
 )
 
-const emit = defineEmits<{
-  'toggle-theme': []
-  search: []
-  'update:searchKeyword': [value: string]
-}>()
-
-const searchOpen = ref(!props.collapsibleSearch || !!props.searchKeyword)
+const emit = defineEmits<{ 'toggle-theme': [] }>()
 const mobileMenuOpen = ref(false)
+const searchPanelOpen = ref(false)
+const searchPanelKeyword = ref('')
+const searchPanelInputRef = ref<HTMLInputElement | null>(null)
 const accountMenuOpen = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
+const isMobile = ref(false)
 
 const isLoggedIn = computed(() => !!localStorage.getItem('md_web_token'))
 const accountName = computed(() => localStorage.getItem('md-reader-nickname') || '已登录用户')
-const accountLabel = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
+const accountEntryLabel = computed(() => (isLoggedIn.value ? `账户：${accountName.value}` : '登录 / 注册'))
+const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
 
-watch(
-  () => props.searchKeyword,
-  (value) => {
-    if (value && props.collapsibleSearch) {
-      searchOpen.value = true
-    }
-  },
+const searchPanelResults = computed(() => {
+  const keyword = searchPanelKeyword.value.trim().toLowerCase()
+  if (!keyword) return props.navItems.slice(0, 5)
+  return props.navItems.filter((item) => item.title.toLowerCase().includes(keyword))
+})
+
+const searchPanelHint = computed(() =>
+  searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
 )
 
-watch(
-  () => props.currentFullPath,
-  () => {
-    mobileMenuOpen.value = false
-  },
-)
-
-const themeToggleLabel = computed(() =>
-  props.theme === 'light' ? '切换为暗色主题' : '切换为白天主题',
-)
+watch(() => props.currentFullPath, () => {
+  mobileMenuOpen.value = false
+  accountMenuOpen.value = false
+})
 
 const splitPathAndQuery = (value: string) => {
   const [pathPart = '/', queryPart = ''] = value.split('?')
-  const normalizedPath = pathPart.replace(/\/$/, '') || '/'
-  const normalizedQuery = queryPart.trim()
-  return { path: normalizedPath, query: normalizedQuery }
+  return { path: pathPart.replace(/\/$/, '') || '/', query: queryPart.trim() }
 }
 
 const isActive = (navTarget: string) => {
   const current = splitPathAndQuery(props.currentFullPath || props.currentPath)
   const target = splitPathAndQuery(navTarget)
-
-  if (target.query) {
-    return current.path === target.path && current.query === target.query
-  }
-
+  if (target.query) return current.path === target.path && current.query === target.query
   if (target.path === '/') return current.path === '/'
   return current.path === target.path || current.path.startsWith(`${target.path}/`)
 }
 
-const onKeywordInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  emit('update:searchKeyword', target.value)
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 960
 }
 
-const toggleSearch = () => {
-  searchOpen.value = !searchOpen.value
+const openSearchPanel = () => {
+  mobileMenuOpen.value = false
+  accountMenuOpen.value = false
+  searchPanelOpen.value = true
+  searchPanelKeyword.value = ''
+  window.setTimeout(() => searchPanelInputRef.value?.focus(), 50)
 }
+
+const closeSearchPanel = () => {
+  searchPanelOpen.value = false
+}
+
+const focusSearchInput = () => searchPanelInputRef.value?.focus()
 
 const toggleAccountMenu = () => {
   accountMenuOpen.value = !accountMenuOpen.value
@@ -223,19 +225,14 @@ const handleDocumentClick = (event: MouseEvent) => {
   }
 }
 
-const onSubmit = () => {
-  if (props.collapsibleSearch && !searchOpen.value) {
-    searchOpen.value = true
-    return
-  }
-  emit('search')
-}
-
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick)
+  handleResize()
+  window.addEventListener('resize', handleResize)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick)
+  window.removeEventListener('resize', handleResize)
 })
 </script>
