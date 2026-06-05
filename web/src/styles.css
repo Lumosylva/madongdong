@@ -1348,21 +1348,36 @@ a {
     margin: 0 calc(50% - 50vw) var(--app-topbar-margin-bottom);
     padding: var(--app-topbar-padding-block) var(--app-topbar-padding-inline-mobile);
     padding-inline: var(--app-topbar-padding-inline-mobile);
-    grid-template-columns: 1fr auto auto;
+    display: flex;
     align-items: center;
+    gap: 8px;
+  }
+
+  .brand-block {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .topbar .nav {
     display: none;
   }
 
+  .topbar-right {
+    margin-left: auto;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
   .hamburger-btn {
     display: grid;
+    margin-left: auto;
+    order: 3;
   }
 
   .search-box {
     justify-content: flex-end;
     flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .search-input-wrap {
