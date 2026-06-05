@@ -151,6 +151,7 @@ const mobileMenuOpen = ref(false)
 const searchPanelOpen = ref(false)
 const searchPanelKeyword = ref('')
 const searchPanelInputRef = ref<HTMLInputElement | null>(null)
+let searchDebounceTimer: number | null = null
 const accountMenuOpen = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
@@ -173,6 +174,23 @@ const searchPanelHint = computed(() =>
 watch(() => props.currentFullPath, () => {
   mobileMenuOpen.value = false
   accountMenuOpen.value = false
+})
+
+watch(searchPanelOpen, (opened) => {
+  document.documentElement.style.overflow = opened ? 'hidden' : ''
+  if (!opened && searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = null
+  }
+})
+
+watch(searchPanelKeyword, () => {
+  if (searchDebounceTimer) {
+    window.clearTimeout(searchDebounceTimer)
+  }
+  searchDebounceTimer = window.setTimeout(() => {
+    searchDebounceTimer = null
+  }, 120)
 })
 
 const splitPathAndQuery = (value: string) => {
