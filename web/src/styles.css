@@ -1375,23 +1375,24 @@ a {
   inset: 0;
   z-index: 991;
   display: grid;
-  place-items: start center;
-  padding: 18px 12px 22px;
-  overflow: auto;
+  place-items: start stretch;
+  padding: 0;
+  overflow: hidden;
 }
 
 .search-overlay-shell {
-  width: min(980px, 100%);
-  min-height: min(100%, 640px);
+  width: 100%;
+  min-height: 100%;
   display: grid;
   grid-template-rows: auto auto 1fr;
   gap: 14px;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
+  padding: 18px clamp(14px, 3vw, 28px) 22px;
+  border: none;
+  border-radius: 0;
   background: var(--bg-panel);
-  box-shadow: var(--shadow);
+  box-shadow: none;
   backdrop-filter: blur(18px);
+  overflow: auto;
 }
 
 .search-overlay-header {

@@ -107,7 +107,6 @@
             type="search"
             placeholder="请输入文章、分类或标签关键词"
           />
-          <button type="button" class="search-overlay-submit" @click="focusSearchInput">⌕</button>
         </form>
 
         <div class="search-overlay-result">
