@@ -16,6 +16,7 @@ const applyTheme = (value: ThemeMode) => {
   theme.value = value
   document.documentElement.dataset.theme = value
   localStorage.setItem('md-theme', value)
+  window.dispatchEvent(new CustomEvent('md-theme-change', { detail: value }))
 }
 
 const toggleTheme = () => {

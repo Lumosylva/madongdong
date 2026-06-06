@@ -54,7 +54,6 @@
             :id="articleEditorId"
             :model-value="data.article.content_markdown || ''"
             :theme="theme"
-            :preview-theme="previewTheme"
             code-theme="atom"
             :show-code-row-number="true"
             :sanitize="sanitizeMarkdownHtml"
@@ -195,23 +194,16 @@ const commentSubmitting = ref(false)
 const commentFieldFocused = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
-const previewTheme = ref<'default' | 'vuepress' | 'github' | 'cyanosis' | 'mk-cute' | 'smart-blue'>('github')
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
 
-const syncPreviewTheme = (value: ThemeMode) => {
-  previewTheme.value = value === 'dark' ? 'vuepress' : 'github'
-  localStorage.setItem('md-preview-theme', previewTheme.value)
-}
-
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
   document.documentElement.dataset.theme = value
   localStorage.setItem('md-theme', value)
-  syncPreviewTheme(value)
 }
 
 const toggleTheme = () => {
@@ -363,9 +355,17 @@ watch(() => route.params.id, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
+const handleThemeChange = (event: Event) => {
+  const detail = (event as CustomEvent<ThemeMode>).detail
+  if (detail === 'dark' || detail === 'light') {
+    applyTheme(detail)
+  }
+}
+
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  window.addEventListener('md-theme-change', handleThemeChange as EventListener)
 
   const savedNickname = localStorage.getItem('md-reader-nickname')
   if (savedNickname && !guestNickname.value.trim()) {
@@ -386,5 +386,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   topbarResizeObserver.value?.disconnect()
+  window.removeEventListener('md-theme-change', handleThemeChange as EventListener)
 })
 </script>
