@@ -47,15 +47,19 @@
         </div>
       </div>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
-      <div class="article-body article-body-md">
-        <MdPreview
-          :id="articleEditorId"
-          :model-value="data.article.content_markdown || ''"
-          :theme="theme"
-          preview-theme="github"
-          code-theme="atom"
-          :show-code-row-number="true"
-        />
+      <div class="article-content-wrap">
+        <div class="article-body article-body-md">
+          <MdPreview
+            :key="`${articleEditorId}-${theme}`"
+            :id="articleEditorId"
+            :model-value="data.article.content_markdown || ''"
+            :theme="theme"
+            preview-theme="github"
+            code-theme="atom"
+            :show-code-row-number="true"
+            :sanitize="sanitizeMarkdownHtml"
+          />
+        </div>
       </div>
 
       <section class="article-extra">
@@ -169,6 +173,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
+import DOMPurify from 'dompurify'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
@@ -193,6 +198,8 @@ const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
+
+const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value

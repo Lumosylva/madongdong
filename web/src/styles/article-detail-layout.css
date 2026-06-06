@@ -97,18 +97,30 @@
   font-size: 16px;
   font-family: inherit;
   background: #f2f2f2;
-}
-/* 控制 md-editor 的背景颜色 */
-.md-editor {
-  --md-bk-color: #f2f2f2;
-}
-/* 控制 md-editor 的背景颜色 */
-.md-editor .md-editor-preview {
-  background-color: #f2f2f2;
+  min-width: 0;
 }
 
 .article-body-md :where(h1, h2, h3, h4, h5, h6, p, blockquote, pre, table, ul, ol, dl) {
   margin-top: 0;
+}
+
+.md-editor {
+  --md-bk-color: #f2f2f2;
+}
+
+.md-editor-preview {
+  display: flow-root;
+  padding-block: 10px;
+  padding-inline: 20px;
+}
+.md-editor-previewOnly {
+  border: none;
+  height: auto;
+  overflow: visible;
+}
+
+.md-editor .md-editor-preview {
+  background-color: #f2f2f2;
 }
 
 :root:not([data-theme='dark']) .article-extra {
