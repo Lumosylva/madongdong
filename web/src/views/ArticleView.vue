@@ -54,7 +54,7 @@
             :id="articleEditorId"
             :model-value="data.article.content_markdown || ''"
             :theme="theme"
-            preview-theme="github"
+            :preview-theme="previewTheme"
             code-theme="atom"
             :show-code-row-number="true"
             :sanitize="sanitizeMarkdownHtml"
@@ -195,16 +195,23 @@ const commentSubmitting = ref(false)
 const commentFieldFocused = ref(false)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
+const previewTheme = ref<'default' | 'vuepress' | 'github' | 'cyanosis' | 'mk-cute' | 'smart-blue'>('github')
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
 
+const syncPreviewTheme = (value: ThemeMode) => {
+  previewTheme.value = value === 'dark' ? 'vuepress' : 'github'
+  localStorage.setItem('md-preview-theme', previewTheme.value)
+}
+
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
   document.documentElement.dataset.theme = value
   localStorage.setItem('md-theme', value)
+  syncPreviewTheme(value)
 }
 
 const toggleTheme = () => {
