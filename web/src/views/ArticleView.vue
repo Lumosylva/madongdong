@@ -49,10 +49,12 @@
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
       <div class="article-body article-body-md">
         <MdPreview
+          :id="articleEditorId"
           :model-value="data.article.content_markdown || ''"
           :theme="theme"
           preview-theme="github"
-          :editor-id="articleEditorId"
+          code-theme="atom"
+          :show-code-row-number="true"
         />
       </div>
 
