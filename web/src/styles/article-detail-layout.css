@@ -103,24 +103,10 @@
   margin-top: 0;
 }
 
-.md-editor {
-  --md-bk-color: #f2f2f2;
+.article-body-md .md-editor {
+  background: transparent;
 }
 
-.md-editor-preview {
-  display: flow-root;
-  padding-block: 10px;
-  padding-inline: 20px;
-}
-.md-editor-previewOnly {
-  border: none;
-  height: auto;
-  overflow: visible;
-}
-
-.md-editor .md-editor-preview {
-  background-color: #f2f2f2;
-}
 
 :root:not([data-theme='dark']) .article-extra {
   margin-top: 22px;
