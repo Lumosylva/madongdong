@@ -1,5 +1,5 @@
 <template>
-  <div class="shell" v-if="data">
+  <div class="shell home-shell" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
@@ -67,7 +67,7 @@
       </aside>
     </main>
 
-    <WebFooter :icp-beian="data.site.icp_beian" :copyright-text="data.site.copyright_text" />
+    <WebFooter :icp-beian="data.site.icp_beian" :friend-links="friendLinks" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
 
@@ -92,6 +92,7 @@ const welcomeMessage = ref('')
 const welcomeShownKey = 'md-home-welcome-shown'
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
+const friendLinks = ref<Array<{ id: number; name: string }>>([])
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -122,6 +123,7 @@ const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo:
 
 const loadData = async () => {
   data.value = await webApi.getHome(page.value, homePageSize.value)
+  friendLinks.value = await webApi.getFriendLinks()
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 

@@ -21,7 +21,7 @@
 
     <nav class="nav">
       <RouterLink
-        v-for="item in navItemsWithFriendLinks"
+        v-for="item in navItems"
         :key="item.id"
         :to="item.path"
         :class="{ active: isActive(item.path) }"
@@ -74,7 +74,7 @@
         <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
       </div>
       <nav class="drawer-nav">
-        <RouterLink v-for="item in navItemsWithFriendLinks" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
+        <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
           {{ item.title }}
         </RouterLink>
         <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
@@ -188,14 +188,6 @@ const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value :
 
 const searchPanelResults = computed(() => searchPanelArticles.value)
 const searchPanelCanLoadMore = computed(() => searchPanelPage.value < searchPanelTotalPages.value)
-const navItemsWithFriendLinks = computed(() => {
-  const base = props.navItems || []
-  if (base.some((item) => item.path === '/friend-links')) return base
-  return [
-    ...base,
-    { id: 999999, title: '友链', path: '/friend-links', sort_order: 999999, is_visible: true, target: null, description: null },
-  ]
-})
 
 const searchPanelHint = computed(() =>
   searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
