@@ -41,7 +41,8 @@
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
           <span>{{ data.article.category?.name || '未分类' }}</span>
-          <span>{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
+          <span>发布时间：{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
+          <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(data.article)) }}</span>
           <span>{{ data.article.view_count }} 浏览</span>
           <span>{{ data.article.comment_count }} 评论</span>
         </div>
@@ -199,6 +200,16 @@ const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
+
+const getArticleUpdatedAt = (article: { updated_at?: string; published_at?: string | null; created_at?: string }) => {
+  const publishedAt = new Date(String(article.published_at || '')).getTime()
+  const updatedAt = new Date(String(article.updated_at || '')).getTime()
+  const createdAt = new Date(String(article.created_at || '')).getTime()
+  if (Number.isNaN(updatedAt)) return article.published_at || article.created_at || ''
+  if (!Number.isNaN(publishedAt) && updatedAt <= publishedAt) return article.published_at || article.created_at || ''
+  if (!Number.isNaN(createdAt) && updatedAt <= createdAt) return article.published_at || article.created_at || ''
+  return article.updated_at || article.published_at || article.created_at || ''
+}
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value

@@ -32,6 +32,7 @@
             <span>分类：{{ item.category?.name || '未分类' }}</span>
             <span>作者：{{ item.author?.nickname || 'admin' }}</span>
             <span>发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
+            <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(item)) }}</span>
             <span>浏览：{{ item.view_count || 0 }}</span>
             <span>评论：{{ item.comment_count || 0 }}</span>
           </small>
@@ -94,6 +95,16 @@ const statusFilter = ref<'all' | 'published' | 'draft' | 'pending' | 'rejected'>
 const sortOrder = ref<'newest' | 'oldest'>('newest')
 
 const normalizeStatus = (status: string) => String(status || '').trim().toLowerCase()
+
+const getArticleUpdatedAt = (item: any) => {
+  const publishedAt = new Date(String(item.published_at || '')).getTime()
+  const updatedAt = new Date(String(item.updated_at || '')).getTime()
+  const createdAt = new Date(String(item.created_at || '')).getTime()
+  if (Number.isNaN(updatedAt)) return item.published_at || item.created_at || ''
+  if (!Number.isNaN(publishedAt) && updatedAt <= publishedAt) return item.published_at || item.created_at || ''
+  if (!Number.isNaN(createdAt) && updatedAt <= createdAt) return item.published_at || item.created_at || ''
+  return item.updated_at || item.published_at || item.created_at || ''
+}
 
 const statusMatched = (status: string) => {
   if (statusFilter.value === 'all') return true
