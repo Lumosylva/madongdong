@@ -491,11 +491,11 @@ a {
 
 .auth-hero,
 .auth-card {
-  border: 1px solid var(--line);
+  border: none;
   border-radius: 24px;
-  background: var(--bg-panel);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
 }
 
 .auth-hero {
@@ -532,6 +532,22 @@ a {
   padding: 30px;
   display: grid;
   gap: 18px;
+  position: relative;
+}
+
+.auth-card::before,
+.auth-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 34%, transparent 66%, rgba(14, 165, 164, 0.06));
+  opacity: 0.5;
+}
+
+.auth-hero {
+  position: relative;
 }
 
 .auth-card-header h3,
@@ -644,7 +660,7 @@ a {
 
 :root[data-theme='dark'] .auth-hero,
 :root[data-theme='dark'] .auth-card {
-  background: rgba(10, 24, 44, 0.88);
+  background: rgba(10, 24, 44, 0.66);
 }
 
 
@@ -1733,6 +1749,13 @@ a {
   .auth-card {
     padding: 22px;
     border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-panel) 82%, transparent);
+    box-shadow: none;
+  }
+
+  .auth-card::before,
+  .auth-hero::before {
+    opacity: 0.38;
   }
 
   .list-page-header,

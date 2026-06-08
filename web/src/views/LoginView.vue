@@ -58,6 +58,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
+import type { NavItem } from '../types'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -70,10 +71,10 @@ const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
 const siteLogoUrl = ref('')
-const authNavItems = computed(() => [
-  { id: 'home', title: '首页', path: '/' },
-  { id: 'login', title: '登录', path: '/login' },
-  { id: 'register', title: '注册', path: '/register' },
+const authNavItems = computed<NavItem[]>(() => [
+  { id: 1, title: '首页', path: '/', sort_order: 1, is_visible: true, target: null, description: null },
+  { id: 2, title: '登录', path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
+  { id: 3, title: '注册', path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
 ])
 
 const applyTheme = (value: ThemeMode) => {
