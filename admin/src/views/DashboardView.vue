@@ -172,7 +172,7 @@ type MainMenuItem = {
 type ArticleSubMenuItem = {
   key: ArticleSubView
   label: string
-  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create' | 'articles-category'>
+  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create' | 'articles-edit' | 'articles-category'>
 }
 
 const router = useRouter()
