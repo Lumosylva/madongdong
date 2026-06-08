@@ -65,7 +65,8 @@
   <transition name="drawer-slide">
     <aside v-if="mobileMenuOpen" class="drawer-panel">
       <div class="drawer-header">
-        <span class="brand-mark">MD</span>
+        <img v-if="logoUrl" :src="logoUrl" class="brand-logo drawer-brand-logo" alt="site logo" />
+        <span v-else class="brand-mark">MD</span>
         <div>
           <p class="drawer-title">{{ title }}</p>
           <p class="drawer-subtitle">快速导航</p>

@@ -1,42 +1,62 @@
 <template>
-  <div class="shell register-page">
+  <div class="shell auth-page">
     <WebTopbar
       title="用户登录"
-      :nav-items="[]"
+      subtitle="欢迎回来，继续阅读精彩内容"
+      :logo-url="siteLogoUrl"
+      :nav-items="authNavItems"
       :theme="theme"
       :current-path="route.path"
       :current-full-path="route.fullPath"
       :search-keyword="''"
-      :collapsible-search="true"
+      :collapsible-search="false"
       @update:search-keyword="() => {}"
       @toggle-theme="toggleTheme"
       @search="() => {}"
     />
 
-    <main class="register-main">
-      <section class="register-card">
-        <h2>读者登录</h2>
-        <p class="tips">仅支持普通读者账号登录前台。</p>
+    <main class="auth-main">
+      <section class="auth-hero">
+        <p class="auth-eyebrow">Reader Portal</p>
+        <h2>登录您的账号</h2>
+        <p>在这里进入您的个人阅读中心，继续浏览、评论与收藏感兴趣的内容。</p>
+      </section>
 
-        <input v-model="username" placeholder="用户名" />
-        <input v-model="password" type="password" placeholder="密码" @keyup.enter="submit" />
+      <section class="auth-card">
+        <div class="auth-card-header">
+          <h3>登录</h3>
+          <p>使用账号登录前台</p>
+        </div>
 
-        <button :disabled="submitting" @click="submit">
+        <div class="auth-field-group">
+          <label>
+            <span>用户名</span>
+            <input v-model="username" autocomplete="username" placeholder="请输入用户名" />
+          </label>
+          <label>
+            <span>密码</span>
+            <input v-model="password" autocomplete="current-password" type="password" placeholder="请输入密码" @keyup.enter="submit" />
+          </label>
+        </div>
+
+        <button class="auth-submit-btn" :disabled="submitting" @click="submit">
           {{ submitting ? '登录中...' : '登录' }}
         </button>
 
-        <p class="tips">还没有账号？<RouterLink to="/register">立即注册</RouterLink></p>
-        <p v-if="message" class="tips" :class="status === 'error' ? 'error-message' : 'success-message'">{{ message }}</p>
+        <p class="auth-switch-link">
+          还没有账号？<RouterLink to="/register">立即注册</RouterLink>
+        </p>
+        <p v-if="message" class="auth-message" :class="status === 'error' ? 'error-message' : 'success-message'">{{ message }}</p>
       </section>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { webApi } from '../api'
+import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
 
 type ThemeMode = 'light' | 'dark'
@@ -49,6 +69,12 @@ const password = ref('')
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
+const siteLogoUrl = ref('')
+const authNavItems = computed(() => [
+  { id: 'home', title: '首页', path: '/' },
+  { id: 'login', title: '登录', path: '/login' },
+  { id: 'register', title: '注册', path: '/register' },
+])
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -58,6 +84,15 @@ const applyTheme = (value: ThemeMode) => {
 
 const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const loadSiteLogo = async () => {
+  try {
+    const home = await webApi.getHome(1, 1)
+    siteLogoUrl.value = toAbsoluteAssetUrl(home.site.site_logo)
+  } catch {
+    siteLogoUrl.value = ''
+  }
 }
 
 const submit = async () => {
@@ -90,9 +125,10 @@ const submit = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
   document.title = '用户登录 - MaDongDong'
+  await loadSiteLogo()
 })
 </script>

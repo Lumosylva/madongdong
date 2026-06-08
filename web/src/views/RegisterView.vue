@@ -1,43 +1,69 @@
 <template>
-  <div class="shell register-page">
+  <div class="shell auth-page">
     <WebTopbar
       title="用户注册"
-      :nav-items="[]"
+      subtitle="创建账号，开启更完整的阅读体验"
+      :logo-url="siteLogoUrl"
+      :nav-items="authNavItems"
       :theme="theme"
       :current-path="route.path"
       :current-full-path="route.fullPath"
       :search-keyword="''"
-      :collapsible-search="true"
+      :collapsible-search="false"
       @update:search-keyword="() => {}"
       @toggle-theme="toggleTheme"
       @search="() => {}"
     />
 
-    <main class="register-main">
-      <section class="register-card">
-        <h2>注册普通读者账号</h2>
-        <p class="tips">仅支持注册普通读者角色，系统管理员与内容作者由后台维护。</p>
+    <main class="auth-main">
+      <section class="auth-hero">
+        <p class="auth-eyebrow">Join the community</p>
+        <h2>创建您的账号</h2>
+        <p>注册后可参与评论、保存个人昵称，并获得更流畅的站内体验。</p>
+      </section>
 
-        <input v-model="username" placeholder="用户名（3-50位）" />
-        <input v-model="nickname" placeholder="昵称" />
-        <input v-model="email" placeholder="邮箱" />
-        <input v-model="password" type="password" placeholder="密码（至少6位）" />
+      <section class="auth-card">
+        <div class="auth-card-header">
+          <h3>注册账号</h3>
+        </div>
 
-        <button :disabled="submitting" @click="submit">
+        <div class="auth-field-group">
+          <label>
+            <span>用户名</span>
+            <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
+          </label>
+          <label>
+            <span>昵称</span>
+            <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
+          </label>
+          <label>
+            <span>邮箱</span>
+            <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
+          </label>
+          <label>
+            <span>密码</span>
+            <input v-model="password" autocomplete="new-password" type="password" placeholder="密码（至少6位）" />
+          </label>
+        </div>
+
+        <button class="auth-submit-btn" :disabled="submitting" @click="submit">
           {{ submitting ? '注册中...' : '注册' }}
         </button>
 
-        <p v-if="message" class="tips" :class="status === 'error' ? 'error-message' : 'success-message'">{{ message }}</p>
+        <p class="auth-switch-link">
+          已有账号？<RouterLink to="/login">返回登录</RouterLink>
+        </p>
+        <p v-if="message" class="auth-message" :class="status === 'error' ? 'error-message' : 'success-message'">{{ message }}</p>
       </section>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { webApi } from '../api'
+import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
 
 type ThemeMode = 'light' | 'dark'
@@ -52,6 +78,12 @@ const password = ref('')
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
+const siteLogoUrl = ref('')
+const authNavItems = computed(() => [
+  { id: 'home', title: '首页', path: '/' },
+  { id: 'login', title: '登录', path: '/login' },
+  { id: 'register', title: '注册', path: '/register' },
+])
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -61,6 +93,15 @@ const applyTheme = (value: ThemeMode) => {
 
 const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const loadSiteLogo = async () => {
+  try {
+    const home = await webApi.getHome(1, 1)
+    siteLogoUrl.value = toAbsoluteAssetUrl(home.site.site_logo)
+  } catch {
+    siteLogoUrl.value = ''
+  }
 }
 
 const submit = async () => {
@@ -102,9 +143,10 @@ const submit = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
   document.title = '用户注册 - MaDongDong'
+  await loadSiteLogo()
 })
 </script>
