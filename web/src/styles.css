@@ -615,10 +615,19 @@ a {
   background: transparent;
   color: var(--accent);
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
   padding: 0;
-  white-space: nowrap;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.auth-password-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
 }
 
 .auth-field-hint {

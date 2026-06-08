@@ -37,11 +37,11 @@
             <span class="auth-input-icon" aria-hidden="true">🔒</span>
             <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="current-password" placeholder="密码" @keyup.enter="submit" />
             <button type="button" class="auth-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" :title="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
-              <svg v-if="showPassword" viewBox="0 0 24 24" aria-hidden="true" class="auth-password-toggle-icon">
-                <path d="M3.98 5.11 5.4 3.7l14.9 14.9-1.42 1.41-2.02-2.02A10.74 10.74 0 0 1 12 19c-5.2 0-9.64-3.22-11.38-7.75a1.24 1.24 0 0 1 0-.9A11.57 11.57 0 0 1 5.15 5.55L3.98 5.11Zm4.16 4.17a4 4 0 0 0 5.68 5.68l-1.45-1.45A2 2 0 0 1 8.28 9.73l-.14-.45Zm4.52-4.5A11.45 11.45 0 0 1 22.4 11a1.24 1.24 0 0 1 0 .9 11.46 11.46 0 0 1-2.84 4.27l-1.41-1.41A9.45 9.45 0 0 0 19.96 11 9.5 9.5 0 0 0 15 6.47l.01.01Zm-1.93 1.2A4 4 0 0 0 10.55 14l-1.46-1.46a4 4 0 0 1 3.47-5.57Z" fill="currentColor"/>
+              <svg v-if="showPassword" class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/>
               </svg>
-              <svg v-else viewBox="0 0 24 24" aria-hidden="true" class="auth-password-toggle-icon">
-                <path d="M12 5c5.2 0 9.64 3.22 11.38 7.75a1.24 1.24 0 0 1 0 .9C21.64 18.18 17.2 21.4 12 21.4S2.36 18.18.62 13.65a1.24 1.24 0 0 1 0-.9C2.36 8.22 6.8 5 12 5Zm0 2C8 7 4.64 9.4 3.17 12c1.47 2.6 4.83 5 8.83 5s7.36-2.4 8.83-5C19.36 9.4 16 7 12 7Zm0 1.6A3.4 3.4 0 1 1 8.6 12 3.4 3.4 0 0 1 12 8.6Zm0 2A1.4 1.4 0 1 0 13.4 12 1.4 1.4 0 0 0 12 10.6Z" fill="currentColor"/>
+              <svg v-else class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5c-5.25 0-9.14 4.38-11 7 1.86 2.62 5.75 7 11 7s9.14-4.38 11-7c-1.86-2.62-5.75-7-11-7Zm0 12c-4.09 0-7.38-3.1-9.08-5 1.7-1.9 5-5 9.08-5s7.38 3.1 9.08 5c-1.7 1.9-5 5-9.08 5Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/>
               </svg>
             </button>
           </label>
