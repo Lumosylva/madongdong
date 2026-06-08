@@ -1,16 +1,12 @@
 import type { ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
+import { resolveAssetUrl } from '../../assets'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
 
 const getToken = () => localStorage.getItem('md_web_token') || ''
 
-export const toAbsoluteAssetUrl = (url: string | null | undefined) => {
-  const value = String(url || '').trim()
-  if (!value) return ''
-  if (/^https?:\/\//i.test(value)) return value
-  return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
-}
+export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {

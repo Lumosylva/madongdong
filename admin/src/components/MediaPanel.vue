@@ -177,7 +177,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { API_ORIGIN } from '../api'
+import { toAbsoluteAssetUrl } from '../api'
 
 const props = defineProps<{
   media: any[]
@@ -225,18 +225,7 @@ const grouped = computed(() => {
   return { image, audio, video }
 })
 
-const fullUrl = (url: string) => {
-  const value = String(url || '').trim()
-  if (!value) return ''
-  if (/^https?:\/\//i.test(value)) return value
-  if (value.startsWith('/admin/')) {
-    return `${API_ORIGIN}${value}`
-  }
-  const normalized = value.startsWith('/uploads/') || value.startsWith('/api/') || value.startsWith('/static/')
-    ? value
-    : `/uploads/${value.replace(/^\/+/, '')}`
-  return `${API_ORIGIN}${normalized}`
-}
+const fullUrl = (url: string) => toAbsoluteAssetUrl(url)
 
 const copyUrl = async (url: string, fileName: string) => {
   await navigator.clipboard.writeText(fullUrl(url))

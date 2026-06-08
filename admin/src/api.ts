@@ -1,8 +1,11 @@
 import type { AdminUser, FriendLinkItem, LoginResponse } from './types'
+import { resolveAssetUrl } from '../../assets'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 const API_ORIGIN_ENV = String(import.meta.env.VITE_API_ORIGIN || '').trim()
 export const API_ORIGIN = API_ORIGIN_ENV || window.location.origin
+
+export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 type WrappedResponse<T> = {
   success: boolean
