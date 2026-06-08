@@ -29,8 +29,19 @@
         </div>
 
         <div class="auth-field-group">
-          <input v-model="username" autocomplete="username" placeholder="用户名" />
-          <input v-model="password" autocomplete="current-password" type="password" placeholder="密码" @keyup.enter="submit" />
+          <label class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">👤</span>
+            <input v-model="username" autocomplete="username" placeholder="用户名" />
+          </label>
+          <label class="auth-input-shell auth-password-shell">
+            <span class="auth-input-icon" aria-hidden="true">🔒</span>
+            <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="current-password" placeholder="密码" @keyup.enter="submit" />
+            <button type="button" class="auth-password-toggle" @click="showPassword = !showPassword">{{ showPassword ? '隐藏' : '显示' }}</button>
+          </label>
+          <label class="auth-remember-row">
+            <input v-model="rememberMe" type="checkbox" />
+            <span>记住我</span>
+          </label>
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">
@@ -61,6 +72,8 @@ const router = useRouter()
 const theme = ref<ThemeMode>('light')
 const username = ref('')
 const password = ref('')
+const showPassword = ref(false)
+const rememberMe = ref(true)
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
@@ -102,6 +115,11 @@ const submit = async () => {
       password: password.value,
     })
     localStorage.setItem('md_web_token', token.access_token)
+    if (rememberMe.value) {
+      localStorage.setItem('md-login-username', username.value.trim())
+    } else {
+      localStorage.removeItem('md-login-username')
+    }
     const savedNickname = localStorage.getItem('md-reader-nickname')
     const displayName = savedNickname || username.value.trim()
     localStorage.setItem('md-reader-nickname', displayName)
@@ -123,6 +141,11 @@ const submit = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  const savedUsername = localStorage.getItem('md-login-username')
+  if (savedUsername) {
+    username.value = savedUsername
+    rememberMe.value = true
+  }
   document.title = '用户登录 - MaDongDong'
   await loadSiteLogo()
 })

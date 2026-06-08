@@ -28,10 +28,24 @@
         </div>
 
         <div class="auth-field-group">
-          <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
-          <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
-          <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
-          <input v-model="password" autocomplete="new-password" type="password" placeholder="密码（至少6位）" />
+          <label class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">👤</span>
+            <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
+          </label>
+          <label class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">✨</span>
+            <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
+          </label>
+          <label class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">✉️</span>
+            <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
+          </label>
+          <label class="auth-input-shell auth-password-shell">
+            <span class="auth-input-icon" aria-hidden="true">🔒</span>
+            <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="new-password" placeholder="密码（至少6位）" />
+            <button type="button" class="auth-password-toggle" @click="showPassword = !showPassword">{{ showPassword ? '隐藏' : '显示' }}</button>
+          </label>
+          <p class="auth-field-hint">注册后可自动登录并进入首页。</p>
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">
@@ -63,6 +77,7 @@ const username = ref('')
 const nickname = ref('')
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
