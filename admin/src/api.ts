@@ -1,7 +1,8 @@
 import type { AdminUser, FriendLinkItem, LoginResponse } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
-export const API_ORIGIN = /^https?:\/\//i.test(API_BASE) ? new URL(API_BASE).origin : window.location.origin
+const API_ORIGIN_ENV = String(import.meta.env.VITE_API_ORIGIN || '').trim()
+export const API_ORIGIN = API_ORIGIN_ENV || window.location.origin
 
 type WrappedResponse<T> = {
   success: boolean
@@ -202,20 +203,6 @@ export const adminApi = {
   },
   updateFriendLink(linkId: number, payload: Record<string, unknown>): Promise<WrappedResponse<FriendLinkItem>> {
     return request<WrappedResponse<FriendLinkItem>>(`/admin/friend-links/${linkId}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    })
-  },
-  deleteFriendLink(linkId: number): Promise<WrappedResponse<any>> {
-    return request<WrappedResponse<any>>(`/admin/friend-links/${linkId}`, {
-      method: 'DELETE',
-    })
-  },
-  getFriendLinks(): Promise<WrappedResponse<any[]>> {
-    return request<WrappedResponse<any[]>>('/admin/friend-links')
-  },
-  updateFriendLink(linkId: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
-    return request<WrappedResponse<any>>(`/admin/friend-links/${linkId}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     })

@@ -43,7 +43,18 @@
             @click="openPreview(item)"
           >
             <input class="media-card-checkbox" type="checkbox" :checked="selectedIds.has(item.id)" @click.stop="toggleSelected(item.id)" />
-            <img class="media-card-thumb" :src="fullUrl(item.url)" :alt="item.original_name" />
+            <div class="media-card-thumb-wrap">
+              <img
+                v-if="!imageLoadErrorIds.has(item.id)"
+                class="media-card-thumb"
+                :src="fullUrl(item.url)"
+                :alt="item.original_name"
+                @error="markImageLoadError(item.id)"
+              />
+              <div v-else class="media-card-thumb-fallback">
+                <span>预览失败</span>
+              </div>
+            </div>
             <div class="media-card-body">
               <p class="media-card-title">{{ item.original_name }}</p>
               <small class="media-card-meta">{{ item.mime_type || 'IMAGE' }}</small>
@@ -133,7 +144,10 @@
         <div v-if="previewItem" class="media-preview-overlay" @click.self="closePreview">
           <div class="media-preview-modal" role="dialog" aria-modal="true" aria-labelledby="media-preview-title">
             <div class="media-preview-image-wrap">
-              <img class="media-preview-image" :src="fullUrl(previewItem.url)" :alt="previewItem.original_name" />
+              <img v-if="!imagePreviewError" class="media-preview-image" :src="fullUrl(previewItem.url)" :alt="previewItem.original_name" @error="markPreviewLoadError" />
+              <div v-else class="media-preview-image-fallback">
+                <span>图片加载失败</span>
+              </div>
             </div>
             <div class="media-preview-info">
               <div class="media-preview-head">
@@ -181,6 +195,8 @@ const emit = defineEmits<{
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const copyMessage = ref('')
 const previewItem = ref<any | null>(null)
+const imageLoadErrorIds = ref<Set<number>>(new Set())
+const imagePreviewError = ref(false)
 const selectedIds = ref<Set<number>>(new Set())
 const deleteConfirmOpen = ref(false)
 const deleteTargetIds = ref<number[]>([])
@@ -213,7 +229,13 @@ const fullUrl = (url: string) => {
   const value = String(url || '').trim()
   if (!value) return ''
   if (/^https?:\/\//i.test(value)) return value
-  return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
+  if (value.startsWith('/admin/')) {
+    return `${API_ORIGIN}${value}`
+  }
+  const normalized = value.startsWith('/uploads/') || value.startsWith('/api/') || value.startsWith('/static/')
+    ? value
+    : `/uploads/${value.replace(/^\/+/, '')}`
+  return `${API_ORIGIN}${normalized}`
 }
 
 const copyUrl = async (url: string, fileName: string) => {
@@ -226,6 +248,17 @@ const copyUrl = async (url: string, fileName: string) => {
 
 const openPreview = (item: any) => {
   previewItem.value = item
+  imagePreviewError.value = false
+}
+
+const markImageLoadError = (id: number) => {
+  const next = new Set(imageLoadErrorIds.value)
+  next.add(id)
+  imageLoadErrorIds.value = next
+}
+
+const markPreviewLoadError = () => {
+  imagePreviewError.value = true
 }
 
 const closePreview = () => {
@@ -310,3 +343,50 @@ const formatResolution = (width?: number, height?: number) => {
   return `${w} × ${h}`
 }
 </script>
+
+<style scoped>
+.media-card-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.media-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-card-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--text-soft);
+  font-size: 12px;
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(14, 165, 164, 0.08));
+}
+
+.media-preview-image,
+.media-preview-image-fallback {
+  max-width: 100%;
+  max-height: 62vh;
+  border-radius: 16px;
+}
+
+.media-preview-image {
+  object-fit: contain;
+}
+
+.media-preview-image-fallback {
+  width: 100%;
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--text-soft);
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(14, 165, 164, 0.08));
+}
+</style>
