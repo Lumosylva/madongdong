@@ -27,7 +27,8 @@
           <div class="card-meta">
             <span>{{ article.category?.name || '未分类' }}</span>
             <span>{{ article.author?.nickname || 'admin' }}</span>
-            <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
+            <span>发布时间：{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
+            <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(article)) }}</span>
             <span>{{ article.view_count }} 浏览</span>
             <span>{{ article.comment_count }} 评论</span>
           </div>
@@ -198,15 +199,37 @@ const formatRelativeTime = (value: string) => {
     return `${minutes} 分钟前`
   }
   if (diffMs < day) {
-    const hours = Math.floor(diffMs / hour)
+    const hours = Math.max(1, Math.floor(diffMs / hour))
     return `${hours} 小时前`
   }
   if (diffMs < year) {
-    const days = Math.floor(diffMs / day)
+    const days = Math.max(1, Math.floor(diffMs / day))
     return `${days} 天前`
   }
-  const years = Math.floor(diffMs / year)
+  const years = Math.max(1, Math.floor(diffMs / year))
   return `${years} 年前`
+}
+
+const formatDateTime = (value: string) => {
+  const date = parseDateTime(value)
+  if (Number.isNaN(date.getTime())) return '--'
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const getArticleUpdatedAt = (article: { updated_at?: string; published_at?: string | null; created_at?: string }) => {
+  const publishedAt = parseDateTime(String(article.published_at || '')).getTime()
+  const updatedAt = parseDateTime(String(article.updated_at || '')).getTime()
+  const createdAt = parseDateTime(String(article.created_at || '')).getTime()
+  if (Number.isNaN(updatedAt)) return article.published_at || article.created_at || ''
+  if (!Number.isNaN(publishedAt) && updatedAt <= publishedAt) return article.published_at || article.created_at || ''
+  if (!Number.isNaN(createdAt) && updatedAt <= createdAt) return article.published_at || article.created_at || ''
+  return article.updated_at || article.published_at || article.created_at || ''
 }
 
 onMounted(async () => {

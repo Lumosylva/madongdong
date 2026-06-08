@@ -201,10 +201,17 @@ const articleEditorId = 'web-article-preview'
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
 
+const parseDateTime = (value: string) => {
+  const text = String(value || '').trim()
+  if (!text) return new Date(0)
+  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
+  return new Date(`${text}Z`)
+}
+
 const getArticleUpdatedAt = (article: { updated_at?: string; published_at?: string | null; created_at?: string }) => {
-  const publishedAt = new Date(String(article.published_at || '')).getTime()
-  const updatedAt = new Date(String(article.updated_at || '')).getTime()
-  const createdAt = new Date(String(article.created_at || '')).getTime()
+  const publishedAt = parseDateTime(String(article.published_at || '')).getTime()
+  const updatedAt = parseDateTime(String(article.updated_at || '')).getTime()
+  const createdAt = parseDateTime(String(article.created_at || '')).getTime()
   if (Number.isNaN(updatedAt)) return article.published_at || article.created_at || ''
   if (!Number.isNaN(publishedAt) && updatedAt <= publishedAt) return article.published_at || article.created_at || ''
   if (!Number.isNaN(createdAt) && updatedAt <= createdAt) return article.published_at || article.created_at || ''
@@ -327,13 +334,6 @@ const truncateText = (value: string | null | undefined, maxLength: number) => {
   const text = String(value || '').trim()
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
-}
-
-const parseDateTime = (value: string) => {
-  const text = String(value || '').trim()
-  if (!text) return new Date(0)
-  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
-  return new Date(`${text}Z`)
 }
 
 const formatRelativeTime = (value: string) => {

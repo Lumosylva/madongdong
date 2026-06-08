@@ -52,7 +52,7 @@
         </transition>
       </div>
 
-      <button v-if="!isMobile" type="button" class="search-launch-btn" aria-label="打开搜索" title="搜索" @click="openSearchPanel">
+      <button v-if="!isMobile && collapsibleSearch" type="button" class="search-launch-btn" aria-label="打开搜索" title="搜索" @click="openSearchPanel">
         <span aria-hidden="true">⌕</span>
       </button>
     </div>
@@ -76,7 +76,7 @@
         <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
           {{ item.title }}
         </RouterLink>
-        <button type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
+        <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
       </nav>
     </aside>
   </transition>
@@ -155,11 +155,12 @@ const props = withDefaults(
     searchKeyword?: string
     currentPath?: string
     currentFullPath?: string
+    collapsibleSearch?: boolean
   }>(),
-  { subtitle: '', logoUrl: '', searchKeyword: '', currentPath: '/', currentFullPath: '/' },
+  { subtitle: '', logoUrl: '', searchKeyword: '', currentPath: '/', currentFullPath: '/', collapsibleSearch: false },
 )
 
-const emit = defineEmits<{ 'toggle-theme': [] }>()
+const emit = defineEmits<{ 'toggle-theme': []; search: [] }>()
 const mobileMenuOpen = ref(false)
 const searchPanelOpen = ref(false)
 const searchPanelKeyword = ref('')
