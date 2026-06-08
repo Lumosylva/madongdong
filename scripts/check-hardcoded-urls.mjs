@@ -2,23 +2,17 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const repoRoot = path.resolve(new URL('..', import.meta.url).pathname)
-const scanRoots = ['app', 'web/src', 'admin/src']
-const allowedPatterns = [
-  /http:\/\/127\.0\.0\.1:8000/i,
-  /http:\/\/localhost:5173/i,
-  /http:\/\/localhost:5174/i,
-  /http:\/\/127\.0\.0\.1:5173/i,
-  /http:\/\/127\.0\.0\.1:5174/i,
-]
-const riskyPatterns = [
-  { name: 'http://', pattern: /http:\/\//i },
-  { name: 'ws://', pattern: /ws:\/\//i },
-  { name: 'localhost:', pattern: /localhost:\d+/i },
-  { name: '127.0.0.1:', pattern: /127\.0\.0\.1:\d+/i },
-  { name: 'absolute domain', pattern: /(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:\/[^\s"'`)]*)?/i },
-]
-const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.py', '.json', '.md', '.yml', '.yaml', '.env', '.example', '.ini', '.conf', '.txt'])
-const ignoreDirs = new Set(['node_modules', 'dist', '.git', '.venv', '__pycache__'])
+const configPath = path.join(repoRoot, 'scripts', 'check-hardcoded-urls.config.json')
+const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+
+const scanRoots = config.scan?.include ?? []
+const ignoreDirs = new Set(config.scan?.exclude ?? [])
+const extensions = new Set(config.scan?.extensions ?? [])
+const allowedPatterns = (config.patterns?.allow ?? []).map((value) => new RegExp(value, 'i'))
+const riskyPatterns = (config.patterns?.deny ?? []).map((item) => ({
+  name: item.name,
+  pattern: new RegExp(item.pattern, 'i'),
+}))
 const matches = []
 
 const shouldScanFile = (filePath) => {
@@ -31,7 +25,6 @@ const isIgnoredLine = (line) => {
   const trimmed = line.trim()
   if (!trimmed) return true
   if (trimmed.startsWith('//') || trimmed.startsWith('#')) return true
-  if (/^import\s+.*from\s+['"].*['"]$/.test(trimmed)) return false
   return false
 }
 
