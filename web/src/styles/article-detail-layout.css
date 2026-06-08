@@ -94,9 +94,12 @@
 }
 
 .article-body-md {
+  background: var(--article-panel-bg);
   font-size: 16px;
   font-family: inherit;
   min-width: 0;
+  padding: 0;
+  border-radius: 0;
 }
 
 .article-body-md :where(h1, h2, h3, h4, h5, h6, p, blockquote, pre, table, ul, ol, dl) {
