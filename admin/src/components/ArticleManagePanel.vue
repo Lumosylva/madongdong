@@ -36,7 +36,10 @@
             <span>评论：{{ item.comment_count || 0 }}</span>
           </small>
         </div>
-        <button class="danger-btn article-trash-btn" @click="openTrashConfirm(item.id, item.title)">移入垃圾箱</button>
+        <div class="article-row-actions">
+          <button type="button" class="article-edit-btn" @click="emit('edit-article', item.id)">编辑</button>
+          <button type="button" class="danger-btn article-trash-btn" @click="openTrashConfirm(item.id, item.title)">移入垃圾箱</button>
+        </div>
       </li>
 
       <li v-if="!pagedArticles.length" class="article-empty">暂无符合条件的文章</li>
@@ -79,6 +82,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'move-to-trash': [articleId: number]
+  'edit-article': [articleId: number]
 }>()
 
 const trashConfirmOpen = ref(false)

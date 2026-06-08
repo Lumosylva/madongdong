@@ -2,7 +2,7 @@
   <section class="editor-panel article-create-panel">
     <div class="article-create-head">
       <div>
-        <h3>创建文章</h3>
+        <h3>{{ editorTitle || (editorMode === 'edit' ? '编辑文章' : '创建文章') }}</h3>
       </div>
       <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
     </div>
@@ -103,7 +103,7 @@
           </select>
         </div>
       </div>
-      <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? '提交中...' : '提交' }}</button>
+      <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? '提交中...' : (editorMode === 'edit' ? '保存修改' : '提交文章') }}</button>
     </div>
   </section>
 </template>
@@ -132,6 +132,8 @@ const props = defineProps<{
   draftSessionSaved?: boolean
   submitError?: string
   submitFocusField?: 'title' | 'content' | null
+  editorMode?: 'create' | 'edit'
+  editorTitle?: string
 }>()
 
 const emit = defineEmits<{

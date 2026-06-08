@@ -98,6 +98,9 @@ export const adminApi = {
   getArticles(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/articles')
   },
+  getArticle(articleId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}`)
+  },
   getDeletedArticles(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/articles/deleted')
   },
@@ -148,6 +151,12 @@ export const adminApi = {
   createArticle(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/articles', {
       method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+  updateArticle(articleId: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/articles/${articleId}`, {
+      method: 'PUT',
       body: JSON.stringify(payload),
     })
   },

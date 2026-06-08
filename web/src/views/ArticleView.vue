@@ -54,7 +54,7 @@
             :id="articleEditorId"
             :model-value="data.article.content_markdown || ''"
             :theme="theme"
-            code-theme="atom"
+            code-theme="github"
             :show-code-row-number="true"
             :sanitize="sanitizeMarkdownHtml"
           />

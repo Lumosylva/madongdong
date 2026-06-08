@@ -208,6 +208,8 @@ const action = ref<'draft' | 'submit' | 'publish'>('draft')
 const articleDraftStorageKey = 'md-admin-article-draft'
 const articleDraftSavedAt = ref<number | null>(null)
 const articleDraftSessionSaved = ref(false)
+const editingArticleId = ref<number | null>(null)
+const editingArticleTitle = ref('')
 
 const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
@@ -431,6 +433,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         draftSessionSaved: articleDraftSessionSaved.value,
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
+        editorMode: editingArticleId.value !== null ? 'edit' : 'create',
+        editorTitle: editingArticleId.value !== null ? '编辑文章' : '创建文章',
       }
     case 'articles-category':
       return {
@@ -474,6 +478,7 @@ const activePanelListeners = computed(() => {
     case 'articles-manage':
       return {
         moveToTrash,
+        editArticle,
       }
     case 'articles-trash':
       return {
@@ -557,6 +562,13 @@ const formatArticleStatus = (status: string) => {
   if (status === 'PENDING_REVIEW' || status === 'pending_review' || status === 'pending') return '待审核'
   if (status === 'REJECTED' || status === 'rejected') return '已驳回'
   return status
+}
+
+const normalizeArticleAction = (status: string): 'draft' | 'submit' | 'publish' => {
+  const normalized = String(status || '').trim().toLowerCase()
+  if (normalized === 'published') return 'publish'
+  if (normalized === 'pending_review' || normalized === 'pending' || normalized === 'rejected') return 'submit'
+  return 'draft'
 }
 
 const formatCommentStatus = (status: string) => {
@@ -1096,13 +1108,51 @@ const showArticleSubmitError = (message: string, focusField: 'title' | 'content'
   }, 3000)
 }
 
+const resetArticleEditorState = () => {
+  editingArticleId.value = null
+  editingArticleTitle.value = ''
+}
+
+const fillArticleEditor = (article: any) => {
+  title.value = String(article.title || '')
+  coverUrl.value = String(article.cover_url || '')
+  contentMarkdown.value = String(article.content_markdown || '')
+  categoryId.value = Number(article.category_id || categories.value[0]?.id || 1)
+  tagIdsText.value = Array.isArray(article.tags) ? article.tags.map((tag: any) => tag.name).join(', ') : ''
+  action.value = normalizeArticleAction(article.status)
+}
+
+const editArticle = async (articleId: number) => {
+  articleSubmitting.value = true
+  articleSubmitError.value = ''
+  try {
+    const res = await adminApi.getArticle(articleId)
+    const article = res.data
+    if (!article || !article.id) throw new Error('获取文章失败')
+    editingArticleId.value = articleId
+    editingArticleTitle.value = String(article.title || '')
+    fillArticleEditor(article)
+    currentView.value = 'articles'
+    articleSubView.value = 'create'
+    articleFlyoutOpen.value = false
+    await nextTick()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (error) {
+    articleSubmitError.value = error instanceof Error ? error.message : '获取文章失败'
+    currentView.value = 'articles'
+    articleSubView.value = 'manage'
+  } finally {
+    articleSubmitting.value = false
+  }
+}
+
 const createArticle = async () => {
   if (articleSubmitting.value) return
   articleSubmitting.value = true
   articleSubmitError.value = ''
-  const finalAction = isAdmin.value
-    ? (action.value === 'publish' ? 'publish' : 'draft')
-    : (action.value === 'submit' ? 'submit' : 'draft')
+  const finalAction = editingArticleId.value !== null
+    ? (action.value === 'publish' ? 'publish' : action.value === 'submit' ? 'submit' : 'draft')
+    : (isAdmin.value ? (action.value === 'publish' ? 'publish' : 'draft') : (action.value === 'submit' ? 'submit' : 'draft'))
 
   try {
     const trimmedTitle = title.value.trim()
@@ -1119,7 +1169,7 @@ const createArticle = async () => {
     const autoSummary = extractSummary(contentMarkdown.value, 120)
     const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
 
-    await adminApi.createArticle({
+    const payload = {
       title: trimmedTitle,
       summary: autoSummary || '暂无摘要',
       content_markdown: contentMarkdown.value,
@@ -1127,11 +1177,18 @@ const createArticle = async () => {
       category_id: categoryId.value,
       tag_ids: resolvedTagIds,
       action: finalAction,
-    })
+    }
+
+    if (editingArticleId.value !== null) {
+      await adminApi.updateArticle(editingArticleId.value, payload)
+    } else {
+      await adminApi.createArticle(payload)
+    }
     title.value = ''
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
+    resetArticleEditorState()
     clearArticleDraft()
     if (articleSubmitErrorTimer !== null) {
       window.clearTimeout(articleSubmitErrorTimer)
