@@ -28,22 +28,10 @@
         </div>
 
         <div class="auth-field-group">
-          <label>
-            <span>用户名</span>
-            <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
-          </label>
-          <label>
-            <span>昵称</span>
-            <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
-          </label>
-          <label>
-            <span>邮箱</span>
-            <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
-          </label>
-          <label>
-            <span>密码</span>
-            <input v-model="password" autocomplete="new-password" type="password" placeholder="密码（至少6位）" />
-          </label>
+          <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
+          <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
+          <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
+          <input v-model="password" autocomplete="new-password" type="password" placeholder="密码（至少6位）" />
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">
@@ -80,9 +68,9 @@ const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
 const siteLogoUrl = ref('')
 const authNavItems = computed(() => [
-  { id: 'home', title: '首页', path: '/' },
-  { id: 'login', title: '登录', path: '/login' },
-  { id: 'register', title: '注册', path: '/register' },
+  { id: 1, title: '首页', path: '/', sort_order: 1, is_visible: true, target: null, description: null },
+  { id: 2, title: '登录', path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
+  { id: 3, title: '注册', path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
 ])
 
 const applyTheme = (value: ThemeMode) => {

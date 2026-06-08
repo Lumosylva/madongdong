@@ -29,14 +29,8 @@
         </div>
 
         <div class="auth-field-group">
-          <label>
-            <span>用户名</span>
-            <input v-model="username" autocomplete="username" placeholder="请输入用户名" />
-          </label>
-          <label>
-            <span>密码</span>
-            <input v-model="password" autocomplete="current-password" type="password" placeholder="请输入密码" @keyup.enter="submit" />
-          </label>
+          <input v-model="username" autocomplete="username" placeholder="用户名" />
+          <input v-model="password" autocomplete="current-password" type="password" placeholder="密码" @keyup.enter="submit" />
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">

@@ -570,16 +570,6 @@ a {
   gap: 14px;
 }
 
-.auth-field-group label {
-  display: grid;
-  gap: 8px;
-}
-
-.auth-field-group label span {
-  font-size: 13px;
-  color: var(--text-soft);
-}
-
 .auth-field-group input {
   width: 100%;
   border-radius: 14px;
@@ -1751,6 +1741,20 @@ a {
     border-radius: 18px;
     background: color-mix(in srgb, var(--bg-panel) 82%, transparent);
     box-shadow: none;
+  }
+
+  .auth-main {
+    grid-template-areas:
+      'hero'
+      'card';
+  }
+
+  .auth-hero {
+    grid-area: hero;
+  }
+
+  .auth-card {
+    grid-area: card;
   }
 
   .auth-card::before,
