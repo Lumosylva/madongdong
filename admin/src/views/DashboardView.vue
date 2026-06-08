@@ -76,7 +76,7 @@
                   @mouseleave="closeArticleFlyoutDelayed()"
                 >
                   <div class="sidebar-flyout-header">
-                    <strong class="sidebar-flyout-title">文章</strong>
+                    <strong class="sidebar-flyout-title">{{ articleFlyoutTitle }}</strong>
                   </div>
                   <button
                     v-for="sub in articleSubMenus"
@@ -256,6 +256,11 @@ const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧
 const sidebarFlyoutSide = ref<'right' | 'left'>('right')
 const articleMenuGroupRef = ref<HTMLElement | null>(null)
 const articleMenuGroupEl = ref<HTMLElement | null>(null)
+const articleFlyoutTitle = computed(() => {
+  if (currentView.value !== 'articles') return '文章'
+  const currentSub = articleSubMenus.find((item) => item.key === articleSubView.value)
+  return currentSub ? `文章 / ${currentSub.label}` : '文章'
+})
 
 const clearArticleFlyoutTimer = () => {
   if (articleFlyoutCloseTimer.value !== null) {
