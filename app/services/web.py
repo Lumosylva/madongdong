@@ -86,6 +86,11 @@ async def get_published_article_detail(session: AsyncSession, article_id: int) -
     )
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
+    # 直接执行原生 SQL 的方式
+    # 这样做的目的就是：
+    # 避免 ORM 把整条文章对象判定成“改过”
+    # 只更新 view_count
+    # 尽量不要触发 updated_at
     if article is not None:
         await session.execute(
             text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
