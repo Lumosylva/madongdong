@@ -2,7 +2,7 @@
 
 from math import ceil
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import Select, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.article import Article, ArticleStatus, Category, Tag
@@ -87,7 +87,10 @@ async def get_published_article_detail(session: AsyncSession, article_id: int) -
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
     if article is not None:
-        article.view_count += 1
+        await session.execute(
+            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
+            {"article_id": article_id},
+        )
         await session.commit()
         await session.refresh(article)
     return article

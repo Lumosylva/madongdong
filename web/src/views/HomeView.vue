@@ -78,6 +78,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { HomeResponse } from '../types'
 
 const router = useRouter()
@@ -176,60 +177,6 @@ const truncateText = (value: string | null | undefined, maxLength: number) => {
   const text = String(value || '').trim()
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
-}
-
-const parseDateTime = (value: string) => {
-  const text = String(value || '').trim()
-  if (!text) return new Date(0)
-  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
-  return new Date(`${text}Z`)
-}
-
-const formatRelativeTime = (value: string) => {
-  const date = parseDateTime(value)
-  const now = Date.now()
-  const diffMs = Math.max(0, now - date.getTime())
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const year = 365 * day
-
-  if (diffMs < hour) {
-    const minutes = Math.max(1, Math.floor(diffMs / minute))
-    return `${minutes} 分钟前`
-  }
-  if (diffMs < day) {
-    const hours = Math.max(1, Math.floor(diffMs / hour))
-    return `${hours} 小时前`
-  }
-  if (diffMs < year) {
-    const days = Math.max(1, Math.floor(diffMs / day))
-    return `${days} 天前`
-  }
-  const years = Math.max(1, Math.floor(diffMs / year))
-  return `${years} 年前`
-}
-
-const formatDateTime = (value: string) => {
-  const date = parseDateTime(value)
-  if (Number.isNaN(date.getTime())) return '--'
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const getArticleUpdatedAt = (article: { updated_at?: string; published_at?: string | null; created_at?: string }) => {
-  const publishedAt = parseDateTime(String(article.published_at || '')).getTime()
-  const updatedAt = parseDateTime(String(article.updated_at || '')).getTime()
-  const createdAt = parseDateTime(String(article.created_at || '')).getTime()
-  if (Number.isNaN(updatedAt)) return article.published_at || article.created_at || ''
-  if (!Number.isNaN(publishedAt) && updatedAt <= publishedAt) return article.published_at || article.created_at || ''
-  if (!Number.isNaN(createdAt) && updatedAt <= createdAt) return article.published_at || article.created_at || ''
-  return article.updated_at || article.published_at || article.created_at || ''
 }
 
 onMounted(async () => {
