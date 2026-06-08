@@ -17,3 +17,8 @@ wheels/
 警告处理方式.md
 首次初始化设计.md
 madongdong.db
+npm_build_admin.bat
+npm_build_web.bat
+run_admin_web_server.bat
+run_backupend_server.bat
+run_web_server.bat

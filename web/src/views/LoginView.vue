@@ -36,7 +36,14 @@
           <label class="auth-input-shell auth-password-shell">
             <span class="auth-input-icon" aria-hidden="true">🔒</span>
             <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="current-password" placeholder="密码" @keyup.enter="submit" />
-            <button type="button" class="auth-password-toggle" @click="showPassword = !showPassword">{{ showPassword ? '隐藏' : '显示' }}</button>
+            <button type="button" class="auth-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" :title="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
+              <svg v-if="showPassword" viewBox="0 0 24 24" aria-hidden="true" class="auth-password-toggle-icon">
+                <path d="M3.98 5.11 5.4 3.7l14.9 14.9-1.42 1.41-2.02-2.02A10.74 10.74 0 0 1 12 19c-5.2 0-9.64-3.22-11.38-7.75a1.24 1.24 0 0 1 0-.9A11.57 11.57 0 0 1 5.15 5.55L3.98 5.11Zm4.16 4.17a4 4 0 0 0 5.68 5.68l-1.45-1.45A2 2 0 0 1 8.28 9.73l-.14-.45Zm4.52-4.5A11.45 11.45 0 0 1 22.4 11a1.24 1.24 0 0 1 0 .9 11.46 11.46 0 0 1-2.84 4.27l-1.41-1.41A9.45 9.45 0 0 0 19.96 11 9.5 9.5 0 0 0 15 6.47l.01.01Zm-1.93 1.2A4 4 0 0 0 10.55 14l-1.46-1.46a4 4 0 0 1 3.47-5.57Z" fill="currentColor"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true" class="auth-password-toggle-icon">
+                <path d="M12 5c5.2 0 9.64 3.22 11.38 7.75a1.24 1.24 0 0 1 0 .9C21.64 18.18 17.2 21.4 12 21.4S2.36 18.18.62 13.65a1.24 1.24 0 0 1 0-.9C2.36 8.22 6.8 5 12 5Zm0 2C8 7 4.64 9.4 3.17 12c1.47 2.6 4.83 5 8.83 5s7.36-2.4 8.83-5C19.36 9.4 16 7 12 7Zm0 1.6A3.4 3.4 0 1 1 8.6 12 3.4 3.4 0 0 1 12 8.6Zm0 2A1.4 1.4 0 1 0 13.4 12 1.4 1.4 0 0 0 12 10.6Z" fill="currentColor"/>
+              </svg>
+            </button>
           </label>
           <label class="auth-remember-row">
             <input v-model="rememberMe" type="checkbox" />
