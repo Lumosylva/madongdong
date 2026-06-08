@@ -83,7 +83,8 @@
                     :key="sub.key"
                     type="button"
                     class="sidebar-flyout-item"
-                    :class="{ active: articleSubView === sub.key }"
+                    :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
+                    :disabled="sub.key === 'edit' && !editingArticleId"
                     @click="setArticleSubView(sub.key)"
                   >
                     {{ sub.label }}
@@ -96,7 +97,7 @@
                   v-for="sub in articleSubMenus"
                   :key="sub.key"
                   href="javascript:void(0)"
-                  :class="{ active: articleSubView === sub.key }"
+                  :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
                   @click="setArticleSubView(sub.key)"
                 >
                   <span class="sidebar-text">{{ sub.label }}</span>
@@ -149,12 +150,13 @@ import type { AdminUser } from '../types'
 
 type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'users' | 'profile' | 'site'
-type ArticleSubView = 'manage' | 'trash' | 'create' | 'category'
+type ArticleSubView = 'manage' | 'trash' | 'create' | 'edit' | 'category'
 type ContentViewKey =
   | 'overview'
   | 'articles-manage'
   | 'articles-trash'
   | 'articles-create'
+  | 'articles-edit'
   | 'articles-category'
   | 'media'
   | 'comments'
@@ -238,6 +240,7 @@ const mainMenus: MainMenuItem[] = [
 const articleSubMenus: ArticleSubMenuItem[] = [
   { key: 'manage', label: '所有文章', contentKey: 'articles-manage' },
   { key: 'create', label: '创建文章', contentKey: 'articles-create' },
+  { key: 'edit', label: '编辑文章', contentKey: 'articles-edit' },
   { key: 'category', label: '文章分类', contentKey: 'articles-category' },
   { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
 ]
@@ -258,6 +261,7 @@ const articleMenuGroupRef = ref<HTMLElement | null>(null)
 const articleMenuGroupEl = ref<HTMLElement | null>(null)
 const articleFlyoutTitle = computed(() => {
   if (currentView.value !== 'articles') return '文章'
+  if (articleSubView.value === 'edit' && !editingArticleId.value) return '文章'
   const currentSub = articleSubMenus.find((item) => item.key === articleSubView.value)
   return currentSub ? `文章 / ${currentSub.label}` : '文章'
 })
@@ -319,6 +323,30 @@ const setView = (view: ViewType) => {
 }
 
 const setArticleSubView = (subView: ArticleSubView) => {
+  if (subView === 'edit' && !editingArticleId.value) {
+    articleSubView.value = 'create'
+    currentView.value = 'articles'
+    articleFlyoutOpen.value = false
+    title.value = ''
+    coverUrl.value = ''
+    contentMarkdown.value = ''
+    tagIdsText.value = ''
+    action.value = 'draft'
+    clearArticleDraft()
+    resetArticleEditorState()
+    return
+  }
+  if (subView === 'create') {
+    editingArticleId.value = null
+    editingArticleTitle.value = ''
+    title.value = ''
+    coverUrl.value = ''
+    contentMarkdown.value = ''
+    tagIdsText.value = ''
+    action.value = 'draft'
+    clearArticleDraft()
+    resetArticleEditorState()
+  }
   articleSubView.value = subView
   currentView.value = 'articles'
   articleFlyoutOpen.value = false
@@ -374,6 +402,7 @@ const articleSubViewToContentKey = articleSubMenus.reduce<Record<ArticleSubView,
     manage: 'articles-manage',
     trash: 'articles-trash',
     create: 'articles-create',
+    edit: 'articles-edit',
     category: 'articles-category',
   },
 )
@@ -392,6 +421,7 @@ const panelComponentMap: Record<ContentViewKey, unknown> = {
   'articles-manage': ArticleManagePanel,
   'articles-trash': ArticleTrashPanel,
   'articles-create': ArticleCreatePanel,
+  'articles-edit': ArticleCreatePanel,
   'articles-category': CategoryManagePanel,
   media: MediaPanel,
   comments: CommentsPanel,
@@ -438,8 +468,28 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         draftSessionSaved: articleDraftSessionSaved.value,
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
-        editorMode: editingArticleId.value !== null ? 'edit' : 'create',
-        editorTitle: editingArticleId.value !== null ? '编辑文章' : '创建文章',
+        editorMode: 'create',
+        editorTitle: '创建文章',
+      }
+    case 'articles-edit':
+      return {
+        isAdmin: isAdmin.value,
+        title: title.value,
+        coverUrl: coverUrl.value,
+        contentMarkdown: contentMarkdown.value,
+        categoryId: categoryId.value,
+        categories: categories.value,
+        tagIdsText: tagIdsText.value,
+        action: action.value,
+        media: media.value,
+        showToolbarName: isSidebarCollapsed.value,
+        submitLoading: articleSubmitting.value,
+        draftSavedAt: articleDraftSavedAt.value,
+        draftSessionSaved: articleDraftSessionSaved.value,
+        submitError: articleSubmitError.value,
+        submitFocusField: articleSubmitFocusField.value,
+        editorMode: 'edit',
+        editorTitle: '编辑文章',
       }
     case 'articles-category':
       return {
@@ -491,6 +541,7 @@ const activePanelListeners = computed(() => {
         removePermanently,
       }
     case 'articles-create':
+    case 'articles-edit':
       return {
         'update:title': (value: string) => {
           title.value = value
@@ -1138,7 +1189,7 @@ const editArticle = async (articleId: number) => {
     editingArticleTitle.value = String(article.title || '')
     fillArticleEditor(article)
     currentView.value = 'articles'
-    articleSubView.value = 'create'
+    articleSubView.value = 'edit'
     articleFlyoutOpen.value = false
     await nextTick()
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1146,6 +1197,8 @@ const editArticle = async (articleId: number) => {
     articleSubmitError.value = error instanceof Error ? error.message : '获取文章失败'
     currentView.value = 'articles'
     articleSubView.value = 'manage'
+    editingArticleId.value = null
+    editingArticleTitle.value = ''
   } finally {
     articleSubmitting.value = false
   }
