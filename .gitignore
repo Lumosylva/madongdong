@@ -16,6 +16,8 @@ wheels/
 .idea
 警告处理方式.md
 首次初始化设计.md
+全站 https 访问分析.md
+https 方案复查.md
 madongdong.db
 npm_build_admin.bat
 npm_build_web.bat

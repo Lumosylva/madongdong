@@ -42,10 +42,7 @@
   - 友链申请表单增加实时校验（站点名称 / 站点地址 / 联系邮箱）
   - 已收录友情链接改为从数据库读取，前台列表支持多列排版展示
 - 静态资源地址统一解析：
-  - 新增仓库根部 `assets/` 共享工具目录
-  - `assets/url.ts` 负责 URL 判断与路径片段规范化
-  - `assets/resolve.ts` 负责统一资源地址拼接
-  - `assets/index.ts` 作为对外入口导出
+  - 新增仓库根部 `assets/index.ts`
   - web/admin 共用同一套 `resolveAssetUrl()`，避免 `/admin`、`/api/v1`、`/uploads` 前缀混乱
 - 移动端 `hamburger` 抽屉菜单
 - 菜单高亮（支持带 query 的精确匹配）
@@ -114,6 +111,7 @@
 app/        FastAPI 后端
 web/        前台 Vue 应用
 admin/      后台 Vue 应用
+assets/     前后端共享工具（如资源 URL 解析）
 ```
 
 ---
@@ -159,7 +157,7 @@ admin/      后台 Vue 应用
 ### 1) 启动后端
 
 ```powershell
-.\.venv\Scripts\activate; uv sync; uvicorn app.main:app --reload
+.\\.venv\\Scripts\\activate; uv sync; uvicorn app.main:app --reload
 ```
 
 默认地址：`http://127.0.0.1:8000`
@@ -249,6 +247,7 @@ VITE_WEB_BASE_PATH=/
 - 本地开发时，前端分别运行在 `5173`（web）和 `5174`（admin），并通过 Vite `proxy` 代理到 `http://127.0.0.1:8000`。
 - 生产环境部署时，建议前端静态站点由 Nginx/Apache/Caddy 托管，并将 `/api/v1` 反向代理到后端服务。
 - 不建议在源码里写死 `http://127.0.0.1:8000` 之类的后端地址。
+- 前端 `build` 脚本已内置硬编码扫描，若检测到不允许的 `http://` / `ws://` / `localhost:` / `127.0.0.1:` / 绝对域名拼接会直接失败，防止回归。
 
 ---
 
@@ -602,4 +601,3 @@ server {
 ## 后续
 
 欢迎提交 [Issues](https://github.com/Lumosylva/madongdong/issues) 以便项目变得更好
-
