@@ -46,7 +46,13 @@
           <div class="friend-links-form-grid">
             <label>
               <span>站点名称</span>
-              <input v-model="form.name" placeholder="例如：我的博客" />
+              <input
+                v-model="form.name"
+                placeholder="例如：我的博客"
+                @blur="nameTouched = true; nameError = validateFriendLinkName(form.name)"
+                @input="nameTouched = true; nameError = validateFriendLinkName(form.name)"
+              />
+              <small v-if="nameTouched && nameError" class="friend-links-field-error">{{ nameError }}</small>
             </label>
             <label>
               <span>站点地址</span>
@@ -60,7 +66,14 @@
             </label>
             <label>
               <span>联系邮箱</span>
-              <input v-model="form.email" type="email" placeholder="用于审核联系" />
+              <input
+                v-model="form.email"
+                type="email"
+                placeholder="用于审核联系"
+                @blur="emailTouched = true; emailError = validateFriendLinkEmail(form.email)"
+                @input="emailTouched = true; emailError = validateFriendLinkEmail(form.email)"
+              />
+              <small v-if="emailTouched && emailError" class="friend-links-field-error">{{ emailError }}</small>
             </label>
             <label class="friend-links-textarea-field">
               <span>站点描述</span>
@@ -129,14 +142,22 @@ const theme = ref<ThemeMode>('light')
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
+const nameTouched = ref(false)
+const nameError = ref('')
 const urlTouched = ref(false)
 const urlError = ref('')
-const links = ref<FriendLinkItem[]>([
-  { name: 'MaDongDong', url: '/', description: '本站首页，技术与生活记录' },
-  { name: 'Vue 官方', url: 'https://vuejs.org/', description: '渐进式前端框架官方站点' },
-  { name: 'MDN Web Docs', url: 'https://developer.mozilla.org/', description: 'Web 开发权威文档' },
-])
+const emailTouched = ref(false)
+const emailError = ref('')
+const links = ref<FriendLinkItem[]>([])
 const form = ref({ name: '', url: '', description: '', email: '' })
+
+const validateFriendLinkName = (value: string) => {
+  const input = value.trim()
+  if (!input) return '请填写站点名称'
+  if (input.length < 2) return '站点名称至少 2 个字符'
+  if (input.length > 100) return '站点名称不能超过 100 个字符'
+  return ''
+}
 
 const validateFriendLinkUrl = (value: string) => {
   const input = value.trim()
@@ -145,6 +166,14 @@ const validateFriendLinkUrl = (value: string) => {
   if (/^https?:\/\//i.test(input)) return ''
   if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(input)) return ''
   return '请输入正确的网址，例如 https://example.com'
+}
+
+const validateFriendLinkEmail = (value: string) => {
+  const input = value.trim()
+  if (!input) return '请填写联系邮箱'
+  if (!/^\S+@\S+\.\S+$/.test(input)) return '请输入有效的邮箱地址'
+  if (input.length > 255) return '邮箱长度不能超过 255 个字符'
+  return ''
 }
 
 const applyTheme = (value: ThemeMode) => {
@@ -163,7 +192,13 @@ const goSearch = () => {
 }
 
 const loadData = async () => {
-  data.value = await webApi.getHome(1, 1)
+  const [home, friendLinks] = await Promise.all([webApi.getHome(1, 1), webApi.getFriendLinks()])
+  data.value = home
+  links.value = friendLinks.map((item) => ({
+    name: item.name,
+    url: item.url,
+    description: item.description,
+  }))
 }
 
 const submitApplication = async () => {
@@ -172,16 +207,20 @@ const submitApplication = async () => {
   const url = form.value.url.trim()
   const description = form.value.description.trim()
   const email = form.value.email.trim()
+  const nameErrorText = validateFriendLinkName(name)
   const urlErrorText = validateFriendLinkUrl(url)
+  const emailErrorText = validateFriendLinkEmail(email)
 
-  if (!name || !url || !description || !email) {
+  nameTouched.value = true
+  urlTouched.value = true
+  emailTouched.value = true
+  nameError.value = nameErrorText
+  urlError.value = urlErrorText
+  emailError.value = emailErrorText
+
+  if (nameErrorText || urlErrorText || emailErrorText || !description) {
     status.value = 'error'
-    message.value = '请完整填写友链申请信息'
-    return
-  }
-  if (urlErrorText) {
-    status.value = 'error'
-    message.value = urlErrorText
+    message.value = !description ? '请填写站点描述' : '请先修正表单中的错误'
     return
   }
 
@@ -192,8 +231,12 @@ const submitApplication = async () => {
   try {
     await webApi.submitFriendLink({ name, url: /^https?:\/\//i.test(url) ? url : `https://${url}`, description, email })
     form.value = { name: '', url: '', description: '', email: '' }
+    nameTouched.value = false
     urlTouched.value = false
+    emailTouched.value = false
+    nameError.value = ''
     urlError.value = ''
+    emailError.value = ''
     status.value = 'success'
     message.value = '申请已提交，等待审核'
   } catch (error) {
