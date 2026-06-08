@@ -42,7 +42,10 @@
   - 友链申请表单增加实时校验（站点名称 / 站点地址 / 联系邮箱）
   - 已收录友情链接改为从数据库读取，前台列表支持多列排版展示
 - 静态资源地址统一解析：
-  - 新增仓库根部 `assets/index.ts`
+  - 新增仓库根部 `assets/` 共享工具目录
+  - `assets/url.ts` 负责 URL 判断与路径片段规范化
+  - `assets/resolve.ts` 负责统一资源地址拼接
+  - `assets/index.ts` 作为对外入口导出
   - web/admin 共用同一套 `resolveAssetUrl()`，避免 `/admin`、`/api/v1`、`/uploads` 前缀混乱
 - 移动端 `hamburger` 抽屉菜单
 - 菜单高亮（支持带 query 的精确匹配）

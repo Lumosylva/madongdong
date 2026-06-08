@@ -12,6 +12,7 @@ from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRe
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
+from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
 from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
@@ -41,7 +42,6 @@ async def home(
 async def article_detail(
     article_id: int,
     session: AsyncSession = Depends(get_db_session),
-    current_user: User | None = Depends(get_current_user_optional),
 ) -> ArticlePageResponse:
     article = await get_published_article_detail(session, article_id)
     if article is None:
@@ -49,12 +49,17 @@ async def article_detail(
     data = await get_homepage_data(session, page=1)
     comments = await list_approved_comments_by_article(session, article_id)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
+    site_data = data["site"]
+    nav_items_data = data["nav_items"]
+    article_detail = ArticleDetailResponse.model_validate(article)
+    previous_article_summary = ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None
+    next_article_summary = ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None
     return ArticlePageResponse(
-        site=SiteSettingResponse.model_validate(data["site"]),
-        nav_items=[NavItemResponse.model_validate(item) for item in data["nav_items"]],
-        article=article,
-        previous_article=previous_article,
-        next_article=next_article,
+        site=SiteSettingResponse.model_validate(site_data),
+        nav_items=[NavItemResponse.model_validate(item) for item in nav_items_data],
+        article=article_detail,
+        previous_article=previous_article_summary,
+        next_article=next_article_summary,
         comments=[CommentResponse.model_validate(item) for item in comments],
     )
 
