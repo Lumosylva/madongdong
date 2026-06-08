@@ -1,4 +1,4 @@
-# MaDongDong Blog
+# MaDongDong
 
 基于 `FastAPI + Vue 3 + SQLite` 的前后端分离博客系统，支持前台展示与后台管理。
 
