@@ -1,4 +1,4 @@
-import type { AdminUser, LoginResponse } from './types'
+import type { AdminUser, FriendLinkItem, LoginResponse } from './types'
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 export const API_ORIGIN = /^https?:\/\//i.test(API_BASE) ? new URL(API_BASE).origin : window.location.origin
@@ -195,6 +195,34 @@ export const adminApi = {
     return request<WrappedResponse<any>>('/admin/site/settings', {
       method: 'PUT',
       body: JSON.stringify(payload),
+    })
+  },
+  getFriendLinks(): Promise<WrappedResponse<FriendLinkItem[]>> {
+    return request<WrappedResponse<FriendLinkItem[]>>('/admin/friend-links')
+  },
+  updateFriendLink(linkId: number, payload: Record<string, unknown>): Promise<WrappedResponse<FriendLinkItem>> {
+    return request<WrappedResponse<FriendLinkItem>>(`/admin/friend-links/${linkId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteFriendLink(linkId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/friend-links/${linkId}`, {
+      method: 'DELETE',
+    })
+  },
+  getFriendLinks(): Promise<WrappedResponse<any[]>> {
+    return request<WrappedResponse<any[]>>('/admin/friend-links')
+  },
+  updateFriendLink(linkId: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/friend-links/${linkId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteFriendLink(linkId: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/friend-links/${linkId}`, {
+      method: 'DELETE',
     })
   },
   async uploadMediaFile(file: File, folderId?: number | null): Promise<WrappedResponse<any>> {

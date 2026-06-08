@@ -29,3 +29,15 @@ export type ArticlePayload = {
   tag_ids: number[]
   action: 'draft' | 'submit' | 'publish'
 }
+
+export type FriendLinkItem = {
+  id: number
+  name: string
+  url: string
+  description: string
+  email: string
+  status: 'approved' | 'pending' | 'rejected' | string
+  source: string
+  created_at: string
+  updated_at: string
+}

@@ -1,14 +1,17 @@
 """前台公开接口。"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.security import create_access_token, get_current_user, get_current_user_optional, verify_password
 from app.models.auth import User
+from app.models.friend_link import FriendLink
 from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
+from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
@@ -114,6 +117,35 @@ async def submit_comment(
         guest_email=str(payload.guest_email) if payload.guest_email else None,
     )
     return CommentResponse.model_validate(comment)
+
+
+@router.get("/friend-links", summary="获取友情链接")
+async def get_friend_links(session: AsyncSession = Depends(get_db_session)) -> list[FriendLinkPublicResponse]:
+    result = await session.execute(
+        select(FriendLink)
+        .where(FriendLink.status == 'approved')
+        .order_by(FriendLink.id.desc())
+    )
+    return [FriendLinkPublicResponse.model_validate(item) for item in result.scalars().all()]
+
+
+@router.post("/friend-links", summary="提交友情链接申请")
+async def submit_friend_link(
+    payload: FriendLinkApplicationRequest,
+    session: AsyncSession = Depends(get_db_session),
+) -> FriendLinkPublicResponse:
+    link = FriendLink(
+        name=payload.name.strip(),
+        url=payload.url.strip(),
+        description=payload.description.strip(),
+        email=payload.email.strip(),
+        status='pending',
+        source='submission',
+    )
+    session.add(link)
+    await session.commit()
+    await session.refresh(link)
+    return FriendLinkPublicResponse.model_validate(link)
 
 
 @router.post('/auth/register', summary='读者注册')

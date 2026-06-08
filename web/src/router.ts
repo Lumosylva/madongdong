@@ -7,6 +7,7 @@ import CategoryView from './views/CategoryView.vue'
 import TagView from './views/TagView.vue'
 import RegisterView from './views/RegisterView.vue'
 import LoginView from './views/LoginView.vue'
+import FriendLinksView from './views/FriendLinksView.vue'
 import InstallView from './views/InstallView.vue'
 
 export const router = createRouter({
@@ -51,6 +52,11 @@ export const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/friend-links',
+      name: 'friend-links',
+      component: FriendLinksView,
     },
   ],
 })

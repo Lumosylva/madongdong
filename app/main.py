@@ -10,6 +10,7 @@ from app.api.admin.site import router as admin_site_router
 from app.api.admin.article import router as admin_article_router
 from app.api.admin.auth import router as admin_auth_router
 from app.api.admin.comment import router as admin_comment_router
+from app.api.admin.friend_link import router as admin_friend_link_router
 from app.api.admin.media import router as admin_media_router
 from app.api.health import router as health_router
 from app.api.install import router as install_router
@@ -47,6 +48,7 @@ app.include_router(admin_auth_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_article_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_media_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_comment_router, prefix=settings.api_v1_prefix)
+app.include_router(admin_friend_link_router, prefix=settings.api_v1_prefix)
 app.include_router(admin_site_router, prefix=settings.api_v1_prefix)
 app.include_router(web_router, prefix=settings.api_v1_prefix)
 

@@ -141,15 +141,16 @@ import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
 import CategoryManagePanel from '../components/CategoryManagePanel.vue'
 import CommentsPanel from '../components/CommentsPanel.vue'
+import FriendLinksPanel from '../components/FriendLinksPanel.vue'
 import MediaPanel from '../components/MediaPanel.vue'
 import OverviewPanel from '../components/OverviewPanel.vue'
 import SiteSettingsPanel from '../components/SiteSettingsPanel.vue'
 import UserManagementPanel from '../components/UserManagementPanel.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
-import type { AdminUser } from '../types'
+import type { AdminUser, FriendLinkItem } from '../types'
 
 type ThemeMode = 'light' | 'dark'
-type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'users' | 'profile' | 'site'
+type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'friend-links' | 'users' | 'profile' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create' | 'edit' | 'category'
 type ContentViewKey =
   | 'overview'
@@ -160,6 +161,7 @@ type ContentViewKey =
   | 'articles-category'
   | 'media'
   | 'comments'
+  | 'friend-links'
   | 'users'
   | 'site'
 
@@ -187,6 +189,7 @@ const deletedArticles = ref<any[]>([])
 const categories = ref<any[]>([])
 const media = ref<any[]>([])
 const comments = ref<any[]>([])
+const friendLinks = ref<FriendLinkItem[]>([])
 const users = ref<any[]>([])
 const siteTitle = ref('')
 const siteSubtitle = ref('')
@@ -232,6 +235,7 @@ const mainMenus: MainMenuItem[] = [
   { key: 'articles', label: '文章' },
   { key: 'media', label: '媒体', adminOnly: true },
   { key: 'comments', label: '评论' },
+  { key: 'friend-links', label: '友链' },
   { key: 'users', label: '用户管理', adminOnly: true },
   { key: 'profile', label: '个人中心' },
   { key: 'site', label: '设置', adminOnly: true },
@@ -250,6 +254,7 @@ const menuIconMap: Record<ViewType, string> = {
   articles: '✎',
   media: '◫',
   comments: '☍',
+  'friend-links': '🔗',
   users: '⚑',
   site: '⚙',
   profile: '◉',
@@ -411,6 +416,7 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'overview') return 'overview'
   if (currentView.value === 'media') return 'media'
   if (currentView.value === 'comments') return 'comments'
+  if (currentView.value === 'friend-links') return 'friend-links'
   if (currentView.value === 'users') return 'users'
   if (currentView.value === 'site') return 'site'
   return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
@@ -425,6 +431,7 @@ const panelComponentMap: Record<ContentViewKey, unknown> = {
   'articles-category': CategoryManagePanel,
   media: MediaPanel,
   comments: CommentsPanel,
+  'friend-links': FriendLinksPanel,
   users: UserManagementPanel,
   site: SiteSettingsPanel,
 }
@@ -507,6 +514,10 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         comments: comments.value,
         formatCommentStatus,
       }
+    case 'friend-links':
+      return {
+        links: friendLinks.value,
+      }
     case 'users':
       return {
         users: users.value,
@@ -579,6 +590,12 @@ const activePanelListeners = computed(() => {
         'bulk-approve': bulkApproveComments,
         'bulk-reject': bulkRejectComments,
         'bulk-delete': bulkDeleteComments,
+      }
+    case 'friend-links':
+      return {
+        approve: approveFriendLink,
+        reject: rejectFriendLink,
+        delete: deleteFriendLink,
       }
     case 'articles-category':
       return {
@@ -743,12 +760,13 @@ const loadAll = async () => {
   try {
     const meRes = await adminApi.getMe()
     currentUser.value = meRes.data
-    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, siteRes, userRes] = await Promise.all([
+    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, linkRes, siteRes, userRes] = await Promise.all([
       adminApi.getArticles(),
       adminApi.getDeletedArticles(),
       adminApi.getCategories(),
       adminApi.getMedia(),
       adminApi.getComments(),
+      adminApi.getFriendLinks(),
       adminApi.getSiteSettings(),
       isAdmin.value ? adminApi.getUsers() : Promise.resolve({ data: [] }),
     ])
@@ -757,6 +775,7 @@ const loadAll = async () => {
     categories.value = categoryRes.data
     media.value = mediaRes.data
     comments.value = commentRes.data
+    friendLinks.value = linkRes.data || []
     users.value = userRes.data || []
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
@@ -797,6 +816,26 @@ const approveComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'APPROVED') return
   await adminApi.approveComment(commentId)
+  await loadAll()
+}
+
+const approveFriendLink = async (linkId: number) => {
+  const target = friendLinks.value.find((item) => item.id === linkId)
+  if (!target || String(target.status).toLowerCase() === 'approved') return
+  await adminApi.updateFriendLink(linkId, { status: 'approved' })
+  await loadAll()
+}
+
+const rejectFriendLink = async (linkId: number) => {
+  const target = friendLinks.value.find((item) => item.id === linkId)
+  if (!target || String(target.status).toLowerCase() === 'rejected') return
+  await adminApi.updateFriendLink(linkId, { status: 'rejected' })
+  await loadAll()
+}
+
+const deleteFriendLink = async (linkId: number) => {
+  if (!confirm('确认删除该友链记录？')) return
+  await adminApi.deleteFriendLink(linkId)
   await loadAll()
 }
 

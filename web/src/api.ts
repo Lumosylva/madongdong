@@ -83,6 +83,18 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
+  getFriendLinks() {
+    return request<Array<{ id: number; name: string; url: string; description: string; created_at: string }>>('/web/friend-links')
+  },
+  submitFriendLink(payload: { name: string; url: string; description: string; email: string }) {
+    const normalizedUrl = payload.url.trim().startsWith('http://') || payload.url.trim().startsWith('https://')
+      ? payload.url.trim()
+      : `https://${payload.url.trim()}`
+    return request<{ id: number; name: string; url: string; description: string; created_at: string }>('/web/friend-links', {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, url: normalizedUrl }),
+    })
+  },
   async getCurrentWebUser() {
     const token = getToken()
     if (!token) {
