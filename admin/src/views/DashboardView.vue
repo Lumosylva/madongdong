@@ -136,6 +136,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
+import { buildPageTitle, setSiteSetting } from '../site-meta'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
@@ -659,8 +660,8 @@ const normalizeAssetUrl = (url: string | null | undefined) => {
 }
 
 const applyAdminMeta = () => {
-  const titleText = String(siteTitle.value || '').trim() || 'MaDongDong'
-  document.title = `${titleText} - 仪表盘`
+  const titleText = String(siteTitle.value || '').trim() || 'MadongDong Admin'
+  document.title = buildPageTitle('仪表盘')
 
   if (!siteLogo.value) return
   let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
@@ -780,6 +781,7 @@ const loadAll = async () => {
     siteTitle.value = siteRes.data.site_title
     siteSubtitle.value = siteRes.data.site_subtitle || ''
     siteLogo.value = normalizeAssetUrl(siteRes.data.site_logo || '')
+    setSiteSetting(siteRes.data)
     applyAdminMeta()
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''

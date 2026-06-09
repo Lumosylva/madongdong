@@ -90,6 +90,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
+import { buildPageTitle } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -115,6 +116,10 @@ const themeToggleLabel = computed(() =>
   theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
 )
 
+const applyTitle = () => {
+  document.title = buildPageTitle('登录')
+}
+
 const submit = async () => {
   loading.value = true
   errorMessage.value = ''
@@ -139,6 +144,7 @@ const submit = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-admin-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  applyTitle()
 
   const token = localStorage.getItem('blog_admin_token')
   if (!token) {

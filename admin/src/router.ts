@@ -12,9 +12,9 @@ const routerBase = (import.meta.env.BASE_URL || '/admin').replace(/\/$/, '') || 
 export const router = createRouter({
   history: createWebHistory(routerBase),
   routes: [
-    { path: '/login', name: 'login', component: LoginView },
-    { path: '/md-editor-probe', name: 'md-editor-probe', component: MdEditorV3ProbeView, meta: { requiresAuth: true } },
-    { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
+    { path: '/login', name: 'login', component: LoginView, meta: { title: '登录' } },
+    { path: '/md-editor-probe', name: 'md-editor-probe', component: MdEditorV3ProbeView, meta: { requiresAuth: true, title: '编辑器探针' } },
+    { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
   ],
 })
 
