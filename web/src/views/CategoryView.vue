@@ -64,7 +64,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { buildPageTitle, setSiteSetting } from '../site-meta'
+import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import type { CategoryArticlesResponse } from '../types'
 
 const route = useRoute()
@@ -104,22 +104,7 @@ const changePageSize = async () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
-  const title = String(siteTitle || '').trim()
-  const subtitle = String(siteSubtitle || '').trim()
-  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || 'MaDongDong')
 
-  const iconUrl = toAbsoluteAssetUrl(siteLogo)
-  if (!iconUrl) return
-
-  let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
-  if (!iconLink) {
-    iconLink = document.createElement('link')
-    iconLink.rel = 'icon'
-    document.head.appendChild(iconLink)
-  }
-  iconLink.href = iconUrl
-}
 
 const parseDateTime = (value: string) => {
   const text = String(value || '').trim()
@@ -149,7 +134,7 @@ const loadData = async () => {
   data.value = await webApi.getCategoryArticles(slug, page.value, pageSize.value)
   keyword.value = data.value.category.name
   setSiteSetting(data.value.site)
-  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  applySiteMetaFromSetting(data.value.site)
   document.title = buildPageTitle(`${data.value.category.name} - ${route.meta?.title as string | undefined}`)
 }
 
