@@ -11,12 +11,29 @@
       @toggle-theme="toggleTheme"
     />
 
-    <header class="list-page-header">
-      <RouterLink to="/" class="back-link list-page-back">← 首页</RouterLink>
-      <div class="list-page-title-wrap">
-        <p class="list-page-eyebrow">时间轴</p>
-        <h1 class="list-page-title">归档</h1>
-        <p class="list-page-subtitle">共 {{ data.total }} 篇文章</p>
+    <header class="archive-hero">
+      <RouterLink to="/" class="archive-back-link">
+        <svg class="archive-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        返回首页
+      </RouterLink>
+      <div class="archive-hero-body">
+        <div class="archive-hero-text">
+          <p class="archive-hero-eyebrow">Archive</p>
+          <h1 class="archive-hero-title">归档</h1>
+          <p class="archive-hero-sub">
+            <template v-if="yearRangeText">{{ yearRangeText }} &nbsp;·&nbsp; </template>按时间轴浏览全部文章
+          </p>
+        </div>
+        <div class="archive-hero-metrics">
+          <div class="archive-metric-card">
+            <strong>{{ data.total }}</strong>
+            <span>篇文章</span>
+          </div>
+          <div class="archive-metric-card">
+            <strong>{{ data.archive.length }}</strong>
+            <span>个年份</span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -70,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -85,6 +102,13 @@ type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 
 const openYears = ref<Set<number>>(new Set())
+
+const yearRangeText = computed(() => {
+  if (!data.value || data.value.archive.length === 0) return ''
+  const max = data.value.archive[0].year
+  const min = data.value.archive[data.value.archive.length - 1].year
+  return max === min ? String(max) : `${min} — ${max}`
+})
 
 const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
 
