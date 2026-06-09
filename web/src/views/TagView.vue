@@ -64,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { buildPageTitle, setSiteSetting } from '../site-meta'
 import type { TagArticlesResponse } from '../types'
 
 const route = useRoute()
@@ -147,7 +148,9 @@ const loadData = async () => {
   if (!slug) return
   data.value = await webApi.getTagArticles(slug, page.value, pageSize.value)
   keyword.value = data.value.tag.name
+  setSiteSetting(data.value.site)
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  document.title = buildPageTitle(`${data.value.tag.name} - ${route.meta?.title as string | undefined}`)
 }
 
 watch(() => route.params.slug, async () => {

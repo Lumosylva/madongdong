@@ -74,6 +74,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
+import { buildPageTitle, getSiteTitle } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -156,7 +157,7 @@ const submit = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  document.title = '用户注册 - MaDongDong'
+  document.title = buildPageTitle('用户注册')
   await loadSiteLogo()
 })
 </script>

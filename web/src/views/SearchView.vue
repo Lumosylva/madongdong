@@ -64,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { buildPageTitle, setSiteSetting } from '../site-meta'
 import type { SearchResponse } from '../types'
 
 const route = useRoute()
@@ -161,7 +162,9 @@ const loadData = async () => {
   keyword.value = queryKeyword
   if (!queryKeyword) return
   data.value = await webApi.search(queryKeyword, page.value, pageSize.value)
+  setSiteSetting(data.value.site)
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  document.title = buildPageTitle(route.meta?.title as string | undefined)
 }
 
 watch(() => route.query.keyword, async () => {

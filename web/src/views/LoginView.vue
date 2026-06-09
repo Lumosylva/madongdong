@@ -70,6 +70,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
+import { buildPageTitle } from '../site-meta'
 import type { NavItem } from '../types'
 
 type ThemeMode = 'light' | 'dark'
@@ -153,7 +154,7 @@ onMounted(async () => {
     username.value = savedUsername
     rememberMe.value = true
   }
-  document.title = '用户登录 - MaDongDong'
+  document.title = buildPageTitle('用户登录')
   await loadSiteLogo()
 })
 </script>
