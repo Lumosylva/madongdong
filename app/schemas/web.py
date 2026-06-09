@@ -71,3 +71,36 @@ class TagArticlesResponse(BaseModel):
     site: SiteSettingResponse
     nav_items: list[NavItemResponse]
     articles: PaginatedResponse[ArticleSummaryResponse]
+
+
+class ArchiveArticleItem(BaseModel):
+    """归档文章条目。"""
+
+    id: int
+    title: str
+    published_at: str
+
+
+class ArchiveMonthGroup(BaseModel):
+    """归档月份分组。"""
+
+    month: int
+    count: int
+    articles: list[ArchiveArticleItem]
+
+
+class ArchiveYearGroup(BaseModel):
+    """归档年份分组。"""
+
+    year: int
+    count: int
+    months: list[ArchiveMonthGroup]
+
+
+class ArchiveResponse(BaseModel):
+    """归档页响应。"""
+
+    site: SiteSettingResponse
+    nav_items: list[NavItemResponse]
+    total: int
+    archive: list[ArchiveYearGroup]

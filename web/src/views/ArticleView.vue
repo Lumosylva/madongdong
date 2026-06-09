@@ -160,6 +160,9 @@
             <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
             <span>{{ formatRelativeTime(comment.created_at) }}</span>
           </div>
+          <div v-if="getClientMetaText(comment)" class="comment-client-meta">
+            {{ getClientMetaText(comment) }}
+          </div>
           <p>{{ comment.content }}</p>
         </div>
       </div>
@@ -180,7 +183,7 @@ import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting } from '../site-meta'
 import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
-import type { ArticlePageResponse } from '../types'
+import type { ArticlePageResponse, Comment } from '../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -265,6 +268,10 @@ const submitComment = async () => {
       content: commentContent.value,
       guest_nickname: guestNickname.value || null,
       guest_email: guestEmail.value || null,
+      client_browser: (navigator as any).userAgentData?.brands?.[0]?.brand || null,
+      client_browser_version: (navigator as any).userAgentData?.brands?.[0]?.version || null,
+      client_os: (navigator as any).userAgentData?.platform || null,
+      client_os_version: (navigator as any).userAgentData?.platformVersion || null,
     }) as { status?: string }
 
     const createdStatus = String(created?.status || '').toUpperCase()
@@ -298,6 +305,13 @@ const submitComment = async () => {
       commentToastStatus.value = ''
     }, 2200)
   }
+}
+
+const getClientMetaText = (comment: Comment) => {
+  const browser = [comment.client_browser, comment.client_browser_version].filter(Boolean).join(' ').trim()
+  const os = [comment.client_os, comment.client_os_version].filter(Boolean).join(' ').trim()
+  const parts = [browser ? `🌐 ${browser}` : '', os ? `🖥️ ${os}` : ''].filter(Boolean)
+  return parts.join(' ')
 }
 
 const truncateText = (value: string | null | undefined, maxLength: number) => {

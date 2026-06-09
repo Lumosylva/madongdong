@@ -66,6 +66,10 @@ export type Comment = {
   user_id: number | null
   guest_nickname: string | null
   guest_email: string | null
+  client_browser: string | null
+  client_browser_version: string | null
+  client_os: string | null
+  client_os_version: string | null
   content: string
   status: string
   parent_id: number | null
@@ -119,4 +123,29 @@ export type TagArticlesResponse = {
   site: SiteSetting
   nav_items: NavItem[]
   articles: Paginated<Article>
+}
+
+export type ArchiveArticleItem = {
+  id: number
+  title: string
+  published_at: string
+}
+
+export type ArchiveMonthGroup = {
+  month: number
+  count: number
+  articles: ArchiveArticleItem[]
+}
+
+export type ArchiveYearGroup = {
+  year: number
+  count: number
+  months: ArchiveMonthGroup[]
+}
+
+export type ArchiveResponse = {
+  site: SiteSetting
+  nav_items: NavItem[]
+  total: number
+  archive: ArchiveYearGroup[]
 }

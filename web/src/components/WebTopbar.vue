@@ -28,6 +28,7 @@
       >
         {{ item.title }}
       </RouterLink>
+      <RouterLink to="/archive" :class="{ active: isActive('/archive') }">归档</RouterLink>
     </nav>
 
     <div class="topbar-right">
@@ -77,6 +78,7 @@
         <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
           {{ item.title }}
         </RouterLink>
+        <RouterLink to="/archive" :class="{ active: isActive('/archive') }" @click="mobileMenuOpen = false">归档</RouterLink>
         <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
       </nav>
     </aside>

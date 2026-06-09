@@ -270,13 +270,45 @@
 }
 
 .comment-form button {
-  border: none;
+  border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 12px;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #38bdf8);
-  color: #02131f;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
   font-weight: 700;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+}
+
+:global([data-theme='dark']) .comment-form button {
+  background: rgba(15, 23, 42, 0.78);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.22);
+  box-shadow: 0 4px 12px rgba(2, 6, 23, 0.24);
+}
+
+.comment-form button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(14, 165, 164, 0.35);
+  transform: translateY(-1px);
+}
+
+:global([data-theme='dark']) .comment-form button:hover:not(:disabled) {
+  background: rgba(30, 41, 59, 0.92);
+  border-color: rgba(45, 212, 191, 0.34);
+}
+
+.comment-form button:disabled {
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--text-soft);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+:global([data-theme='dark']) .comment-form button:disabled {
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(148, 163, 184, 0.78);
 }
 
 .comment-inputs-row {

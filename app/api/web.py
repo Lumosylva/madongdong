@@ -1,6 +1,6 @@
 """前台公开接口。"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,10 +13,11 @@ from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
-from app.schemas.web import ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
+from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
+    get_archive_data,
     get_category_page_data,
     get_homepage_data,
     get_prev_next_published_articles,
@@ -36,6 +37,14 @@ async def home(
 ) -> HomeResponse:
     data = await get_homepage_data(session, page)
     return HomeResponse.model_validate(data)
+
+
+@router.get("/archive", summary="获取归档数据")
+async def archive(
+    session: AsyncSession = Depends(get_db_session),
+) -> ArchiveResponse:
+    data = await get_archive_data(session)
+    return ArchiveResponse.model_validate(data)
 
 
 @router.get("/articles/{article_id}", summary="获取前台文章详情")
@@ -109,6 +118,7 @@ async def tag_articles(
 @router.post("/comments", summary="提交评论")
 async def submit_comment(
     payload: CommentCreate,
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
     current_user: User | None = Depends(get_current_user_optional),
 ) -> CommentResponse:
@@ -120,6 +130,7 @@ async def submit_comment(
         current_user=current_user,
         guest_nickname=payload.guest_nickname,
         guest_email=str(payload.guest_email) if payload.guest_email else None,
+        client_user_agent=request.headers.get('user-agent'),
     )
     return CommentResponse.model_validate(comment)
 

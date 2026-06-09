@@ -2086,3 +2086,159 @@ a {
     max-height: 420px;
   }
 }
+
+/* ── Archive page ─────────────────────────────── */
+
+.archive-panel {
+  padding: 24px 28px;
+}
+
+.archive-summary {
+  margin: 0 0 24px;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.archive-year-group {
+  border-bottom: 1px solid var(--line);
+}
+
+.archive-year-group:last-child {
+  border-bottom: none;
+}
+
+.archive-year-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 14px;
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+}
+
+.archive-year-header:hover .archive-year-title {
+  color: var(--accent);
+}
+
+.archive-toggle-icon {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--text-soft);
+  transition: transform 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.archive-toggle-icon.open {
+  transform: rotate(90deg);
+}
+
+.archive-year-title {
+  font-size: 20px;
+  font-weight: 700;
+  transition: color 0.18s ease;
+}
+
+.archive-year-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(14, 165, 164, 0.08);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.archive-year-body {
+  padding-bottom: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.archive-month-group {
+  margin-bottom: 4px;
+}
+
+.archive-month-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 4px 14px;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.archive-month-count {
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.archive-article-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0 6px 28px;
+  border-left: 2px solid transparent;
+  transition: border-color 0.18s ease;
+}
+
+.archive-article-row:hover {
+  border-left-color: var(--accent);
+}
+
+.archive-article-date {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  color: var(--text-soft);
+  min-width: 40px;
+}
+
+.archive-article-link {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.18s ease;
+}
+
+.archive-article-link:hover {
+  color: var(--accent);
+}
+
+.archive-collapse-enter-active,
+.archive-collapse-leave-active {
+  transition: opacity 0.2s ease, max-height 0.26s ease;
+  overflow: hidden;
+  max-height: 9999px;
+}
+
+.archive-collapse-enter-from,
+.archive-collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+@media (max-width: 960px) {
+  .archive-panel {
+    padding: 16px;
+  }
+
+  .archive-year-title {
+    font-size: 18px;
+  }
+
+  .archive-article-row {
+    padding-left: 16px;
+  }
+}

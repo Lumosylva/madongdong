@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import ArchiveView from './views/ArchiveView.vue'
 import ArticleView from './views/ArticleView.vue'
 import HomeView from './views/HomeView.vue'
 import SearchView from './views/SearchView.vue'
@@ -66,6 +67,12 @@ export const router = createRouter({
       name: 'friend-links',
       component: FriendLinksView,
       meta: { title: '友情链接' },
+    },
+    {
+      path: '/archive',
+      name: 'archive',
+      component: ArchiveView,
+      meta: { title: '归档' },
     },
   ],
 })

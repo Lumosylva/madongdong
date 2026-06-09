@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from fastapi import HTTPException, status
 from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +11,63 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.article import Article
 from app.models.auth import User
 from app.models.comment import Comment, CommentStatus
+
+_BROWSER_PATTERNS = [
+    ('Edge', r'Edg(?:e|A|iOS)?/([0-9.]+)'),
+    ('Opera', r'OPR/([0-9.]+)'),
+    ('Chrome', r'Chrome/([0-9.]+)'),
+    ('Firefox', r'Firefox/([0-9.]+)'),
+    ('Safari', r'Version/([0-9.]+).*Safari/'),
+]
+_OS_PATTERNS = [
+    ('Windows 11', r'Windows NT 11\.0|Windows 11|Win11'),
+    ('Windows 10', r'Windows NT 10\.0|Windows 10'),
+    ('Windows 8.1', r'Windows NT 6\.3'),
+    ('Windows 8', r'Windows NT 6\.2'),
+    ('Windows 7', r'Windows NT 6\.1'),
+    ('macOS', r'Mac OS X ([0-9_\.]+)'),
+    ('iOS', r'(?:iPhone OS|CPU OS) ([0-9_\.]+)'),
+    ('Android', r'Android ([0-9.]+)'),
+    ('Linux', r'Linux'),
+]
+
+
+def parse_client_user_agent(user_agent: str | None) -> dict[str, str | None]:
+    """解析客户端浏览器与系统标识。"""
+
+    text = str(user_agent or '').strip()
+    if not text:
+        return {'client_browser': None, 'client_browser_version': None, 'client_os': None, 'client_os_version': None}
+
+    browser_name = 'Unknown'
+    browser_version: str | None = None
+    for name, pattern in _BROWSER_PATTERNS:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            browser_name = name
+            browser_version = next((group for group in match.groups() if group), None)
+            break
+
+    os_name = 'Unknown'
+    os_version: str | None = None
+    for name, pattern in _OS_PATTERNS:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            os_name = name
+            if name in {'macOS', 'iOS', 'Android'}:
+                os_version = next((group for group in match.groups() if group), None)
+                if os_version:
+                    os_version = os_version.replace('_', '.')
+                    if name == 'Android':
+                        os_version = os_version.split('.')[0] if os_version else os_version
+            break
+
+    return {
+        'client_browser': browser_name,
+        'client_browser_version': browser_version,
+        'client_os': os_name,
+        'client_os_version': os_version,
+    }
 
 
 async def create_comment(
@@ -19,6 +78,7 @@ async def create_comment(
     current_user: User | None = None,
     guest_nickname: str | None = None,
     guest_email: str | None = None,
+    client_user_agent: str | None = None,
 ) -> Comment:
     """创建评论。"""
 
@@ -35,11 +95,17 @@ async def create_comment(
 
     auto_approved = bool(current_user and _is_admin_or_author(current_user))
 
+    client_meta = parse_client_user_agent(client_user_agent)
+
     comment = Comment(
         article_id=article.id,
         user_id=current_user.id if current_user else None,
         guest_nickname=None if current_user else guest_nickname,
         guest_email=None if current_user else guest_email,
+        client_browser=client_meta['client_browser'],
+        client_browser_version=client_meta['client_browser_version'],
+        client_os=client_meta['client_os'],
+        client_os_version=client_meta['client_os_version'],
         content=content,
         status=CommentStatus.APPROVED if auto_approved else CommentStatus.PENDING,
         parent_id=parent.id if parent else None,

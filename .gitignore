@@ -10,6 +10,7 @@ wheels/
 # Cursor rules
 .cursor/
 .cursor/rules/
+.claude/
 .codebuddy/
 .mypy_cache/
 .git
@@ -24,3 +25,4 @@ npm_build_web.bat
 run_admin_web_server.bat
 run_backupend_server.bat
 run_web_server.bat
+CLAUDE.md

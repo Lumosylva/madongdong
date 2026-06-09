@@ -271,6 +271,62 @@ async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_si
     }
 
 
+async def get_archive_data(session: AsyncSession) -> dict:
+    """获取归档数据，按年份、月份分组。"""
+
+    site = await get_or_create_site_setting(session)
+    nav_items = await list_nav_items(session, visible_only=True)
+
+    statement = (
+        select(Article)
+        .where(Article.status == ArticleStatus.PUBLISHED)
+        .order_by(Article.published_at.desc(), Article.id.desc())
+    )
+    result = await session.execute(statement)
+    articles = list(result.scalars().unique().all())
+
+    year_month_map: dict[int, dict[int, list]] = {}
+    for article in articles:
+        dt = article.published_at
+        if dt is None:
+            continue
+        year = dt.year
+        month = dt.month
+        if year not in year_month_map:
+            year_month_map[year] = {}
+        if month not in year_month_map[year]:
+            year_month_map[year][month] = []
+        year_month_map[year][month].append(article)
+
+    archive = []
+    for year in sorted(year_month_map.keys(), reverse=True):
+        months = []
+        year_count = 0
+        for month in sorted(year_month_map[year].keys(), reverse=True):
+            month_articles = year_month_map[year][month]
+            months.append({
+                "month": month,
+                "count": len(month_articles),
+                "articles": [
+                    {"id": a.id, "title": a.title, "published_at": a.published_at.isoformat()}
+                    for a in month_articles
+                ],
+            })
+            year_count += len(month_articles)
+        archive.append({
+            "year": year,
+            "count": year_count,
+            "months": months,
+        })
+
+    return {
+        "site": site,
+        "nav_items": nav_items,
+        "total": len(articles),
+        "archive": archive,
+    }
+
+
 async def list_public_categories(session: AsyncSession) -> list[Category]:
     """查询分类列表。"""
 

@@ -33,6 +33,10 @@ class Comment(TimestampMixin, Base):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     guest_nickname: Mapped[str | None] = mapped_column(String(100), nullable=True)
     guest_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    client_browser: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    client_browser_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    client_os: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    client_os_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     content: Mapped[str] = mapped_column(Text)
     status: Mapped[CommentStatus] = mapped_column(
         String(20),
