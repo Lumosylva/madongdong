@@ -247,8 +247,6 @@ VITE_WEB_BASE_PATH=/
 - 本地开发时，前端分别运行在 `5173`（web）和 `5174`（admin），并通过 Vite `proxy` 代理到 `http://127.0.0.1:8000`。
 - 生产环境部署时，建议前端静态站点由 Nginx/Apache/Caddy 托管，并将 `/api/v1` 反向代理到后端服务。
 - 不建议在源码里写死 `http://127.0.0.1:8000` 之类的后端地址。
-- 前端 `build` 脚本已内置基于配置文件的硬编码扫描，若检测到不允许的 `http://` / `ws://` / `localhost:` / `127.0.0.1:` / 绝对域名拼接会直接失败，防止回归。
-- 扫描规则统一维护在 `scripts/check-hardcoded-urls.config.json`，后续只需改配置即可扩展允许/禁止项。
 
 ### URL 风险扫描说明
 
@@ -294,6 +292,9 @@ VITE_WEB_BASE_PATH=/
 - 增加禁止项：修改 `patterns.deny`
 
 无需修改脚本主体逻辑。
+
+- 前端 `build` 脚本已内置基于配置文件的硬编码扫描，若检测到不允许的 `http://` / `ws://` / `localhost:` / `127.0.0.1:` / 绝对域名拼接会直接失败，防止回归。
+- 扫描规则统一维护在 `scripts/check-hardcoded-urls.config.json`，后续只需改配置即可扩展允许/禁止项。
 
 ---
 
