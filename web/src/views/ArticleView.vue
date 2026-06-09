@@ -178,6 +178,7 @@ import DOMPurify from 'dompurify'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { applySiteMetaFromSetting } from '../site-meta'
 import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { ArticlePageResponse } from '../types'
 
@@ -256,7 +257,7 @@ const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo:
 
 const loadData = async () => {
   data.value = await webApi.getArticle(String(route.params.id))
-  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  applySiteMetaFromSetting(data.value.site)
 }
 
 const hydrateCurrentUser = async () => {

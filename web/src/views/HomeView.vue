@@ -78,7 +78,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { setSiteSetting } from '../site-meta'
+import { applySiteMeta, setSiteSetting } from '../site-meta'
 import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { HomeResponse } from '../types'
 
@@ -105,10 +105,8 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
-const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
-  const title = String(siteTitle || '').trim()
-  const subtitle = String(siteSubtitle || '').trim()
-  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || 'MaDongDong')
+const applyHomeMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
+  applySiteMeta(siteTitle, siteSubtitle, siteLogo)
 
   const iconUrl = toAbsoluteAssetUrl(siteLogo)
   if (!iconUrl) return
@@ -126,7 +124,7 @@ const loadData = async () => {
   data.value = await webApi.getHome(page.value, homePageSize.value)
   friendLinks.value = await webApi.getFriendLinks()
   setSiteSetting(data.value.site)
-  applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  applyHomeMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
 const hydrateWelcomeName = async () => {
