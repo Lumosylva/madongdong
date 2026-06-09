@@ -74,7 +74,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
-import { buildPageTitle } from '../site-meta'
+import { applySiteMetaFromSetting, buildPageTitle } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 
@@ -110,6 +110,7 @@ const loadSiteLogo = async () => {
   try {
     const home = await webApi.getHome(1, 1)
     siteLogoUrl.value = toAbsoluteAssetUrl(home.site.site_logo)
+    applySiteMetaFromSetting(home.site)
   } catch {
     siteLogoUrl.value = ''
   }
