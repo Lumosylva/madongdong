@@ -78,6 +78,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { setSiteSetting } from '../site-meta'
 import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { HomeResponse } from '../types'
 
@@ -124,6 +125,7 @@ const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo:
 const loadData = async () => {
   data.value = await webApi.getHome(page.value, homePageSize.value)
   friendLinks.value = await webApi.getFriendLinks()
+  setSiteSetting(data.value.site)
   applySiteMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
 }
 
