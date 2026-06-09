@@ -130,6 +130,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
+import { buildPageTitle, setSiteSetting } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 type FriendLinkItem = { name: string; url: string; description: string }
@@ -194,11 +195,13 @@ const goSearch = () => {
 const loadData = async () => {
   const [home, friendLinks] = await Promise.all([webApi.getHome(1, 1), webApi.getFriendLinks()])
   data.value = home
+  setSiteSetting(home.site)
   links.value = friendLinks.map((item) => ({
     name: item.name,
     url: item.url,
     description: item.description,
   }))
+  document.title = buildPageTitle('友情链接')
 }
 
 const submitApplication = async () => {
@@ -250,7 +253,7 @@ const submitApplication = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  document.title = '友情链接 - MaDongDong'
+  document.title = buildPageTitle('友情链接')
   await loadData()
 })
 </script>

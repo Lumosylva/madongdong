@@ -116,6 +116,7 @@
 import { onMounted, reactive, ref } from 'vue'
 
 import { webApi } from '../api'
+import { buildPageTitle } from '../site-meta'
 
 const submitting = ref(false)
 const errorMessage = ref('')
@@ -168,6 +169,7 @@ const submitInstall = async () => {
 }
 
 onMounted(() => {
+  document.title = buildPageTitle('安装')
   void checkInstalled()
 })
 </script>
