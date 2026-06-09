@@ -130,7 +130,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
-import { buildPageTitle, setSiteSetting } from '../site-meta'
+import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 type FriendLinkItem = { name: string; url: string; description: string }
@@ -196,6 +196,7 @@ const loadData = async () => {
   const [home, friendLinks] = await Promise.all([webApi.getHome(1, 1), webApi.getFriendLinks()])
   data.value = home
   setSiteSetting(home.site)
+  applySiteMetaFromSetting(home.site)
   links.value = friendLinks.map((item) => ({
     name: item.name,
     url: item.url,
