@@ -1,10 +1,31 @@
 """站点配置业务逻辑。"""
 
+from urllib.parse import urlparse
+
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.site import NavItem, SiteSetting
+
+
+def normalize_site_logo_url(value: str | None) -> str | None:
+    """将站点 Logo URL 规范为站内相对路径，避免 HTTPS 混合内容。"""
+
+    text = str(value or '').strip()
+    if not text:
+        return None
+    if text.startswith('/'):
+        return text
+    if text.startswith('http://') or text.startswith('https://'):
+        parsed = urlparse(text)
+        path = parsed.path or ''
+        if parsed.query:
+            path = f'{path}?{parsed.query}'
+        if parsed.fragment:
+            path = f'{path}#{parsed.fragment}'
+        return path or '/'
+    return text
 
 
 async def get_or_create_site_setting(session: AsyncSession) -> SiteSetting:
@@ -34,7 +55,7 @@ async def update_site_setting(
 
     setting = await get_or_create_site_setting(session)
     setting.site_title = site_title
-    setting.site_logo = site_logo
+    setting.site_logo = normalize_site_logo_url(site_logo)
     setting.site_subtitle = site_subtitle
     setting.icp_beian = icp_beian
     setting.copyright_text = copyright_text
