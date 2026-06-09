@@ -1,24 +1,30 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const repoRoot = path.resolve(new URL('..', import.meta.url).pathname)
-const configPath = path.join(repoRoot, 'scripts', 'check-hardcoded-urls.config.json')
+const scriptUrl = new URL(import.meta.url)
+const scriptDir = path.dirname(fileURLToPath(scriptUrl))
+const repoRoot = path.resolve(scriptDir, '..')
+const configPath = path.resolve(scriptDir, 'check-hardcoded-urls.config.json')
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
-const scanRoots = config.scan?.include ?? []
+const scanRoots = (config.scan?.include ?? []).map((root) => path.resolve(repoRoot, root))
 const ignoreDirs = new Set(config.scan?.exclude ?? [])
 const extensions = new Set(config.scan?.extensions ?? [])
-const allowedPatterns = (config.patterns?.allow ?? []).map((value) => new RegExp(value, 'i'))
+const allowedPatterns = (config.patterns?.allow ?? []).map((value) => String(value).toLowerCase())
 const riskyPatterns = (config.patterns?.deny ?? []).map((item) => ({
   name: item.name,
   pattern: new RegExp(item.pattern, 'i'),
 }))
 const matches = []
 
+const normalizeSlashes = (value) => value.replace(/\\/g, '/')
+
 const shouldScanFile = (filePath) => {
-  const lower = filePath.toLowerCase()
-  if (lower.includes(`${path.sep}dist${path.sep}`) || lower.includes(`${path.sep}node_modules${path.sep}`) || lower.includes(`${path.sep}.git${path.sep}`)) return false
-  return [...extensions].some((ext) => lower.endsWith(ext))
+  const relativePath = path.relative(repoRoot, filePath)
+  const normalized = normalizeSlashes(relativePath).toLowerCase()
+  if (normalized.includes('/dist/') || normalized.includes('/node_modules/') || normalized.includes('/.git/')) return false
+  return [...extensions].some((ext) => normalized.endsWith(ext.toLowerCase()))
 }
 
 const isIgnoredLine = (line) => {
@@ -28,13 +34,17 @@ const isIgnoredLine = (line) => {
   return false
 }
 
-const shouldIgnoreMatch = (line) => allowedPatterns.some((pattern) => pattern.test(line))
+const shouldIgnoreMatch = (line) => {
+  const normalizedLine = line.toLowerCase()
+  return allowedPatterns.some((pattern) => normalizedLine.includes(pattern))
+}
 
 const walk = (dir) => {
   if (!fs.existsSync(dir)) return
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (ignoreDirs.has(entry.name)) continue
     const fullPath = path.join(dir, entry.name)
+    const relativeDir = path.relative(repoRoot, fullPath)
     if (entry.isDirectory()) {
       walk(fullPath)
       continue
@@ -47,12 +57,14 @@ const walk = (dir) => {
       if (shouldIgnoreMatch(line)) return
       const hit = riskyPatterns.find((item) => item.pattern.test(line))
       if (!hit) return
-      matches.push(`${path.relative(repoRoot, fullPath)}:${index + 1}: [${hit.name}] ${line.trim()}`)
+      const normalizedLine = line.toLowerCase()
+      if (allowedPatterns.some((pattern) => normalizedLine.includes(pattern))) return
+      matches.push(`${normalizeSlashes(relativeDir)}:${index + 1}: [${hit.name}] ${line.trim()}`)
     })
   }
 }
 
-for (const root of scanRoots) walk(path.join(repoRoot, root))
+for (const root of scanRoots) walk(root)
 
 if (matches.length) {
   console.error('Found risky hardcoded network URLs that may break HTTPS migration:')

@@ -83,7 +83,7 @@ export const webApi = {
     return request<Array<{ id: number; name: string; url: string; description: string; created_at: string }>>('/web/friend-links')
   },
   submitFriendLink(payload: { name: string; url: string; description: string; email: string }) {
-    const normalizedUrl = payload.url.trim().startsWith('http://') || payload.url.trim().startsWith('https://')
+    const normalizedUrl = payload.url.trim().startsWith('http')
       ? payload.url.trim()
       : `https://${payload.url.trim()}`
     return request<{ id: number; name: string; url: string; description: string; created_at: string }>('/web/friend-links', {

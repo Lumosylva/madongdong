@@ -10,7 +10,13 @@
       "http://localhost:5173",
       "http://localhost:5174",
       "http://127.0.0.1:5173",
-      "http://127.0.0.1:5174"
+      "http://127.0.0.1:5174",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173",
+      "http://localhost:4174",
+      "http://127.0.0.1:4174",
+      "https://picsum.photos/seed/md-editor-probe/800/400",
+      "text.startswith('http://') or text.startswith('https://')"
     ],
     "deny": [
       {
@@ -31,7 +37,7 @@
       },
       {
         "name": "absolute domain",
-        "pattern": "(?:https?:\\/\\/)?(?:[a-z0-9-]+\\.)+[a-z]{2,}(?::\\d+)?(?:\\/[^\\s\"'`)]*)?"
+        "pattern": "(?:https?:\\/\\/)?(?:[a-z0-9-]+\\.)+[a-z]{2,}(?::\\d+)?\\/[^\\s\"'`)]*"
       }
     ]
   }

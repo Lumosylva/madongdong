@@ -17,7 +17,7 @@ class FriendLinkApplicationRequest(BaseModel):
         text = str(value or '').strip()
         if not text:
             raise ValueError('请输入有效的站点地址')
-        if not text.startswith(('http://', 'https://')):
+        if not (text.startswith('http://') or text.startswith('https://')):
             text = f'https://{text}'
         return text
 
@@ -38,7 +38,7 @@ class FriendLinkAdminUpdateRequest(BaseModel):
         text = str(value or '').strip()
         if not text:
             raise ValueError('请输入有效的站点地址')
-        if not text.startswith(('http://', 'https://')):
+        if not (text.startswith('http://') or text.startswith('https://')):
             text = f'https://{text}'
         return text
 

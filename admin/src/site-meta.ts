@@ -1,4 +1,8 @@
-import type { SiteSetting } from './types'
+type SiteSetting = {
+  site_title: string
+  site_subtitle: string | null
+  site_logo: string | null
+}
 
 let siteSetting: SiteSetting | null = null
 

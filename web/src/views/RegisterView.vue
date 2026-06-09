@@ -74,7 +74,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
-import { buildPageTitle, getSiteTitle } from '../site-meta'
+import { buildPageTitle } from '../site-meta'
 
 type ThemeMode = 'light' | 'dark'
 

@@ -660,7 +660,6 @@ const normalizeAssetUrl = (url: string | null | undefined) => {
 }
 
 const applyAdminMeta = () => {
-  const titleText = String(siteTitle.value || '').trim() || 'MadongDong Admin'
   document.title = buildPageTitle('仪表盘')
 
   if (!siteLogo.value) return
