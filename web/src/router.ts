@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import AboutView from './views/AboutView.vue'
 import ArchiveView from './views/ArchiveView.vue'
 import ArticleView from './views/ArticleView.vue'
 import CategoriesView from './views/CategoriesView.vue'
@@ -80,6 +81,12 @@ export const router = createRouter({
       name: 'archive',
       component: ArchiveView,
       meta: { title: '归档' },
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
+      meta: { title: 'About' },
     },
   ],
 })

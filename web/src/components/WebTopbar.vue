@@ -30,6 +30,7 @@
       </RouterLink>
       <RouterLink to="/categories" :class="{ active: isActive('/categories') }">分类</RouterLink>
       <RouterLink to="/archive" :class="{ active: isActive('/archive') }">归档</RouterLink>
+      <RouterLink to="/about" :class="{ active: isActive('/about') }">关于</RouterLink>
     </nav>
 
     <div class="topbar-right">
@@ -82,6 +83,7 @@
         <RouterLink to="/categories" :class="{ active: isActive('/categories') }" @click="mobileMenuOpen = false">分类</RouterLink>
         <RouterLink to="/archive" :class="{ active: isActive('/archive') }" @click="mobileMenuOpen = false">归档</RouterLink>
         <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
+        <RouterLink to="/about" :class="{ active: isActive('/about') }" @click="mobileMenuOpen = false">关于</RouterLink>
       </nav>
     </aside>
   </transition>
