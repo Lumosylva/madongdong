@@ -149,3 +149,18 @@ export type ArchiveResponse = {
   total: number
   archive: ArchiveYearGroup[]
 }
+
+export type CategoryWithCount = {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  article_count: number
+}
+
+export type CategoriesResponse = {
+  site: SiteSetting
+  nav_items: NavItem[]
+  total_articles: number
+  categories: CategoryWithCount[]
+}

@@ -1,4 +1,4 @@
-import type { ArchiveResponse, ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
+import type { ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
 import { resolveAssetUrl } from '../../assets'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
@@ -43,6 +43,9 @@ export const webApi = {
   },
   getArchive(): Promise<ArchiveResponse> {
     return request<ArchiveResponse>('/web/archive')
+  },
+  getCategories(): Promise<CategoriesResponse> {
+    return request<CategoriesResponse>('/web/categories')
   },
   getInstallStatus(): Promise<{ success: boolean; data: { installed: boolean; initialized: boolean } }> {
     return request('/install/status')

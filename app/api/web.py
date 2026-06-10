@@ -13,11 +13,12 @@ from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
-from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
+from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_username, register_reader_user
 from app.services.comment import create_comment
 from app.services.web import (
     get_archive_data,
+    get_categories_page_data,
     get_category_page_data,
     get_homepage_data,
     get_prev_next_published_articles,
@@ -45,6 +46,14 @@ async def archive(
 ) -> ArchiveResponse:
     data = await get_archive_data(session)
     return ArchiveResponse.model_validate(data)
+
+
+@router.get("/categories", summary="获取分类索引数据")
+async def categories_index(
+    session: AsyncSession = Depends(get_db_session),
+) -> CategoriesResponse:
+    data = await get_categories_page_data(session)
+    return CategoriesResponse.model_validate(data)
 
 
 @router.get("/articles/{article_id}", summary="获取前台文章详情")

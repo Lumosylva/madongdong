@@ -271,6 +271,44 @@ async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_si
     }
 
 
+async def get_categories_page_data(session: AsyncSession) -> dict:
+    """获取分类索引页数据，含各分类已发布文章数量。"""
+
+    site = await get_or_create_site_setting(session)
+    nav_items = await list_nav_items(session, visible_only=True)
+
+    cats_result = await session.execute(select(Category).order_by(Category.name.asc()))
+    categories = list(cats_result.scalars().all())
+
+    count_result = await session.execute(
+        select(Article.category_id, func.count(Article.id).label("cnt"))
+        .where(Article.status == ArticleStatus.PUBLISHED)
+        .group_by(Article.category_id)
+    )
+    count_map: dict[int, int] = {row.category_id: row.cnt for row in count_result.all()}
+
+    cats_with_count = sorted(
+        [
+            {
+                "id": c.id,
+                "name": c.name,
+                "slug": c.slug,
+                "description": c.description,
+                "article_count": count_map.get(c.id, 0),
+            }
+            for c in categories
+        ],
+        key=lambda x: (-x["article_count"], x["name"]),
+    )
+
+    return {
+        "site": site,
+        "nav_items": nav_items,
+        "total_articles": sum(count_map.values()),
+        "categories": cats_with_count,
+    }
+
+
 async def get_archive_data(session: AsyncSession) -> dict:
     """获取归档数据，按年份、月份分组。"""
 

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import ArchiveView from './views/ArchiveView.vue'
 import ArticleView from './views/ArticleView.vue'
+import CategoriesView from './views/CategoriesView.vue'
 import HomeView from './views/HomeView.vue'
 import SearchView from './views/SearchView.vue'
 import CategoryView from './views/CategoryView.vue'
@@ -67,6 +68,12 @@ export const router = createRouter({
       name: 'friend-links',
       component: FriendLinksView,
       meta: { title: '友情链接' },
+    },
+    {
+      path: '/categories',
+      name: 'categories',
+      component: CategoriesView,
+      meta: { title: '分类' },
     },
     {
       path: '/archive',

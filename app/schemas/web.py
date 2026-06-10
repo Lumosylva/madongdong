@@ -104,3 +104,22 @@ class ArchiveResponse(BaseModel):
     nav_items: list[NavItemResponse]
     total: int
     archive: list[ArchiveYearGroup]
+
+
+class CategoryWithCountResponse(BaseModel):
+    """带文章数量的分类响应。"""
+
+    id: int
+    name: str
+    slug: str
+    description: str | None
+    article_count: int
+
+
+class CategoriesResponse(BaseModel):
+    """分类索引页响应。"""
+
+    site: SiteSettingResponse
+    nav_items: list[NavItemResponse]
+    total_articles: int
+    categories: list[CategoryWithCountResponse]
