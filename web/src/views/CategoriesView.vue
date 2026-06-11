@@ -244,10 +244,12 @@ onMounted(() => {
 .categories-hero {
   position: relative;
   margin-bottom: 14px;
-  padding: 18px 24px 16px;
-  border-radius: 16px;
+  padding: 18px 32px 16px;
+  border-radius: 0;
   border: none;
   background: var(--bg-panel);
+  margin-left: -32px;
+  margin-right: -32px;
   overflow: hidden;
 }
 
@@ -356,7 +358,7 @@ onMounted(() => {
   padding: 10px 14px;
   border-radius: 12px;
   background: rgba(14, 165, 164, 0.07);
-  border: 1px solid rgba(14, 165, 164, 0.14);
+  border: none;
 }
 
 .categories-metric-card strong {
@@ -392,10 +394,10 @@ onMounted(() => {
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px 12px;
-  border-radius: 14px;
+  border-radius: 0;
   border: none;
   background: var(--bg-panel);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   overflow: hidden;
   color: var(--text);
   cursor: pointer;
@@ -410,7 +412,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  border-radius: 14px 14px 0 0;
+  border-radius: 0;
   background: linear-gradient(90deg, var(--accent), #38bdf8);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -455,8 +457,8 @@ onMounted(() => {
   place-items: center;
   font-size: 15px;
   font-weight: 800;
-  color: #04111d;
-  background: linear-gradient(135deg, var(--accent), #38bdf8);
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.6), rgba(56, 189, 248, 0.6));
   flex: 0 0 auto;
 }
 
@@ -759,7 +761,9 @@ onMounted(() => {
 
 @media (max-width: 960px) {
   .categories-hero {
-    padding: 14px 16px 12px;
+    padding: 14px 24px 12px;
+    margin-left: -24px;
+    margin-right: -24px;
   }
 
   .categories-hero::after {

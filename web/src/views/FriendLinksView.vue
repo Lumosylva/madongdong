@@ -18,6 +18,10 @@
 
     <main class="friend-links-layout">
       <section class="friend-links-card friend-links-card-wide friend-links-hero">
+        <RouterLink to="/" class="friend-links-back-link">
+          <svg class="friend-links-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          返回首页
+        </RouterLink>
         <h2>友情链接</h2>
         <p class="friend-links-hero-text">
           欢迎与本站交换优质链接。我们优先接受内容健康、更新稳定、排版清晰的网站申请，
@@ -299,6 +303,29 @@ onMounted(async () => {
   gap: 24px;
 }
 
+.friend-links-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 12px;
+  color: var(--text-soft);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.18s ease, gap 0.18s ease;
+}
+
+.friend-links-back-link:hover {
+  color: var(--accent);
+  gap: 7px;
+}
+
+.friend-links-back-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: block;
+}
+
 .friend-links-card {
   padding: 0 2px;
 }
@@ -357,7 +384,7 @@ onMounted(async () => {
   padding: 14px;
   border-radius: 18px;
   background: var(--bg-soft);
-  border: 1px solid var(--line);
+  border: none;
 }
 
 .friend-links-metric-inline {
@@ -406,7 +433,7 @@ onMounted(async () => {
 .friend-links-action-btn.secondary {
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--line);
+  border: none;
   box-shadow: none;
 }
 
@@ -454,7 +481,7 @@ onMounted(async () => {
   padding: 18px;
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.45));
-  border: 1px solid var(--line);
+  border: none;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 

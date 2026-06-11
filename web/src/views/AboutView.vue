@@ -123,11 +123,10 @@ onMounted(async () => {
 
 .about-hero {
   position: relative;
-  padding: 18px 24px 16px;
+  padding: 10px 2px 2px;
   border-radius: 0;
   border: none;
-  background: var(--bg-panel);
-  margin: 0 -24px;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -199,7 +198,7 @@ onMounted(async () => {
 .about-panel {
   padding: 18px 20px;
   border: none;
-  border-radius: 14px;
+  border-radius: 0;
   background: var(--bg-panel);
 }
 
@@ -274,7 +273,7 @@ onMounted(async () => {
 @media (max-width: 960px) {
   .about-hero {
     grid-template-columns: 1fr;
-    padding: 14px 16px 12px;
+    padding: 8px 0 0;
   }
 
   .about-grid {
