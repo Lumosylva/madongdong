@@ -15,6 +15,7 @@ wheels/
 .mypy_cache/
 .git
 .idea
+scripts
 警告处理方式.md
 首次初始化设计.md
 全站 https 访问分析.md
