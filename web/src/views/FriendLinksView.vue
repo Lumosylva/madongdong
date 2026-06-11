@@ -480,13 +480,18 @@ onMounted(async () => {
   gap: 14px;
   padding: 18px;
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.45));
+  background: var(--bg-soft);
   border: none;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 :global([data-theme='dark']) .friend-link-item {
-  background: linear-gradient(180deg, rgba(10, 24, 44, 0.8), rgba(10, 24, 44, 0.58));
+  background: #0a1829;
+}
+
+:global([data-theme='dark']) .friend-link-item:hover {
+  background: #0e2035;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.3);
 }
 
 .friend-link-item:hover {

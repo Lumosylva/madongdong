@@ -35,7 +35,7 @@ undefined
   display: none;
 }
 
-:global([data-theme='dark']) .comment-client-meta {
+:root[data-theme='dark'] .comment-client-meta {
   color: color-mix(in srgb, var(--text-soft) 88%, white 12%);
 }
 

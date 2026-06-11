@@ -888,6 +888,19 @@ a {
   font-weight: 700;
 }
 
+.comment-form button:disabled {
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--text-soft);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+:root[data-theme='dark'] .comment-form button:disabled {
+  background: #1e3a5f !important;
+  color: #e2e8f0 !important;
+  cursor: not-allowed;
+}
+
 .search-trigger,
 .search-submit-inside,
 .theme-toggle {
