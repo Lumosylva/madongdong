@@ -1,11 +1,11 @@
 <template>
   <section class="panel profile-panel">
-    <div class="article-manage-head profile-head">
+    <div class="profile-head">
       <div>
         <h3>个人中心</h3>
         <p class="profile-subtitle">管理头像、昵称、联系信息和登录密码</p>
       </div>
-      <span class="article-count profile-count">{{ user?.username || '-' }}</span>
+      <span class="profile-count">{{ user?.username || '-' }}</span>
     </div>
 
     <div class="profile-stack">
