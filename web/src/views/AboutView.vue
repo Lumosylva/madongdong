@@ -101,6 +101,7 @@ onMounted(async () => {
 <style scoped>
 .about-page {
   position: relative;
+  padding-top: 10px;
 }
 
 .about-page::before {
@@ -109,8 +110,8 @@ onMounted(async () => {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 10% 10%, rgba(14, 165, 164, 0.12), transparent 24%),
-    radial-gradient(circle at 92% 12%, rgba(234, 154, 24, 0.1), transparent 20%);
+    radial-gradient(circle at 12% 10%, rgba(14, 165, 164, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 8%, rgba(234, 154, 24, 0.1), transparent 18%);
   z-index: 0;
 }
 
@@ -123,7 +124,7 @@ onMounted(async () => {
 
 .about-hero {
   position: relative;
-  padding: 10px 2px 2px;
+  padding: 10px 24px 2px;
   border-radius: 0;
   border: none;
   background: transparent;
@@ -155,17 +156,6 @@ onMounted(async () => {
   display: block;
 }
 
-.about-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 6% 68%, rgba(14, 165, 164, 0.12), transparent 34%),
-    radial-gradient(circle at 95% 14%, rgba(234, 154, 24, 0.08), transparent 28%);
-}
-
 .about-eyebrow {
   margin: 0 0 6px;
   color: var(--accent);
@@ -177,15 +167,15 @@ onMounted(async () => {
 
 .about-title {
   margin: 0 0 6px;
-  font-size: clamp(26px, 4vw, 36px);
-  line-height: 1.05;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
   font-weight: 800;
 }
 
 .about-lead {
   margin: 0;
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -196,7 +186,7 @@ onMounted(async () => {
 }
 
 .about-panel {
-  padding: 18px 20px;
+  padding: 24px;
   border: none;
   border-radius: 0;
   background: var(--bg-panel);
@@ -273,7 +263,7 @@ onMounted(async () => {
 @media (max-width: 960px) {
   .about-hero {
     grid-template-columns: 1fr;
-    padding: 8px 0 0;
+    padding: 8px 16px 0;
   }
 
   .about-grid {
@@ -286,7 +276,7 @@ onMounted(async () => {
   }
 
   .about-panel {
-    padding: 14px 16px;
+    padding: 20px 16px;
   }
 
   .about-contact-card strong {
