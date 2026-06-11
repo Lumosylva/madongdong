@@ -340,12 +340,41 @@ const setArticleSubView = (subView: ArticleSubView) => {
   if (subView === 'create') {
     editingArticleId.value = null
     editingArticleTitle.value = ''
-    title.value = ''
-    coverUrl.value = ''
-    contentMarkdown.value = ''
-    tagIdsText.value = ''
-    action.value = 'draft'
-    clearArticleDraft()
+    const savedDraftRaw = localStorage.getItem(articleDraftStorageKey)
+    if (savedDraftRaw) {
+      try {
+        const savedDraft = JSON.parse(savedDraftRaw) as {
+          title?: string
+          coverUrl?: string
+          contentMarkdown?: string
+          categoryId?: number
+          tagIdsText?: string
+          action?: 'draft' | 'submit' | 'publish'
+        }
+        if (typeof savedDraft.title === 'string') title.value = savedDraft.title
+        if (typeof savedDraft.coverUrl === 'string') coverUrl.value = savedDraft.coverUrl
+        if (typeof savedDraft.contentMarkdown === 'string') contentMarkdown.value = savedDraft.contentMarkdown
+        if (typeof savedDraft.categoryId === 'number') categoryId.value = savedDraft.categoryId
+        if (typeof savedDraft.tagIdsText === 'string') tagIdsText.value = savedDraft.tagIdsText
+        if (savedDraft.action) action.value = savedDraft.action
+        articleDraftSavedAt.value = null
+        articleDraftSessionSaved.value = true
+      } catch {
+        title.value = ''
+        coverUrl.value = ''
+        contentMarkdown.value = ''
+        tagIdsText.value = ''
+        action.value = 'draft'
+        clearArticleDraft()
+      }
+    } else {
+      title.value = ''
+      coverUrl.value = ''
+      contentMarkdown.value = ''
+      tagIdsText.value = ''
+      action.value = 'draft'
+      clearArticleDraft()
+    }
     resetArticleEditorState()
   }
   articleSubView.value = subView
