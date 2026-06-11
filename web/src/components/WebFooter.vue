@@ -32,7 +32,7 @@ defineProps<{
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--accent);
+  color: var(--text);
   padding: 8px 2px;
   position: relative;
 }
