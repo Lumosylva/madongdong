@@ -50,7 +50,10 @@
           <div v-if="accountMenuOpen" class="account-dropdown">
             <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
             <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
-            <button v-else type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+            <template v-else>
+              <RouterLink to="/profile" class="dropdown-item" @click="accountMenuOpen = false">个人中心</RouterLink>
+              <button type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+            </template>
           </div>
         </transition>
       </div>

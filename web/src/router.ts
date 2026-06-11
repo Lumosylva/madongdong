@@ -12,6 +12,7 @@ import RegisterView from './views/RegisterView.vue'
 import LoginView from './views/LoginView.vue'
 import FriendLinksView from './views/FriendLinksView.vue'
 import InstallView from './views/InstallView.vue'
+import ProfileView from './views/ProfileView.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -87,6 +88,12 @@ export const router = createRouter({
       name: 'about',
       component: AboutView,
       meta: { title: 'About' },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: ProfileView,
+      meta: { title: '个人中心' },
     },
   ],
 })

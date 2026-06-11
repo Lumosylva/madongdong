@@ -8,13 +8,13 @@ from app.core.database import get_db_session
 from app.core.security import create_access_token, get_current_user, get_current_user_optional, verify_password
 from app.models.auth import User
 from app.models.friend_link import FriendLink
-from app.schemas.auth import CurrentUserResponse, LoginRequest, ReaderRegisterRequest, TokenResponse
+from app.schemas.auth import CurrentUserResponse, LoginRequest, ProfileUpdateRequest, ReaderRegisterRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
 from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
-from app.services.auth import get_user_by_username, register_reader_user
+from app.services.auth import get_user_by_username, register_reader_user, update_current_user_profile
 from app.services.comment import create_comment
 from app.services.web import (
     get_archive_data,
@@ -215,4 +215,24 @@ async def reader_me(
     if 'reader' not in role_names:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台使用')
     return CurrentUserResponse.model_validate(current_user)
+
+
+@router.put('/auth/me', summary='更新前台当前登录用户资料')
+async def reader_update_me(
+    payload: ProfileUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> CurrentUserResponse:
+    role_names = {str(role.name or '').strip().lower() for role in current_user.roles}
+    if 'reader' not in role_names:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台使用')
+    user = await update_current_user_profile(
+        session,
+        current_user,
+        nickname=payload.nickname,
+        email=payload.email,
+        avatar=payload.avatar,
+        password=payload.password,
+    )
+    return CurrentUserResponse.model_validate(user)
 

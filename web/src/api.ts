@@ -115,6 +115,28 @@ export const webApi = {
       throw new Error(text || '请求失败')
     }
 
-    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string }>
+    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
+  },
+  async updateCurrentWebUser(payload: { nickname: string; email: string; avatar?: string | null; password?: string | null }) {
+    const token = getToken()
+    if (!token) {
+      throw new Error('未登录')
+    }
+
+    const response = await fetch(`${API_BASE}/web/auth/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(text || '请求失败')
+    }
+
+    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
   },
 }
