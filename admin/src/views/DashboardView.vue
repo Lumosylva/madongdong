@@ -14,9 +14,6 @@
         </div>
       </a>
       <div class="topbar-actions">
-        <button type="button" class="theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
-        </button>
         <div class="user-menu" ref="userMenuRef">
           <button type="button" class="user-trigger" @click="toggleUserMenu">
             <span class="user-name">{{ displayName }}</span>
@@ -150,7 +147,6 @@ import UserManagementPanel from '../components/UserManagementPanel.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
 import type { AdminUser, FriendLinkItem } from '../types'
 
-type ThemeMode = 'light' | 'dark'
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'friend-links' | 'users' | 'profile' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create' | 'edit' | 'category'
 type ContentViewKey =
@@ -217,7 +213,6 @@ const articleDraftSessionSaved = ref(false)
 const editingArticleId = ref<number | null>(null)
 const editingArticleTitle = ref('')
 
-const theme = ref<ThemeMode>('light')
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
 const logoUploading = ref(false)
@@ -357,20 +352,6 @@ const setArticleSubView = (subView: ArticleSubView) => {
   currentView.value = 'articles'
   articleFlyoutOpen.value = false
 }
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-admin-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
-
-const themeToggleLabel = computed(() =>
-  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
-)
 
 const isAdmin = computed(() =>
   currentUser.value?.roles.some((role) => role.name === 'admin' || role.name === '系统管理员') ?? false,
@@ -1318,9 +1299,7 @@ const createArticle = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-admin-theme')
   const storedSidebarState = localStorage.getItem('md-admin-sidebar-collapsed')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
   isSidebarCollapsed.value = storedSidebarState === '1'
   await loadAll()
   action.value = isAdmin.value ? 'publish' : 'submit'

@@ -1,49 +1,29 @@
 <template>
   <router-view />
-  <transition name="scroll-top-fade">
-    <button v-if="showScrollTop" class="scroll-top-btn" type="button" aria-label="回到顶部" @click="scrollToTop">
-      ↑
-    </button>
-  </transition>
+  <FloatingTools :theme="theme" @toggle-theme="toggleTheme" />
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
-const scrollTop = ref(0)
-const showScrollTop = ref(false)
-let hideTimer: number | null = null
+import FloatingTools from './components/FloatingTools.vue'
 
-const updateScrollTop = () => {
-  scrollTop.value = window.scrollY || document.documentElement.scrollTop || 0
-  if (scrollTop.value > 320) {
-    showScrollTop.value = true
-    if (hideTimer) {
-      window.clearTimeout(hideTimer)
-      hideTimer = null
-    }
-  } else if (!hideTimer) {
-    hideTimer = window.setTimeout(() => {
-      showScrollTop.value = false
-      hideTimer = null
-    }, 220)
-  }
+type ThemeMode = 'light' | 'dark'
+
+const theme = ref<ThemeMode>('light')
+
+const applyTheme = (value: ThemeMode) => {
+  theme.value = value
+  document.documentElement.dataset.theme = value
+  localStorage.setItem('md-admin-theme', value)
 }
 
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+const toggleTheme = () => {
+  applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 onMounted(() => {
-  updateScrollTop()
-  window.addEventListener('scroll', updateScrollTop, { passive: true })
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', updateScrollTop)
-  if (hideTimer) {
-    window.clearTimeout(hideTimer)
-    hideTimer = null
-  }
+  const storedTheme = localStorage.getItem('md-admin-theme')
+  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
 })
 </script>

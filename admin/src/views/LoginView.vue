@@ -7,11 +7,7 @@
           <h1>MaDongDong仪表盘</h1>
         </div>
       </div>
-      <div class="topbar-actions">
-        <button type="button" class="theme-toggle login-theme-toggle" :aria-label="themeToggleLabel" @click="toggleTheme">
-          <span aria-hidden="true">{{ theme === 'light' ? '◐' : '☼' }}</span>
-        </button>
-      </div>
+      <div class="topbar-actions"></div>
     </header>
 
     <div class="login-stage">
@@ -86,13 +82,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { adminApi } from '../api'
 import { buildPageTitle } from '../site-meta'
-
-type ThemeMode = 'light' | 'dark'
 
 const router = useRouter()
 const username = ref('admin')
@@ -100,21 +94,6 @@ const password = ref('admin123456')
 const loading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
-const theme = ref<ThemeMode>('light')
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-admin-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
-
-const themeToggleLabel = computed(() =>
-  theme.value === 'light' ? '切换为暗色主题' : '切换为白天主题',
-)
 
 const applyTitle = () => {
   document.title = buildPageTitle('登录')
@@ -142,8 +121,6 @@ const submit = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-admin-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
   applyTitle()
 
   const token = localStorage.getItem('blog_admin_token')
