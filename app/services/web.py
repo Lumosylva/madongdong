@@ -287,19 +287,16 @@ async def get_categories_page_data(session: AsyncSession) -> dict:
     )
     count_map: dict[int, int] = {row.category_id: row.cnt for row in count_result.all()}
 
-    cats_with_count = sorted(
-        [
-            {
-                "id": c.id,
-                "name": c.name,
-                "slug": c.slug,
-                "description": c.description,
-                "article_count": count_map.get(c.id, 0),
-            }
-            for c in categories
-        ],
-        key=lambda x: (-int(x["article_count"]), str(x["name"])),
-    )
+    cats_with_count = [
+        {
+            "id": c.id,
+            "name": c.name,
+            "slug": c.slug,
+            "description": c.description,
+            "article_count": count_map.get(c.id, 0),
+        }
+        for c in sorted(categories, key=lambda c: (-count_map.get(c.id, 0), c.name))
+    ]
 
     return {
         "site": site,
