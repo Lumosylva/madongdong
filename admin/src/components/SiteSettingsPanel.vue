@@ -1,6 +1,11 @@
 <template>
   <section class="panel settings-panel">
-    <h3>站点设置</h3>
+    <div class="settings-head">
+      <div>
+        <h3>站点设置</h3>
+        <p>管理站点品牌信息、页脚内容与全局配置</p>
+      </div>
+    </div>
 
     <div class="settings-grid">
       <section class="settings-card">
