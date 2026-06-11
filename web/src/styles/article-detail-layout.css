@@ -423,6 +423,10 @@
     grid-template-columns: 1fr;
   }
 
+  .comment-inputs-row {
+    grid-template-columns: 1fr;
+  }
+
   .jump-comment-btn {
     justify-self: start;
   }
