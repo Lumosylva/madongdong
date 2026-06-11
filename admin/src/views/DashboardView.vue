@@ -588,6 +588,7 @@ const activePanelListeners = computed(() => {
       return {
         approve: approveComment,
         reject: rejectComment,
+        delete: deleteComment,
         'bulk-approve': bulkApproveComments,
         'bulk-reject': bulkRejectComments,
         'bulk-delete': bulkDeleteComments,
@@ -860,6 +861,12 @@ const rejectComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'REJECTED') return
   await adminApi.rejectComment(commentId)
+  await loadAll()
+}
+
+const deleteComment = async (commentId: number) => {
+  if (!confirm('确认删除该条评论？删除后无法恢复。')) return
+  await adminApi.deleteComments([commentId])
   await loadAll()
 }
 

@@ -1,22 +1,22 @@
 <template>
   <section class="panel comments-panel">
-    <div class="article-manage-head comments-head">
+    <div class="comments-head">
       <div>
         <h3>评论管理</h3>
         <p class="comments-subtitle">集中审核文章评论，维护社区内容质量</p>
       </div>
-      <span class="article-count comments-count">共 {{ displayComments.length }} 条</span>
+      <span class="comments-count">共 {{ displayComments.length }} 条</span>
     </div>
 
-    <div class="action-row comments-filter-row">
-      <input class="article-search-input comments-search-input" v-model="keyword" placeholder="按评论内容或文章标题搜索" />
-      <select class="article-filter-select comments-filter-select" v-model="statusFilter">
+    <div class="comments-filter-row">
+      <input class="comments-search-input" v-model="keyword" placeholder="按评论内容或文章标题搜索" />
+      <select class="comments-filter-select" v-model="statusFilter">
         <option value="all">全部状态</option>
         <option value="APPROVED">已通过</option>
         <option value="PENDING">待审核</option>
         <option value="REJECTED">已拒绝</option>
       </select>
-      <select class="article-filter-select comments-filter-select" v-model="sortOrder">
+      <select class="comments-filter-select" v-model="sortOrder">
         <option value="newest">评论时间：最新优先</option>
         <option value="oldest">评论时间：最早优先</option>
       </select>
@@ -29,9 +29,9 @@
         <span>全选当前页</span>
       </label>
       <div class="comments-bulk-actions">
-        <button type="button" :disabled="!hasSelectedPending" @click="bulkApproveSelected">批量通过</button>
-        <button type="button" class="danger-btn" :disabled="!hasSelectedPending" @click="bulkRejectSelected">批量拒绝</button>
-        <button v-if="statusFilter === 'REJECTED'" type="button" class="danger-btn" :disabled="!hasSelectedRejected" @click="openBulkDeleteConfirm">批量删除</button>
+        <button type="button" class="cm-btn cm-btn-approve" :disabled="!hasSelectedPending" @click="bulkApproveSelected">批量通过</button>
+        <button type="button" class="cm-btn cm-btn-reject" :disabled="!hasSelectedPending" @click="bulkRejectSelected">批量拒绝</button>
+        <button type="button" class="cm-btn cm-btn-delete" :disabled="!hasSelectedRejected" @click="openBulkDeleteConfirm">批量删除</button>
       </div>
     </div>
 
@@ -69,8 +69,9 @@
           </div>
         </div>
         <div class="comments-actions">
-          <button v-if="!isApproved(item.status) && !isRejected(item.status)" type="button" @click="$emit('approve', item.id)">通过</button>
-          <button v-if="!isRejected(item.status)" type="button" class="danger-btn" @click="openRejectConfirm(item)">拒绝</button>
+          <button v-if="!isApproved(item.status) && !isRejected(item.status)" type="button" class="cm-btn cm-btn-approve" @click="$emit('approve', item.id)">通过</button>
+          <button v-if="!isRejected(item.status)" type="button" class="cm-btn cm-btn-reject" @click="openRejectConfirm(item)">拒绝</button>
+          <button type="button" class="cm-btn cm-btn-delete" @click="$emit('delete', item.id)">删除</button>
         </div>
       </article>
 
@@ -117,9 +118,9 @@
         </div>
 
         <div class="comment-modal-actions">
-          <button type="button" class="comment-modal-cancel" @click="closeActiveConfirm">取消</button>
-          <button v-if="bulkDeleteConfirmOpen" type="button" class="comment-modal-confirm danger-btn" @click="confirmBulkDelete">确认删除</button>
-          <button v-else type="button" class="comment-modal-confirm danger-btn" @click="confirmReject">确认拒绝</button>
+          <button type="button" class="cm-btn" @click="closeActiveConfirm">取消</button>
+          <button v-if="bulkDeleteConfirmOpen" type="button" class="cm-btn cm-btn-delete" @click="confirmBulkDelete">确认删除</button>
+          <button v-else type="button" class="cm-btn cm-btn-reject" @click="confirmReject">确认拒绝</button>
         </div>
       </div>
     </div>
@@ -148,6 +149,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   approve: [commentId: number]
   reject: [commentId: number]
+  delete: [commentId: number]
   'bulk-approve': [commentIds: number[]]
   'bulk-reject': [commentIds: number[]]
   'bulk-delete': [commentIds: number[]]
