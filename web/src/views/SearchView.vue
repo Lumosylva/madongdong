@@ -2,6 +2,7 @@
   <div class="search-page unified-list-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -15,7 +16,10 @@
     />
 
     <header class="list-page-header">
-      <RouterLink to="/" class="back-link list-page-back">← 首页</RouterLink>
+      <RouterLink to="/" class="back-link list-page-back">
+        <svg class="list-page-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        返回首页
+      </RouterLink>
       <div class="list-page-title-wrap">
         <p class="list-page-eyebrow">搜索结果</p>
         <h1 class="list-page-title">{{ data.keyword }}</h1>

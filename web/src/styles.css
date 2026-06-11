@@ -1468,9 +1468,10 @@ a {
 .list-page-header,
 .search-header {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  flex-direction: column;
+  gap: 4px;
   margin-bottom: 16px;
+  padding: 16px 24px 0;
 }
 
 .list-page-header {
@@ -1478,7 +1479,26 @@ a {
 }
 
 .list-page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 12px;
+  color: var(--text-soft);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.18s ease, gap 0.18s ease;
+}
+
+.list-page-back:hover {
+  color: var(--accent);
+  gap: 7px;
+}
+
+.list-page-back-icon {
+  width: 14px;
+  height: 14px;
   flex: 0 0 auto;
+  display: block;
 }
 
 .list-page-title-wrap {
@@ -1487,24 +1507,26 @@ a {
 
 .list-page-eyebrow {
   margin: 0 0 6px;
-  color: var(--text-soft);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .list-page-title {
   margin: 0;
-  font-size: 24px;
-  line-height: 1.15;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
+  font-weight: 800;
 }
 
 .list-page-subtitle,
 .search-subtitle {
   margin: 6px 0 0;
   color: var(--text-soft);
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .unified-list-panel {

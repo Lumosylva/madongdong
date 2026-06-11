@@ -2,6 +2,7 @@
   <div class="shell categories-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
+      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
