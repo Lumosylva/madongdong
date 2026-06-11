@@ -298,7 +298,7 @@ async def get_categories_page_data(session: AsyncSession) -> dict:
             }
             for c in categories
         ],
-        key=lambda x: (-x["article_count"], x["name"]),
+        key=lambda x: (-int(x["article_count"]), str(x["name"])),
     )
 
     return {
