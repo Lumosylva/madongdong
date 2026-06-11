@@ -124,7 +124,7 @@ onMounted(async () => {
 
 .about-hero {
   position: relative;
-  padding: 10px 2px 2px;
+  padding: 10px 24px 2px;
   border-radius: 0;
   border: none;
   background: transparent;
