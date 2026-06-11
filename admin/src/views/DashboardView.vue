@@ -597,6 +597,7 @@ const activePanelListeners = computed(() => {
         approve: approveFriendLink,
         reject: rejectFriendLink,
         delete: deleteFriendLink,
+        edit: editFriendLink,
       }
     case 'articles-category':
       return {
@@ -837,6 +838,11 @@ const rejectFriendLink = async (linkId: number) => {
 const deleteFriendLink = async (linkId: number) => {
   if (!confirm('确认删除该友链记录？')) return
   await adminApi.deleteFriendLink(linkId)
+  await loadAll()
+}
+
+const editFriendLink = async (linkId: number, payload: { name: string; email: string; description: string }) => {
+  await adminApi.updateFriendLink(linkId, payload)
   await loadAll()
 }
 

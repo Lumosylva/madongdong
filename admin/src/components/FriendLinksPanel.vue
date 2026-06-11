@@ -31,56 +31,78 @@
         class="fl-card"
         :class="[`status-${item.status}`]"
       >
-        <div class="fl-card-top">
-          <div class="fl-avatar" :style="{ background: avatarColor(item.name) }">
-            {{ avatarLetter(item.name) }}
+        <div v-if="editingId === item.id" class="fl-edit-fields">
+          <div class="fl-field">
+            <label class="fl-field-label">站点名称</label>
+            <input class="fl-input" v-model="editForm.name" placeholder="站点名称" />
           </div>
-          <div class="fl-site-info">
-            <div class="fl-site-head">
-              <strong class="fl-site-name">{{ item.name }}</strong>
-              <span class="fl-badge" :class="`status-${item.status}`">{{ statusText(item.status) }}</span>
+          <div class="fl-field">
+            <label class="fl-field-label">联系邮箱</label>
+            <input class="fl-input" v-model="editForm.email" placeholder="联系邮箱" />
+          </div>
+          <div class="fl-field">
+            <label class="fl-field-label">站点介绍</label>
+            <textarea class="fl-textarea" v-model="editForm.description" placeholder="站点介绍" rows="3"></textarea>
+          </div>
+          <div class="fl-edit-actions">
+            <button type="button" class="fl-btn fl-btn-save" :disabled="saving" @click="saveEdit(item.id)">保存</button>
+            <button type="button" class="fl-btn fl-btn-cancel" :disabled="saving" @click="cancelEdit">取消</button>
+          </div>
+        </div>
+
+        <template v-else>
+          <div class="fl-card-top">
+            <div class="fl-avatar" :style="{ background: avatarColor(item.name) }">
+              {{ avatarLetter(item.name) }}
             </div>
-            <a class="fl-url" :href="item.url" target="_blank" rel="noreferrer" :title="item.url">{{ item.url }}</a>
+            <div class="fl-site-info">
+              <div class="fl-site-head">
+                <strong class="fl-site-name">{{ item.name }}</strong>
+                <span class="fl-badge" :class="`status-${item.status}`">{{ statusText(item.status) }}</span>
+              </div>
+              <a class="fl-url" :href="item.url" target="_blank" rel="noreferrer" :title="item.url">{{ item.url }}</a>
+            </div>
           </div>
-        </div>
 
-        <p class="fl-desc">{{ item.description || '暂无描述' }}</p>
+          <p class="fl-desc">{{ item.description || '暂无描述' }}</p>
 
-        <div class="fl-card-bottom">
-          <div class="fl-meta">
-            <span class="fl-meta-item">
-              <span class="fl-meta-label">邮箱</span>
-              {{ item.email || '-' }}
-            </span>
-            <span class="fl-meta-item">
-              <span class="fl-meta-label">来源</span>
-              {{ item.source || '-' }}
-            </span>
-            <span class="fl-meta-item">
-              <span class="fl-meta-label">申请时间</span>
-              {{ formatTime(item.created_at) }}
-            </span>
+          <div class="fl-card-bottom">
+            <div class="fl-meta">
+              <span class="fl-meta-item">
+                <span class="fl-meta-label">邮箱</span>
+                {{ item.email || '-' }}
+              </span>
+              <span class="fl-meta-item">
+                <span class="fl-meta-label">来源</span>
+                {{ item.source || '-' }}
+              </span>
+              <span class="fl-meta-item">
+                <span class="fl-meta-label">申请时间</span>
+                {{ formatTime(item.created_at) }}
+              </span>
+            </div>
+            <div class="fl-actions">
+              <button type="button" class="fl-btn fl-btn-edit" @click="startEdit(item)">编辑</button>
+              <button
+                v-if="item.status !== 'approved'"
+                type="button"
+                class="fl-btn fl-btn-approve"
+                @click="$emit('approve', item.id)"
+              >通过</button>
+              <button
+                v-if="item.status !== 'rejected'"
+                type="button"
+                class="fl-btn fl-btn-reject"
+                @click="$emit('reject', item.id)"
+              >拒绝</button>
+              <button
+                type="button"
+                class="fl-btn fl-btn-delete"
+                @click="$emit('delete', item.id)"
+              >删除</button>
+            </div>
           </div>
-          <div class="fl-actions">
-            <button
-              v-if="item.status !== 'approved'"
-              type="button"
-              class="fl-btn fl-btn-approve"
-              @click="$emit('approve', item.id)"
-            >通过</button>
-            <button
-              v-if="item.status !== 'rejected'"
-              type="button"
-              class="fl-btn fl-btn-reject"
-              @click="$emit('reject', item.id)"
-            >拒绝</button>
-            <button
-              type="button"
-              class="fl-btn fl-btn-delete"
-              @click="$emit('delete', item.id)"
-            >删除</button>
-          </div>
-        </div>
+        </template>
       </article>
 
       <p v-if="!filteredLinks.length" class="fl-empty">暂无符合条件的友链</p>
@@ -89,9 +111,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const props = defineProps<{ links: any[] }>()
+const emit = defineEmits<{
+  approve: [id: number]
+  reject: [id: number]
+  delete: [id: number]
+  edit: [id: number, payload: { name: string; email: string; description: string }]
+}>()
 
 const keyword = ref('')
 const statusFilter = ref<'all' | 'approved' | 'pending' | 'rejected'>('all')
@@ -119,6 +147,39 @@ const statusText = (value: string) => {
 const formatTime = (value: string) => String(value || '').replace('T', ' ').slice(0, 19)
 
 const refresh = () => window.location.reload()
+
+const editingId = ref<number | null>(null)
+const saving = ref(false)
+const editForm = reactive({ name: '', email: '', description: '' })
+
+const startEdit = (item: any) => {
+  editingId.value = item.id
+  editForm.name = String(item.name || '')
+  editForm.email = String(item.email || '')
+  editForm.description = String(item.description || '')
+}
+
+const cancelEdit = () => {
+  editingId.value = null
+}
+
+const saveEdit = async (id: number) => {
+  if (saving.value) return
+  saving.value = true
+  try {
+    await new Promise<void>((resolve) => {
+      emit('edit', id, {
+        name: editForm.name.trim(),
+        email: editForm.email.trim(),
+        description: editForm.description.trim(),
+      })
+      resolve()
+    })
+  } finally {
+    saving.value = false
+    editingId.value = null
+  }
+}
 
 const AVATAR_COLORS = [
   '#0ea5a4', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316',
@@ -500,6 +561,19 @@ const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || ''))
   box-shadow: 0 8px 18px rgba(227, 91, 119, 0.12);
 }
 
+.fl-btn-edit {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-soft);
+}
+
+.fl-btn-edit:hover {
+  border-color: rgba(14, 165, 164, 0.3);
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.1), rgba(59, 130, 246, 0.08));
+  color: var(--text);
+  box-shadow: 0 8px 18px rgba(16, 35, 63, 0.06);
+}
+
 .fl-empty {
   margin: 0;
   padding: 20px 16px;
@@ -508,6 +582,91 @@ const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || ''))
   border: 1px dashed var(--line);
   border-radius: 14px;
   background: transparent;
+}
+
+.fl-edit-fields {
+  display: grid;
+  gap: 12px;
+}
+
+.fl-field {
+  display: grid;
+  gap: 6px;
+}
+
+.fl-field-label {
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.fl-input,
+.fl-textarea {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  padding: 0 14px;
+  font-size: 14px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 6px 16px rgba(16, 35, 63, 0.04);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.fl-textarea {
+  min-height: 80px;
+  padding: 10px 14px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.fl-input:hover,
+.fl-textarea:hover {
+  border-color: rgba(14, 165, 164, 0.3);
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.fl-input:focus,
+.fl-textarea:focus {
+  outline: none;
+  border-color: rgba(14, 165, 164, 0.6);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.16);
+}
+
+.fl-edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.fl-btn-save {
+  border: 1px solid rgba(14, 165, 164, 0.2);
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.14), rgba(56, 189, 248, 0.08));
+  color: var(--text);
+}
+
+.fl-btn-save:hover:not(:disabled) {
+  border-color: rgba(14, 165, 164, 0.34);
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.2), rgba(56, 189, 248, 0.14));
+  box-shadow: 0 8px 18px rgba(16, 35, 63, 0.08);
+}
+
+.fl-btn-cancel {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-soft);
+}
+
+.fl-btn-cancel:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.14);
+  color: var(--text);
+}
+
+.fl-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 :root[data-theme='dark'] .fl-count {
@@ -601,6 +760,19 @@ const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || ''))
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
 }
 
+:root[data-theme='dark'] .fl-btn-edit {
+  border-color: rgba(56, 189, 248, 0.16);
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--text-soft);
+}
+
+:root[data-theme='dark'] .fl-btn-edit:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(14, 165, 164, 0.08));
+  color: var(--text);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
 :root[data-theme='dark'] .fl-btn-reject {
   border-color: rgba(251, 191, 36, 0.22);
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(251, 191, 36, 0.06));
@@ -623,6 +795,48 @@ const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || ''))
   border-color: rgba(227, 91, 119, 0.38);
   background: linear-gradient(135deg, rgba(227, 91, 119, 0.2), rgba(227, 91, 119, 0.12));
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme='dark'] .fl-input,
+:root[data-theme='dark'] .fl-textarea {
+  border-color: rgba(56, 189, 248, 0.16);
+  background: rgba(17, 24, 39, 0.96);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 10px 22px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme='dark'] .fl-input:hover,
+:root[data-theme='dark'] .fl-textarea:hover {
+  border-color: rgba(56, 189, 248, 0.28);
+  background: rgba(20, 27, 42, 0.98);
+}
+
+:root[data-theme='dark'] .fl-input:focus,
+:root[data-theme='dark'] .fl-textarea:focus {
+  border-color: rgba(56, 189, 248, 0.52);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14), 0 12px 24px rgba(0, 0, 0, 0.42);
+}
+
+:root[data-theme='dark'] .fl-btn-save {
+  border-color: rgba(56, 189, 248, 0.22);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(14, 165, 164, 0.08));
+  color: var(--text);
+}
+
+:root[data-theme='dark'] .fl-btn-save:hover:not(:disabled) {
+  border-color: rgba(56, 189, 248, 0.38);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 164, 0.14));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme='dark'] .fl-btn-cancel {
+  border-color: rgba(56, 189, 248, 0.16);
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--text-soft);
+}
+
+:root[data-theme='dark'] .fl-btn-cancel:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--text);
 }
 
 @media (max-width: 900px) {
