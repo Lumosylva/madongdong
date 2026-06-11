@@ -114,7 +114,6 @@ onMounted(async () => {
 <style scoped>
 .about-page {
   position: relative;
-  padding-top: 10px;
 }
 
 .about-page::before {

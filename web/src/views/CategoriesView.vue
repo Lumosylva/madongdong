@@ -237,17 +237,16 @@ onMounted(() => {
 <style scoped>
 .categories-page {
   position: relative;
-  padding-top: 10px;
 }
 
 /* ── Hero ─────────────────────────────────────── */
 
 .categories-hero {
   position: relative;
-  margin-bottom: 18px;
-  padding: 28px 32px 24px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
+  margin-bottom: 14px;
+  padding: 18px 24px 16px;
+  border-radius: 16px;
+  border: none;
   background: var(--bg-panel);
   overflow: hidden;
 }
@@ -267,8 +266,8 @@ onMounted(() => {
   content: 'Categories';
   position: absolute;
   right: 20px;
-  bottom: -12px;
-  font-size: 78px;
+  bottom: -8px;
+  font-size: 56px;
   font-weight: 900;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -288,7 +287,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   color: var(--text-soft);
   font-size: 13px;
   transition: color 0.18s ease, gap 0.18s ease;
@@ -312,13 +311,13 @@ onMounted(() => {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
 .categories-hero-text { min-width: 0; }
 
 .categories-hero-eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--accent);
   font-size: 11px;
   font-weight: 800;
@@ -327,8 +326,8 @@ onMounted(() => {
 }
 
 .categories-hero-title {
-  margin: 0 0 10px;
-  font-size: clamp(38px, 5vw, 54px);
+  margin: 0 0 6px;
+  font-size: clamp(26px, 4vw, 36px);
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.03em;
@@ -337,13 +336,13 @@ onMounted(() => {
 .categories-hero-sub {
   margin: 0;
   color: var(--text-soft);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
 .categories-hero-metrics {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex: 0 0 auto;
 }
 
@@ -353,15 +352,15 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-width: 72px;
-  padding: 14px 16px;
-  border-radius: 16px;
+  min-width: 60px;
+  padding: 10px 14px;
+  border-radius: 12px;
   background: rgba(14, 165, 164, 0.07);
   border: 1px solid rgba(14, 165, 164, 0.14);
 }
 
 .categories-metric-card strong {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1;
   color: var(--accent);
@@ -383,7 +382,7 @@ onMounted(() => {
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 10px;
   margin-bottom: 18px;
 }
 
@@ -391,21 +390,17 @@ onMounted(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 22px 20px 18px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.72), rgba(244, 247, 251, 0.52));
+  gap: 8px;
+  padding: 14px 16px 12px;
+  border-radius: 14px;
+  border: none;
+  background: var(--bg-panel);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   overflow: hidden;
   color: var(--text);
   cursor: pointer;
   text-align: left;
   font: inherit;
-}
-
-:global([data-theme='dark']) .category-card {
-  background: linear-gradient(160deg, rgba(12, 26, 48, 0.82), rgba(8, 20, 38, 0.6));
 }
 
 .category-card::before {
@@ -415,7 +410,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  border-radius: 18px 18px 0 0;
+  border-radius: 14px 14px 0 0;
   background: linear-gradient(90deg, var(--accent), #38bdf8);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -424,7 +419,6 @@ onMounted(() => {
 .category-card:hover,
 .category-card.is-selected {
   transform: translateY(-3px);
-  border-color: rgba(14, 165, 164, 0.35);
   box-shadow: 0 16px 32px rgba(16, 35, 63, 0.1);
 }
 
@@ -454,12 +448,12 @@ onMounted(() => {
 }
 
 .category-card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   color: #04111d;
   background: linear-gradient(135deg, var(--accent), #38bdf8);
@@ -469,18 +463,18 @@ onMounted(() => {
 .category-card-count {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 999px;
   background: var(--bg-soft);
   border: 1px solid var(--line);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-soft);
   white-space: nowrap;
 }
 
 .category-card-name {
   margin: 0;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
@@ -490,9 +484,9 @@ onMounted(() => {
 
 .category-card-desc {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-soft);
-  line-height: 1.65;
+  line-height: 1.55;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -500,9 +494,13 @@ onMounted(() => {
   flex: 1;
 }
 
+:global([data-theme='dark']) .category-card-desc {
+  color: var(--text);
+}
+
 .category-card-arrow {
   display: inline-block;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--accent);
   line-height: 1;
   opacity: 0;
@@ -761,13 +759,13 @@ onMounted(() => {
 
 @media (max-width: 960px) {
   .categories-hero {
-    padding: 20px 18px 18px;
+    padding: 14px 16px 12px;
   }
 
   .categories-hero::after {
-    font-size: 52px;
+    font-size: 40px;
     right: 14px;
-    bottom: -8px;
+    bottom: -6px;
   }
 
   .categories-hero-body {
@@ -784,7 +782,7 @@ onMounted(() => {
   .categories-metric-card {
     flex: 1;
     min-width: 0;
-    padding: 12px 10px;
+    padding: 8px 10px;
   }
 
   .categories-metric-card strong {
