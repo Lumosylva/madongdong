@@ -14,6 +14,10 @@
 
     <main class="about-layout">
       <section class="about-hero">
+        <RouterLink to="/" class="about-back-link">
+          <svg class="about-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          返回首页
+        </RouterLink>
         <div class="about-hero-copy">
           <p class="about-eyebrow">About</p>
           <h1 class="about-title">关于本站</h1>
@@ -22,36 +26,19 @@
             克制的设计和稳定的内容输出，提供值得长期阅读与回访的体验。
           </p>
         </div>
-        <div class="about-hero-metrics" aria-label="站点特点">
-          <div class="about-metric-card">
-            <strong>Clear</strong>
-            <span>内容表达清晰</span>
-          </div>
-          <div class="about-metric-card">
-            <strong>Focused</strong>
-            <span>主题聚焦稳定</span>
-          </div>
-          <div class="about-metric-card">
-            <strong>Long-term</strong>
-            <span>注重长期沉淀</span>
-          </div>
-        </div>
       </section>
 
       <section class="about-grid">
-        <article class="about-panel">
+        <article class="about-panel about-panel-wide">
           <h2>站点定位</h2>
           <p>
             本站用于记录技术实践、知识整理、项目观察以及一些经过筛选的个人表达。内容会优先强调准确性、
             可读性与复用价值，而不是短期噪音。
           </p>
-        </article>
-
-        <article class="about-panel">
-          <h2>阅读体验</h2>
-          <p>
-            页面结构保持简洁，导航、归档、分类与搜索共同构成主要的信息入口，方便在浏览、查找与回顾之间快速切换。
-          </p>
+          <a class="about-github-link" href="https://github.com/Lumosylva/madongdong" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub 开源地址
+          </a>
         </article>
 
         <article class="about-panel about-panel-wide">
@@ -136,14 +123,37 @@ onMounted(async () => {
 
 .about-hero {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
-  gap: 18px;
-  padding: 32px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
+  padding: 18px 24px 16px;
+  border-radius: 0;
+  border: none;
   background: var(--bg-panel);
+  margin: 0 -24px;
   overflow: hidden;
+}
+
+.about-back-link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 12px;
+  color: var(--text-soft);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.18s ease, gap 0.18s ease;
+}
+
+.about-back-link:hover {
+  color: var(--accent);
+  gap: 7px;
+}
+
+.about-back-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  display: block;
 }
 
 .about-hero::before {
@@ -157,140 +167,114 @@ onMounted(async () => {
     radial-gradient(circle at 95% 14%, rgba(234, 154, 24, 0.08), transparent 28%);
 }
 
-.about-hero-copy,
-.about-hero-metrics {
-  position: relative;
-  z-index: 1;
-}
-
 .about-eyebrow {
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: var(--accent);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .about-title {
-  margin: 0 0 12px;
-  font-size: clamp(34px, 5vw, 52px);
-  line-height: 1.06;
+  margin: 0 0 6px;
+  font-size: clamp(26px, 4vw, 36px);
+  line-height: 1.05;
   font-weight: 800;
 }
 
 .about-lead {
   margin: 0;
-  max-width: 60ch;
   color: var(--text-soft);
-  font-size: 15px;
-  line-height: 1.85;
-}
-
-.about-hero-metrics {
-  display: grid;
-  gap: 12px;
-  align-content: center;
-}
-
-.about-metric-card {
-  display: grid;
-  gap: 4px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(14, 165, 164, 0.16);
-  background: rgba(14, 165, 164, 0.06);
-}
-
-.about-metric-card strong {
-  font-size: 18px;
-  line-height: 1.1;
-  color: var(--accent);
-}
-
-.about-metric-card span {
   font-size: 13px;
-  color: var(--text-soft);
+  line-height: 1.6;
 }
 
 .about-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 14px;
 }
 
 .about-panel {
-  padding: 26px;
-  border: 1px solid var(--line);
-  border-radius: 20px;
+  padding: 18px 20px;
+  border: none;
+  border-radius: 14px;
   background: var(--bg-panel);
-  box-shadow: var(--shadow);
 }
 
 .about-panel h2 {
-  margin: 0 0 10px;
-  font-size: 22px;
+  margin: 0 0 8px;
+  font-size: 16px;
   line-height: 1.2;
+  font-weight: 700;
 }
 
 .about-panel p {
   margin: 0;
   color: var(--text-soft);
-  font-size: 14px;
-  line-height: 1.85;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .about-panel-wide {
   grid-column: 1 / -1;
 }
 
+.about-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.about-github-link:hover {
+  background: rgba(14, 165, 164, 0.12);
+  color: var(--accent);
+}
+
 .about-contact-card {
   display: grid;
-  gap: 6px;
-  margin-top: 18px;
-  padding: 18px 20px;
-  border-radius: 18px;
-  border: 1px solid rgba(14, 165, 164, 0.18);
-  background: linear-gradient(135deg, rgba(14, 165, 164, 0.08), rgba(56, 189, 248, 0.06));
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(14, 165, 164, 0.07);
+  transition: transform 0.18s ease, background 0.18s ease;
 }
 
 .about-contact-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(14, 165, 164, 0.32);
-  box-shadow: 0 16px 30px rgba(16, 35, 63, 0.08);
+  background: rgba(14, 165, 164, 0.12);
 }
 
 .about-contact-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-soft);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .about-contact-card strong {
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.25;
   color: var(--text);
   overflow-wrap: anywhere;
 }
 
-:global([data-theme='dark']) .about-hero {
-  background: rgba(10, 24, 44, 0.76);
-}
-
-:global([data-theme='dark']) .about-panel {
-  background: rgba(10, 24, 44, 0.82);
-}
-
-:global([data-theme='dark']) .about-contact-card {
-  background: linear-gradient(135deg, rgba(94, 234, 212, 0.1), rgba(59, 130, 246, 0.08));
-}
-
 @media (max-width: 960px) {
   .about-hero {
     grid-template-columns: 1fr;
-    padding: 22px 18px;
+    padding: 14px 16px 12px;
   }
 
   .about-grid {
@@ -303,11 +287,11 @@ onMounted(async () => {
   }
 
   .about-panel {
-    padding: 20px 18px;
+    padding: 14px 16px;
   }
 
   .about-contact-card strong {
-    font-size: 17px;
+    font-size: 14px;
   }
 }
 </style>
