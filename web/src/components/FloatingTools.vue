@@ -29,6 +29,21 @@
         </svg>
       </button>
     </transition>
+
+    <transition name="scroll-top-fade">
+      <button
+        v-if="showScrollBottom"
+        class="floating-tool-btn scroll-bottom-btn"
+        type="button"
+        aria-label="回到底部"
+        title="回到底部"
+        @click="scrollToBottom"
+      >
+        <svg viewBox="0 0 24 24" class="floating-tool-icon" aria-hidden="true" focusable="false">
+          <path d="M12 18.5c-.4 0-.75-.14-1.03-.42l-5.78-5.78a1.5 1.5 0 1 1 2.12-2.12L12 14.87V7a1.5 1.5 0 0 1 3 0v7.87l3.19-3.19a1.5 1.5 0 0 1 2.12 2.12l-5.78 5.78c-.28.28-.63.42-1.03.42Z" />
+        </svg>
+      </button>
+    </transition>
   </div>
 </template>
 
@@ -47,9 +62,16 @@ defineEmits<{
 
 const scrollTop = ref(0)
 const showScrollTop = ref(false)
+const showScrollBottom = ref(false)
 let hideTimer: number | null = null
 
 const themeLabel = computed(() => (props.theme === 'light' ? '切换为暗色主题' : '切换为白天主题'))
+
+const isAtBottom = () => {
+  const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight
+  const clientHeight = document.documentElement.clientHeight || window.innerHeight
+  return window.scrollY + clientHeight >= scrollHeight - 80
+}
 
 const updateScrollTop = () => {
   scrollTop.value = window.scrollY || document.documentElement.scrollTop || 0
@@ -65,10 +87,15 @@ const updateScrollTop = () => {
       hideTimer = null
     }, 220)
   }
+  showScrollBottom.value = !isAtBottom()
 }
 
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const scrollToBottom = () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
 }
 
 onMounted(() => {
