@@ -163,3 +163,21 @@ onMounted(() => {
   loadData()
 })
 </script>
+
+<style scoped>
+.search-page {
+  position: relative;
+  padding-top: 10px;
+}
+
+.search-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(14, 165, 164, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 8%, rgba(234, 154, 24, 0.1), transparent 18%);
+  z-index: 0;
+}
+</style>

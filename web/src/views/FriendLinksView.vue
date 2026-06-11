@@ -300,14 +300,14 @@ onMounted(async () => {
 
 .friend-links-hero {
   padding: 10px 2px 2px;
-  gap: 24px;
+  gap: 16px;
 }
 
 .friend-links-back-link {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: var(--text-soft);
   font-size: 13px;
   text-decoration: none;

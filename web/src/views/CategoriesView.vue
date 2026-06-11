@@ -237,6 +237,18 @@ onMounted(() => {
 <style scoped>
 .categories-page {
   position: relative;
+  padding-top: 10px;
+}
+
+.categories-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(14, 165, 164, 0.12), transparent 22%),
+    radial-gradient(circle at 88% 8%, rgba(234, 154, 24, 0.1), transparent 18%);
+  z-index: 0;
 }
 
 /* ── Hero ─────────────────────────────────────── */
@@ -244,24 +256,11 @@ onMounted(() => {
 .categories-hero {
   position: relative;
   margin-bottom: 14px;
-  padding: 18px 32px 16px;
+  padding: 10px 24px 2px;
   border-radius: 0;
   border: none;
-  background: var(--bg-panel);
-  margin-left: -32px;
-  margin-right: -32px;
+  background: transparent;
   overflow: hidden;
-}
-
-.categories-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 3% 65%, rgba(14, 165, 164, 0.13), transparent 38%),
-    radial-gradient(circle at 92% 14%, rgba(234, 154, 24, 0.09), transparent 30%);
 }
 
 .categories-hero::after {
@@ -329,8 +328,8 @@ onMounted(() => {
 
 .categories-hero-title {
   margin: 0 0 6px;
-  font-size: clamp(26px, 4vw, 36px);
-  line-height: 1.05;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.08;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
@@ -373,10 +372,6 @@ onMounted(() => {
   font-size: 11px;
   color: var(--text-soft);
   white-space: nowrap;
-}
-
-:global([data-theme='dark']) .categories-hero {
-  background: rgba(8, 20, 38, 0.82);
 }
 
 /* ── Category grid ────────────────────────────── */
@@ -761,9 +756,7 @@ onMounted(() => {
 
 @media (max-width: 960px) {
   .categories-hero {
-    padding: 14px 24px 12px;
-    margin-left: -24px;
-    margin-right: -24px;
+    padding: 8px 16px 0;
   }
 
   .categories-hero::after {
