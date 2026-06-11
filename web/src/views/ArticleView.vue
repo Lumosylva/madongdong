@@ -156,14 +156,22 @@
           :class="{ 'comment-item-new': highlightedCommentId === comment.id }"
           :data-comment-id="comment.id"
         >
-          <div class="comment-item-head">
-            <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
-            <span>{{ formatRelativeTime(comment.created_at) }}</span>
+          <div class="comment-avatar">
+            <img v-if="comment.user?.avatar" :src="comment.user.avatar" :alt="comment.user?.nickname" class="comment-avatar-img" />
+            <div v-else class="comment-avatar-fallback" :style="{ background: avatarColor(comment.user?.nickname || comment.guest_nickname || '匿') }">
+              {{ avatarLetter(comment.user?.nickname || comment.guest_nickname || '匿') }}
+            </div>
           </div>
-          <div v-if="getClientMetaText(comment)" class="comment-client-meta">
-            {{ getClientMetaText(comment) }}
+          <div class="comment-body">
+            <div class="comment-item-head">
+              <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
+              <span>{{ formatRelativeTime(comment.created_at) }}</span>
+            </div>
+            <div v-if="getClientMetaText(comment)" class="comment-client-meta">
+              {{ getClientMetaText(comment) }}
+            </div>
+            <p>{{ comment.content }}</p>
           </div>
-          <p>{{ comment.content }}</p>
         </div>
       </div>
     </section>
@@ -319,6 +327,30 @@ const truncateText = (value: string | null | undefined, maxLength: number) => {
   if (!text) return ''
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
 }
+
+const AVATAR_COLORS = [
+  '#0ea5a4', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316',
+  '#14b8a6', '#6366f1', '#a855f7', '#e11d48', '#f59e0b',
+  '#06b6d4', '#8b5cf6', '#d946ef', '#ef4444', '#eab308',
+]
+
+const hashCode = (str: string) => {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
+const avatarLetter = (name: string) => {
+  const s = String(name || '').trim()
+  if (!s) return '?'
+  const ch = s[0]
+  if (ch === '#' || ch === '/') return s.length > 1 ? s[1].toUpperCase() : '?'
+  return ch.toUpperCase()
+}
+
+const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || '')) % AVATAR_COLORS.length]
 
 watch(() => route.params.id, () => {
   loadData()

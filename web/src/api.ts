@@ -9,12 +9,13 @@ const getToken = () => localStorage.getItem('md_web_token') || ''
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const { headers: extraHeaders, ...rest } = init ?? {}
   const response = await fetch(`${API_BASE}${path}`, {
+    ...rest,
     headers: {
       'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
+      ...extraHeaders,
     },
-    ...init,
   })
 
   if (!response.ok) {
@@ -68,8 +69,12 @@ export const webApi = {
     })
   },
   submitComment(payload: Record<string, unknown>) {
+    const token = getToken()
     return request('/web/comments', {
       method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify(payload),
     })
   },

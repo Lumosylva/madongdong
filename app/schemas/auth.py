@@ -73,7 +73,7 @@ class ProfileUpdateRequest(BaseModel):
 
     nickname: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    avatar: str | None = Field(default=None, max_length=100000)
+    avatar: str | None = Field(default=None, max_length=1000000)
     password: str | None = Field(default=None, min_length=6, max_length=128)
 
 
@@ -93,7 +93,7 @@ class AdminUserCreateRequest(BaseModel):
     username: str = Field(min_length=3, max_length=50)
     nickname: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    avatar: str | None = Field(default=None, max_length=100000)
+    avatar: str | None = Field(default=None, max_length=1000000)
     role_name: str = Field(pattern="^(admin|author|reader)$")
     password: str = Field(min_length=6, max_length=128)
 
@@ -101,7 +101,7 @@ class AdminUserCreateRequest(BaseModel):
 class AdminUserUpdateRequest(BaseModel):
     nickname: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    avatar: str | None = Field(default=None, max_length=100000)
+    avatar: str | None = Field(default=None, max_length=1000000)
     role_name: str = Field(pattern="^(admin|author|reader)$")
     password: str | None = Field(default=None, min_length=6, max_length=128)
 
