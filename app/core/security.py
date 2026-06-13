@@ -179,11 +179,17 @@ async def get_current_user(
     if credentials:
         token = credentials.credentials
     else:
-        token = (
-            request.cookies.get("admin_access_token")
-            or request.cookies.get("web_access_token")
-            or request.cookies.get("access_token")
-        )
+        path = request.url.path
+        if "/admin/" in path:
+            token = request.cookies.get("admin_access_token")
+        elif "/web/" in path:
+            token = request.cookies.get("web_access_token")
+        else:
+            token = (
+                request.cookies.get("admin_access_token")
+                or request.cookies.get("web_access_token")
+                or request.cookies.get("access_token")
+            )
 
     if not token:
         raise HTTPException(
@@ -224,11 +230,17 @@ async def get_current_user_optional(
     """获取可选登录用户。"""
 
     if credentials is None:
-        token = (
-            request.cookies.get("admin_access_token")
-            or request.cookies.get("web_access_token")
-            or request.cookies.get("access_token")
-        )
+        path = request.url.path
+        if "/admin/" in path:
+            token = request.cookies.get("admin_access_token")
+        elif "/web/" in path:
+            token = request.cookies.get("web_access_token")
+        else:
+            token = (
+                request.cookies.get("admin_access_token")
+                or request.cookies.get("web_access_token")
+                or request.cookies.get("access_token")
+            )
         if not token:
             return None
     else:
