@@ -734,6 +734,9 @@ const logout = async () => {
   } catch {
     // ignore
   }
+  document.cookie = 'logged_in=; path=/; max-age=0'
+  document.cookie = 'access_token=; path=/; max-age=0'
+  document.cookie = 'refresh_token=; path=/; max-age=0'
   await router.push('/login')
 }
 

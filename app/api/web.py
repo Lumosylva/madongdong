@@ -272,7 +272,7 @@ async def reader_refresh_token(
     rt.revoked = True
     await session.commit()
 
-    user = await get_user_by_id(session, data['sub'])
+    user = await get_user_by_id(session, int(data['sub']))
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='用户不存在或已被禁用')
 
@@ -299,10 +299,15 @@ async def reader_revoke_token(
     from app.models.refresh_token import RefreshToken
     from sqlalchemy import select as _select
 
+    if not payload.refresh_token:
+        clear_auth_cookies(response)
+        return
+
     try:
         data = _jwt.decode(payload.refresh_token, _settings.secret_key, algorithms=[_settings.algorithm])
     except (JWTError, ValueError):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='无效的刷新令牌')
+        clear_auth_cookies(response)
+        return
 
     if data.get('sub') != current_user.username:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='无权撤销他人的令牌')

@@ -366,6 +366,9 @@ const logout = async () => {
   } catch {
     // ignore errors
   }
+  document.cookie = 'logged_in=; path=/; max-age=0'
+  document.cookie = 'access_token=; path=/; max-age=0'
+  document.cookie = 'refresh_token=; path=/; max-age=0'
   localStorage.removeItem('md-reader-nickname')
   localStorage.removeItem('md-reader-email')
   accountMenuOpen.value = false

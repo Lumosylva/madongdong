@@ -195,7 +195,7 @@ async def get_current_user(
             detail="令牌已被撤销",
         )
 
-    user = await get_user_by_id(session, token_data.sub)
+    user = await get_user_by_id(session, token_data.user_id)
     if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -229,7 +229,7 @@ async def get_current_user_optional(
     if jti and await _is_token_revoked(session, jti):
         return None
 
-    user = await get_user_by_id(session, token_data.sub)
+    user = await get_user_by_id(session, token_data.user_id)
     if user is None or not user.is_active:
         return None
     user._token_roles = token_data.roles

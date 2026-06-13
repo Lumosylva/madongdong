@@ -6,11 +6,15 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class TokenPayload(BaseModel):
     """JWT 载荷。"""
 
-    sub: int
+    sub: str
     exp: int
     type: str = "access"
     jti: str | None = None
     roles: list[str] = []
+
+    @property
+    def user_id(self) -> int:
+        return int(self.sub)
 
 
 class TokenResponse(BaseModel):
