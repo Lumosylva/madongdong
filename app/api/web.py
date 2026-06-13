@@ -235,7 +235,7 @@ async def reader_login(
     refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
     set_auth_cookies(response, token, refresh)
-    return TokenResponse(access_token=token, refresh_token=refresh)
+    return {"access_token": token, "refresh_token": refresh, "token_type": "bearer"}
 
 
 @router.post('/auth/refresh', summary='刷新访问令牌')

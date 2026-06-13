@@ -64,12 +64,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._cleanup_interval = cleanup_interval
 
     def _get_client_ip(self, request: Request) -> str:
-        forwarded = request.headers.get("X-Forwarded-For")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-        real_ip = request.headers.get("X-Real-IP")
-        if real_ip:
-            return real_ip.strip()
+        from app.core.config import settings
+        if settings.trusted_proxy:
+            forwarded = request.headers.get("X-Forwarded-For")
+            if forwarded:
+                return forwarded.split(",")[0].strip()
+            real_ip = request.headers.get("X-Real-IP")
+            if real_ip:
+                return real_ip.strip()
         if request.client:
             return request.client.host
         return "unknown"

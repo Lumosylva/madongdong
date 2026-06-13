@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     debug: bool = False
     sql_echo: bool = False
+    cookie_secure: bool = False
+    trusted_proxy: bool = False
 
     sqlite_file: str = "madongdong.db"
     database_url: str = "sqlite+aiosqlite:///./madongdong.db"

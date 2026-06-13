@@ -76,7 +76,7 @@ async def login(
     refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
     set_auth_cookies(response, token, refresh)
-    return success_response(TokenResponse(access_token=token, refresh_token=refresh).model_dump())
+    return success_response({"message": "登录成功"})
 
 
 @router.post("/refresh", summary="刷新访问令牌")

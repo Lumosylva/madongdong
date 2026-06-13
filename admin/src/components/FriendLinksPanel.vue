@@ -60,7 +60,7 @@
                 <strong class="fl-site-name">{{ item.name }}</strong>
                 <span class="fl-badge" :class="`status-${item.status}`">{{ statusText(item.status) }}</span>
               </div>
-              <a class="fl-url" :href="item.url" target="_blank" rel="noreferrer" :title="item.url">{{ item.url }}</a>
+              <a class="fl-url" :href="item.url" target="_blank" rel="noreferrer noopener" :title="item.url">{{ item.url }}</a>
             </div>
           </div>
 

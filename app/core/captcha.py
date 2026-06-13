@@ -4,20 +4,25 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import random
+import secrets
 import time
 
 from fastapi import HTTPException, status
 
-_CAPTCHA_SECRET = "madongdong-captcha-hmac-key"
 _TTL = 300  # 5 分钟有效
+
+
+def _get_captcha_secret() -> bytes:
+    from app.core.config import settings
+    return hashlib.sha256(f"captcha:{settings.secret_key}".encode()).digest()
 
 
 def generate_captcha() -> dict[str, str]:
     """生成一道简单数学题，返回题目和签名令牌。"""
 
-    a, b = random.randint(10, 99), random.randint(10, 99)
-    op = random.choice(["+", "-"])
+    a = secrets.randbelow(90) + 10
+    b = secrets.randbelow(90) + 10
+    op = secrets.choice(["+", "-"])
     if op == "-":
         a, b = max(a, b), min(a, b)
     answer = a + b if op == "+" else a - b
@@ -25,7 +30,7 @@ def generate_captcha() -> dict[str, str]:
 
     ts = str(int(time.time()))
     payload = f"{answer}:{ts}"
-    sig = hmac.new(_CAPTCHA_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+    sig = hmac.new(_get_captcha_secret(), payload.encode(), hashlib.sha256).hexdigest()[:16]
     token = f"{payload}:{sig}"
 
     return {"question": question, "token": token}
@@ -40,7 +45,7 @@ def verify_captcha(token: str, answer: str) -> None:
             raise ValueError
         correct_answer_str, ts_str, sig = parts
         payload = f"{correct_answer_str}:{ts_str}"
-        expected_sig = hmac.new(_CAPTCHA_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()[:16]
+        expected_sig = hmac.new(_get_captcha_secret(), payload.encode(), hashlib.sha256).hexdigest()[:16]
         if not hmac.compare_digest(sig, expected_sig):
             raise ValueError
         ts = int(ts_str)

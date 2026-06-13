@@ -51,11 +51,13 @@ _COOKIE_SAMESITE = "lax"
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
     """将令牌设置为 httpOnly Cookie。"""
 
+    secure = settings.cookie_secure
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
         samesite=_COOKIE_SAMESITE,
+        secure=secure,
         path="/",
         max_age=settings.access_token_expire_minutes * 60,
     )
@@ -64,6 +66,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         value=refresh_token,
         httponly=True,
         samesite=_COOKIE_SAMESITE,
+        secure=secure,
         path="/",
         max_age=settings.refresh_token_expire_minutes * 60,
     )
@@ -72,6 +75,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         value="1",
         httponly=False,
         samesite=_COOKIE_SAMESITE,
+        secure=secure,
         path="/",
         max_age=settings.refresh_token_expire_minutes * 60,
     )
