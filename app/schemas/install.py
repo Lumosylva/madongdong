@@ -1,5 +1,7 @@
 """首次安装相关 schema。"""
 
+import secrets
+
 from pydantic import BaseModel, Field
 
 
@@ -19,3 +21,10 @@ class InstallRequest(BaseModel):
     copyright_text: str | None = Field(default=None, max_length=255)
     homepage_page_size: int = Field(default=10, ge=1, le=100)
     comment_requires_review: bool = True
+    site_domain: str = Field(default="", max_length=255)
+    secret_key: str = Field(default="", max_length=256)
+    database_url: str = Field(default="sqlite+aiosqlite:///./madongdong.db", max_length=500)
+
+
+def generate_secret_key() -> str:
+    return secrets.token_urlsafe(48)

@@ -74,6 +74,35 @@
                 <span class="install-field-label">副标题</span>
                 <input v-model="form.site_subtitle" placeholder="例如：记录技术、生活与长期主义" />
               </label>
+              <label class="install-field install-field-wide">
+                <span class="install-field-label">站点域名</span>
+                <div class="install-field-row">
+                  <input v-model="form.site_domain" placeholder="例如：example.com（用于 CORS 和部署配置）" />
+                  <button type="button" class="install-field-btn" title="自动获取当前域名" @click="autoDetectDomain">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  </button>
+                </div>
+                <p class="install-field-hint">留空则使用默认 localhost 配置。生产环境请填写实际域名。</p>
+              </label>
+              <label class="install-field install-field-wide">
+                <span class="install-field-label">JWT 签名密钥</span>
+                <div class="install-field-row">
+                  <input v-model="form.secret_key" :type="showSecretKey ? 'text' : 'password'" placeholder="留空将自动生成随机密钥" />
+                  <button type="button" class="install-field-btn" :title="showSecretKey ? '隐藏' : '显示'" @click="showSecretKey = !showSecretKey">
+                    <svg v-if="showSecretKey" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/></svg>
+                    <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-5.25 0-9.14 4.38-11 7 1.86 2.62 5.75 7 11 7s9.14-4.38 11-7c-1.86-2.62-5.75-7-11-7Zm0 12c-4.09 0-7.38-3.1-9.08-5 1.7-1.9 5-5 9.08-5s7.38 3.1 9.08 5c-1.7 1.9-5 5-9.08 5Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/></svg>
+                  </button>
+                  <button type="button" class="install-field-btn" title="生成随机密钥" @click="generateSecretKey">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
+                  </button>
+                </div>
+                <p class="install-field-hint">用于 JWT 令牌签名。留空将自动生成，生产环境建议显式设置。</p>
+              </label>
+              <label class="install-field install-field-wide">
+                <span class="install-field-label">数据库连接</span>
+                <input v-model="form.database_url" placeholder="sqlite+aiosqlite:///./madongdong.db" />
+                <p class="install-field-hint">默认使用 SQLite。如需使用 MySQL/PostgreSQL，请修改连接字符串。</p>
+              </label>
               <label class="install-field">
                 <span class="install-field-label">首页每页文章数</span>
                 <input v-model.number="form.homepage_page_size" type="number" min="1" max="100" />
@@ -190,6 +219,7 @@ import { buildPageTitle } from '../site-meta'
 
 const currentStep = ref(1)
 const showPassword = ref(false)
+const showSecretKey = ref(false)
 const submitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
@@ -208,12 +238,33 @@ const form = reactive({
   copyright_text: '© MaDongDong Blog',
   homepage_page_size: 10,
   comment_requires_review: true,
+  site_domain: '',
+  secret_key: '',
+  database_url: 'sqlite+aiosqlite:///./madongdong.db',
 })
 
 const getAdminLoginUrl = () => {
   const adminBasePath = (import.meta.env.VITE_ADMIN_BASE_PATH as string | undefined)?.trim() || '/admin'
   const normalized = adminBasePath.startsWith('/') ? adminBasePath : `/${adminBasePath}`
   return `${normalized.replace(/\/$/, '')}/login`
+}
+
+const autoDetectDomain = () => {
+  form.site_domain = window.location.hostname
+}
+
+const generateSecretKey = async () => {
+  try {
+    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/install/secret-key`)
+    const data = await res.json() as { secret_key: string }
+    form.secret_key = data.secret_key
+    showSecretKey.value = true
+  } catch {
+    const array = new Uint8Array(48)
+    crypto.getRandomValues(array)
+    form.secret_key = btoa(String.fromCharCode(...array)).replace(/[^a-zA-Z0-9]/g, '').slice(0, 64)
+    showSecretKey.value = true
+  }
 }
 
 const checkInstalled = async () => {
@@ -532,6 +583,39 @@ onMounted(() => {
 :global([data-theme='dark']) .install-field input,
 :global([data-theme='dark']) .install-field textarea {
   background: rgba(255, 255, 255, 0.06);
+}
+
+.install-field-hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.install-field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.install-field-btn {
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text-soft);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color 0.18s ease, border-color 0.18s ease;
+  flex: 0 0 auto;
+}
+
+.install-field-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .install-field input:focus,

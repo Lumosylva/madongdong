@@ -13,9 +13,10 @@ from app.core.security import get_password_hash
 from app.models.article import Category
 from app.models.auth import Permission, Role, User
 from app.models.site import NavItem, SiteSetting
-from app.schemas.install import InstallRequest
+from app.schemas.install import InstallRequest, generate_secret_key
 
 _INSTALLED_MARKER = Path(settings.upload_dir).parent / ".installed"
+_ENV_FILE = Path(".env")
 
 DEFAULT_ROLES = {
     'admin': '系统管理员',
@@ -192,5 +193,35 @@ async def perform_install(session: AsyncSession, payload: InstallRequest) -> Non
 
     await session.commit()
 
+    _write_env_file(payload)
     _INSTALLED_MARKER.parent.mkdir(parents=True, exist_ok=True)
     _INSTALLED_MARKER.write_text("installed")
+
+
+def _write_env_file(payload: InstallRequest) -> None:
+    """将安装配置写入 .env 文件。"""
+
+    secret = payload.secret_key.strip() or generate_secret_key()
+    database_url = payload.database_url.strip() or "sqlite+aiosqlite:///./madongdong.db"
+    domain = payload.site_domain.strip()
+
+    cors_origins = '["http://localhost:5173","http://localhost:5174"]'
+    if domain:
+        protocol = "https" if not domain.startswith(("http://", "https://")) else ""
+        origin = f"{protocol}://{domain.lstrip('/')}" if protocol else domain
+        cors_origins = f'["{origin}","http://localhost:5173","http://localhost:5174"]'
+
+    lines = [
+        "# MaDongDong Blog 后端环境变量",
+        "# 由安装向导自动生成",
+        "",
+        f"SECRET_KEY={secret}",
+        f"DATABASE_URL={database_url}",
+        "DEBUG=false",
+        "SQL_ECHO=false",
+        "COOKIE_SECURE=false",
+        "TRUSTED_PROXY=false",
+        f"CORS_ORIGINS={cors_origins}",
+    ]
+
+    _ENV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")

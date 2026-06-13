@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.schemas.install import InstallRequest, InstallStatusResponse
+from app.schemas.install import InstallRequest, InstallStatusResponse, generate_secret_key
 from app.services.install import get_install_state, perform_install
 from app.utils.response import success_response
 
@@ -15,6 +15,11 @@ router = APIRouter(tags=["install"])
 async def install_status_endpoint(session: AsyncSession = Depends(get_db_session)) -> dict[str, object]:
     installed, initialized = await get_install_state(session)
     return success_response(InstallStatusResponse(installed=installed, initialized=initialized).model_dump())
+
+
+@router.get("/install/secret-key", summary="生成随机密钥")
+async def generate_secret_key_endpoint() -> dict[str, object]:
+    return success_response({"secret_key": generate_secret_key()})
 
 
 @router.post("/install", summary="执行首次安装")
