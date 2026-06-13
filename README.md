@@ -1,4 +1,4 @@
-# MaDongDong
+# MaDongDong Blog
 
 基于 `FastAPI + Vue 3 + SQLite` 的前后端分离博客系统，支持前台展示与后台管理。
 
@@ -18,6 +18,9 @@
 - 用户管理（创建/编辑/删除/批量角色变更）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
+- 速率限制（按端点配置，防止暴力破解）
+- 登录失败锁定（6 次失败锁定 15 分钟）
+- 数学验证码（HMAC 签名，防止批量注册和暴力破解）
 
 ### 前台（web）
 
@@ -51,6 +54,56 @@
 
 ---
 
+## 安全特性
+
+### 认证与授权
+
+- JWT + httpOnly Cookie 认证（admin / web 独立 Cookie 命名空间）
+- Access Token 有效期 1 小时，Refresh Token 有效期 7 天
+- Refresh Token 存储于数据库，支持单个/全部撤销
+- JWT 中包含 `roles` claim，通过 `require_token_role()` 校验角色
+- JWT `sub` 使用用户 ID（非 username），改名不影响 Token
+- 登录失败锁定：6 次失败锁定 15 分钟
+
+### 请求保护
+
+- 全站速率限制（按端点配置，兜底 120 次/分钟）
+- 登录端点 5 次/分钟，注册 3 次/5 分钟，上传 20 次/分钟
+- 安装端点 3 次/10 分钟，安装状态 30 次/分钟
+- 可选的反向代理 IP 信任（`TRUSTED_PROXY` 配置）
+
+### 输入验证
+
+- Pydantic v2 严格校验，所有字段有长度和格式限制
+- 评论内容 `max_length=2000`，文章内容 `max_length=500000`
+- 友链状态限制枚举值（`pending` / `approved` / `rejected`）
+- 文件上传白名单限制扩展名和大小（默认 10MB）
+
+### XSS 防护
+
+- 前端 `v-html` 全部使用 DOMPurify 消毒
+- CSP 安全头：`script-src 'self'`（无 unsafe-inline/eval）
+- API 响应 `default-src 'none'`
+- 上传文件 `.html`/`.svg` 等 Content-Type 覆盖为 `application/octet-stream`
+
+### 其他安全头
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY` + CSP `frame-ancestors 'none'`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- Cookie `SameSite=Lax`，生产环境支持 `Secure` 标志
+- Swagger UI / Redoc 生产环境自动禁用
+- 安装端点文件锁保护，防止重复安装
+
+### CORS
+
+- 来源白名单，禁止 `*` 通配符
+- 方法限制为 `GET/POST/PUT/DELETE`
+- 头限制为 `Content-Type/Authorization`
+
+---
+
 ## 技术栈
 
 ### 后端
@@ -68,7 +121,7 @@
 - Vue Router
 - Vite
 - md-editor-v3（admin Markdown 编辑器）
-- marked + DOMPurify（web Markdown 渲染）
+- DOMPurify（web Markdown 渲染消毒）
 
 ---
 
@@ -112,11 +165,41 @@ cd admin; npm install; npm run dev
 
 ### 4) 环境变量
 
+#### 后端 `.env`
+
+```env
+# JWT 签名密钥（必填，生产环境务必设置）
+SECRET_KEY=
+
+# 数据库连接
+DATABASE_URL=sqlite+aiosqlite:///./madongdong.db
+
+# 调试模式
+DEBUG=false
+
+# SQL 查询日志
+SQL_ECHO=false
+
+# Cookie 安全标志（生产环境启用 HTTPS 后设为 true）
+COOKIE_SECURE=false
+
+# 信任代理头
+TRUSTED_PROXY=false
+
+# 文件上传目录
+UPLOAD_DIR=app/static/uploads
+
+# 文件上传大小限制（字节，默认 10MB）
+UPLOAD_MAX_SIZE=10485760
+
+# CORS 来源（JSON 数组格式）
+CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
+```
+
 #### `web/.env`
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_APP_NAME=MadongDong
 VITE_ADMIN_BASE_PATH=/admin
 ```
 
@@ -124,8 +207,7 @@ VITE_ADMIN_BASE_PATH=/admin
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_APP_NAME=MadongDong Admin
-VITE_WEB_BASE_URL=
+VITE_WEB_BASE_URL=http://localhost:5173
 ```
 
 ---
@@ -146,6 +228,8 @@ VITE_WEB_BASE_URL=
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | `/api/v1/admin/auth/login` | 后台登录 |
+| POST | `/api/v1/admin/auth/refresh` | 刷新令牌 |
+| POST | `/api/v1/admin/auth/revoke` | 登出（撤销令牌） |
 | GET | `/api/v1/admin/auth/me` | 获取当前用户 |
 | PUT | `/api/v1/admin/auth/me` | 更新个人资料 |
 
@@ -235,8 +319,11 @@ VITE_WEB_BASE_URL=
 | POST | `/api/v1/web/comments` | 提交评论 |
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
+| GET | `/api/v1/web/captcha` | 获取验证码 |
 | POST | `/api/v1/web/auth/register` | 读者注册 |
 | POST | `/api/v1/web/auth/login` | 读者登录 |
+| POST | `/api/v1/web/auth/refresh` | 刷新令牌 |
+| POST | `/api/v1/web/auth/revoke` | 登出 |
 | GET | `/api/v1/web/auth/me` | 获取当前用户 |
 | PUT | `/api/v1/web/auth/me` | 更新个人资料 |
 
@@ -246,8 +333,8 @@ VITE_WEB_BASE_URL=
 
 | 角色 | Web 前台 | Admin 登录 | 文章创建 | 直接发布 | 提交审核 | 审核文章 | 垃圾箱 | 媒体 | 评论管理 | 友链管理 | 用户管理 | 站点设置 | 个人中心 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 系统管理员 | ✅ | ✅ | ✅ | ✅ | （可选） | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 内容作者 | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅（仅本人） | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| 系统管理员 | ❌ | ✅ | ✅ | ✅ | （可选） | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 内容作者 | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ✅（仅本人） | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | 普通读者 | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
@@ -304,12 +391,14 @@ server {
 ### 后端生产配置
 
 ```env
-APP_NAME=MaDongDong Blog
-DEBUG=false
 SECRET_KEY=请替换为强随机密钥
 DATABASE_URL=sqlite+aiosqlite:///./madongdong.db
+DEBUG=false
+SQL_ECHO=false
+COOKIE_SECURE=true
+TRUSTED_PROXY=true
 UPLOAD_DIR=app/static/uploads
-API_V1_PREFIX=/api/v1
+CORS_ORIGINS=["https://your-domain.com"]
 ```
 
 ---
@@ -326,23 +415,89 @@ API_V1_PREFIX=/api/v1
 
 ## 预览
 
+### 首页
+
 ![](assets/images/01.png)
+
+### 读者注册
+
 ![](assets/images/02.png)
+
+### 读者登录
+
 ![](assets/images/03.png)
+
+### 首页（读者已登录）
+
 ![](assets/images/04.png)
+
+### 文章详情
+
 ![](assets/images/05.png)
+
+### 文章标签
+
 ![](assets/images/06.png)
+
+### 文章评论区
+
 ![](assets/images/07.png)
+
+### 管理员登录
+
 ![](assets/images/08.png)
+
+### 管理员概览
+
 ![](assets/images/09.png)
-![](assets/images/10.png)
+
+### 文章管理
+
+![10](assets/images/10.png)
+
+### 创建文章
+
 ![](assets/images/11.png)
-![](assets/images/12.png)
+
+### 创建文章尾部
+
+![12](assets/images/12.png)
+
+### 编辑文章
+
 ![](assets/images/13.png)
+
+### 文章分类管理
+
 ![](assets/images/14.png)
+
+### 垃圾箱
+
 ![](assets/images/15.png)
+
+### 媒体管理
+
 ![](assets/images/16.png)
+
+### 评论管理
+
 ![](assets/images/17.png)
+
+### 友链管理
+
+![](assets/images/18.png)
+
+### 用户管理
+
+![](assets/images/19.png)
+
+### 个人中心
+
+![](assets/images/20.png)
+
+### 设置
+
+![](assets/images/21.png)
 
 ---
 
