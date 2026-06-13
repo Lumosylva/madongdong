@@ -207,7 +207,7 @@ def _write_env_file(payload: InstallRequest) -> None:
 
     cors_origins = '["http://localhost:5173","http://localhost:5174"]'
     if domain:
-        protocol = "https" if not domain.startswith(("http://", "https://")) else ""
+        protocol = "https" if "://" not in domain else ""
         origin = f"{protocol}://{domain.lstrip('/')}" if protocol else domain
         cors_origins = f'["{origin}","http://localhost:5173","http://localhost:5174"]'
 
