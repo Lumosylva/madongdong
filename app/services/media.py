@@ -13,7 +13,7 @@ from app.core.config import settings
 from app.models.auth import User
 from app.models.media import MediaFile, MediaFolder, MediaType
 
-IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"}
+IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 AUDIO_MIME_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg"}
 VIDEO_MIME_TYPES = {"video/mp4", "video/webm", "video/ogg"}
 
@@ -86,11 +86,20 @@ async def upload_media_file(
     if folder_id is not None:
         folder = await get_media_folder_or_404(session, folder_id)
 
+    suffix = Path(upload_file.filename or "file").suffix.lower()
+
+    if suffix not in settings.upload_allowed_extensions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"不允许上传 {suffix or '此类型'} 文件",
+        )
+
+    file_size = await _check_upload_size(upload_file)
+
     media_type = _guess_media_type(upload_file.content_type or "application/octet-stream")
     uploads_dir = Path(settings.upload_dir)
     uploads_dir.mkdir(parents=True, exist_ok=True)
 
-    suffix = Path(upload_file.filename or "file").suffix
     generated_name = f"{uuid4().hex}{suffix}"
     storage_path = uploads_dir / generated_name
 
@@ -106,7 +115,7 @@ async def upload_media_file(
         original_name=upload_file.filename or generated_name,
         mime_type=upload_file.content_type or "application/octet-stream",
         media_type=media_type,
-        file_size=len(content),
+        file_size=file_size,
         width=None,
         height=None,
         duration=None,
@@ -204,6 +213,34 @@ def _ensure_media_permission(media: MediaFile, current_user: User) -> None:
         return
     if media.uploaded_by != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作该媒体文件")
+
+
+async def _check_upload_size(upload_file: UploadFile) -> int:
+    max_size = settings.upload_max_size
+
+    if upload_file.size is not None:
+        if upload_file.size > max_size:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"文件大小超过限制（最大 {max_size // (1024 * 1024)} MB）",
+            )
+        return upload_file.size
+
+    total = 0
+    chunk_size = 1024 * 1024  # 1 MB
+    while True:
+        chunk = await upload_file.read(chunk_size)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_size:
+            await upload_file.close()
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"文件大小超过限制（最大 {max_size // (1024 * 1024)} MB）",
+            )
+    await upload_file.seek(0)
+    return total
 
 
 def _guess_media_type(content_type: str) -> MediaType:

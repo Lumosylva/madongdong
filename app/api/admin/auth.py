@@ -4,7 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import create_access_token, get_current_user, require_role, verify_password
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    persist_refresh_token,
+    require_role,
+    revoke_all_user_refresh_tokens,
+    verify_password,
+)
 from app.models.auth import User
 from app.schemas.auth import (
     AdminUserBatchDeleteRequest,
@@ -15,6 +23,8 @@ from app.schemas.auth import (
     CurrentUserResponse,
     LoginRequest,
     ProfileUpdateRequest,
+    RefreshRequest,
+    RevokeRequest,
     TokenResponse,
 )
 from app.services.auth import (
@@ -51,8 +61,87 @@ async def login(
     if not any(role_name in role_names for role_name in ["admin", "author"]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅系统管理员和内容作者可登录后台")
 
-    token = create_access_token(user.username)
-    return success_response(TokenResponse(access_token=token).model_dump())
+    user_roles = list(role_names)
+    token = create_access_token(user.username, roles=user_roles)
+    refresh = create_refresh_token(user.username, roles=user_roles)
+    await persist_refresh_token(session, user.id, refresh)
+    return success_response(TokenResponse(access_token=token, refresh_token=refresh).model_dump())
+
+
+@router.post("/refresh", summary="刷新访问令牌")
+async def refresh_token(
+    payload: RefreshRequest,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, object]:
+    """使用刷新令牌获取新的访问令牌和刷新令牌。"""
+
+    from jose import JWTError, jwt as _jwt
+
+    from app.core.config import settings as _settings
+    from app.models.refresh_token import RefreshToken
+    from sqlalchemy import select as _select
+
+    try:
+        data = _jwt.decode(payload.refresh_token, _settings.secret_key, algorithms=[_settings.algorithm])
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="无效的刷新令牌")
+
+    if data.get("type") != "refresh":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌类型错误")
+
+    jti = data.get("jti")
+    if not jti:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="令牌缺少标识")
+
+    result = await session.execute(_select(RefreshToken).where(RefreshToken.jti == jti))
+    rt = result.scalar_one_or_none()
+    if rt is None or rt.revoked:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="刷新令牌已被撤销")
+
+    rt.revoked = True
+    await session.commit()
+
+    user = await get_user_by_username(session, data["sub"])
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在或已被禁用")
+
+    new_access = create_access_token(user.username)
+    new_refresh = create_refresh_token(user.username)
+    await persist_refresh_token(session, user.id, new_refresh)
+    return success_response(TokenResponse(access_token=new_access, refresh_token=new_refresh).model_dump())
+
+
+@router.post("/revoke", summary="撤销刷新令牌（登出）")
+async def revoke_token(
+    payload: RevokeRequest,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    """撤销当前用户的指定刷新令牌。"""
+
+    from jose import JWTError, jwt as _jwt
+
+    from app.core.config import settings as _settings
+    from app.models.refresh_token import RefreshToken
+    from sqlalchemy import select as _select
+
+    try:
+        data = _jwt.decode(payload.refresh_token, _settings.secret_key, algorithms=[_settings.algorithm])
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="无效的刷新令牌")
+
+    if data.get("sub") != current_user.username:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权撤销他人的令牌")
+
+    jti = data.get("jti")
+    if jti:
+        result = await session.execute(_select(RefreshToken).where(RefreshToken.jti == jti))
+        rt = result.scalar_one_or_none()
+        if rt:
+            rt.revoked = True
+            await session.commit()
+
+    return success_response(None)
 
 
 @router.get("/me", summary="获取当前登录用户")

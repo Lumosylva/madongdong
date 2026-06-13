@@ -1,7 +1,12 @@
 """应用配置。"""
 
-from pydantic import Field
+import logging
+import secrets
+
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -14,11 +19,23 @@ class Settings(BaseSettings):
     sqlite_file: str = "madongdong.db"
     database_url: str = "sqlite+aiosqlite:///./madongdong.db"
 
-    secret_key: str = "change-me-in-production"
+    secret_key: str = ""
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24
+    access_token_expire_minutes: int = 60  # 1 小时
+    refresh_token_expire_minutes: int = 60 * 24 * 7  # 7 天
     upload_dir: str = "app/static/uploads"
     upload_url_prefix: str = "/uploads"
+    upload_max_size: int = 10 * 1024 * 1024  # 10 MB
+    upload_allowed_extensions: set[str] = Field(
+        default_factory=lambda: {
+            ".jpg", ".jpeg", ".png", ".gif", ".webp",
+            ".mp3", ".wav", ".ogg",
+            ".mp4", ".webm",
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            ".zip", ".rar",
+            ".txt", ".md", ".csv",
+        }
+    )
 
     cors_origins: list[str] = Field(
         default_factory=lambda: [
@@ -32,6 +49,16 @@ class Settings(BaseSettings):
             "http://127.0.0.1:4174",
         ]
     )
+
+    @model_validator(mode="after")
+    def _ensure_secret_key(self) -> "Settings":
+        if not self.secret_key:
+            self.secret_key = secrets.token_urlsafe(48)
+            logger.warning(
+                "SECRET_KEY 未设置，已自动生成随机密钥。"
+                "生产环境请在 .env 中显式设置 SECRET_KEY，否则每次重启后已有 Token 将失效。"
+            )
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env",

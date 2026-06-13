@@ -2441,5 +2441,13 @@ a {
 
   .archive-article-row {
     padding-left: 16px;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .archive-article-link {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
   }
 }

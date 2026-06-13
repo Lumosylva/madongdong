@@ -28,3 +28,4 @@ run_backupend_server.bat
 run_web_server.bat
 CLAUDE.md
 AGENTS.md
+.env

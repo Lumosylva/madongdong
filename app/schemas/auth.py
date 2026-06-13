@@ -8,13 +8,29 @@ class TokenPayload(BaseModel):
 
     sub: str
     exp: int
+    type: str = "access"
+    jti: str | None = None
+    roles: list[str] = []
 
 
 class TokenResponse(BaseModel):
     """登录返回令牌。"""
 
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModel):
+    """刷新令牌请求。"""
+
+    refresh_token: str
+
+
+class RevokeRequest(BaseModel):
+    """撤销令牌请求。"""
+
+    refresh_token: str
 
 
 class LoginRequest(BaseModel):

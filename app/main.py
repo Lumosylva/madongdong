@@ -17,6 +17,7 @@ from app.api.install import router as install_router
 from app.api.web import router as web_router
 from app.core.config import settings
 from app.core.init_db import init_db
+from app.core.rate_limit import RateLimitMiddleware
 
 
 @asynccontextmanager
@@ -39,6 +40,19 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    RateLimitMiddleware,
+    rules={
+        f"{settings.api_v1_prefix}/admin/auth/login": (5, 60),
+        f"{settings.api_v1_prefix}/web/auth/login": (5, 60),
+        f"{settings.api_v1_prefix}/web/auth/register": (3, 300),
+        f"{settings.api_v1_prefix}/web/comments": (10, 60),
+        f"{settings.api_v1_prefix}/web/friend-links": (5, 300),
+        f"{settings.api_v1_prefix}/install": (3, 600),
+        f"{settings.api_v1_prefix}/admin/media/upload": (20, 60),
+    },
+    default=(120, 60),
 )
 app.mount(settings.upload_url_prefix, StaticFiles(directory=settings.upload_dir), name="uploads")
 

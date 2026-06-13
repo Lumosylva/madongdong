@@ -5,7 +5,7 @@
         <div class="install-brand">
           <span class="install-brand-mark">MD</span>
           <div>
-            <p class="install-eyebrow">欢迎使用</p>
+            <p class="install-eyebrow">Welcome</p>
             <h1>开始安装 MaDongDong Blog</h1>
           </div>
         </div>
@@ -14,97 +14,167 @@
           这是一个简洁的安装向导。接下来只需填写站点信息和管理员账号，系统会自动完成初始化，准备好后即可开始使用。
         </p>
 
-        <div class="install-checklist">
-          <div class="install-check-item">
-            <span class="install-check-dot"></span>
-            <span>下一步将自动创建角色、权限与默认站点配置</span>
+        <div class="install-steps">
+          <div class="install-step" :class="{ active: currentStep >= 1, done: currentStep > 1 }">
+            <div class="install-step-num">1</div>
+            <div>
+              <p class="install-step-title">站点信息</p>
+              <p class="install-step-desc">配置站点名称与基础设置</p>
+            </div>
           </div>
-          <div class="install-check-item">
-            <span class="install-check-dot"></span>
-            <span>系统会自动生成首页、搜索等基础导航</span>
+          <div class="install-step" :class="{ active: currentStep >= 2, done: currentStep > 2 }">
+            <div class="install-step-num">2</div>
+            <div>
+              <p class="install-step-title">管理员账号</p>
+              <p class="install-step-desc">创建后台管理账号</p>
+            </div>
           </div>
-          <div class="install-check-item">
-            <span class="install-check-dot"></span>
-            <span>安装完成后可直接使用管理员账号登录后台</span>
+          <div class="install-step" :class="{ active: currentStep >= 3 }">
+            <div class="install-step-num">3</div>
+            <div>
+              <p class="install-step-title">高级选项</p>
+              <p class="install-step-desc">备案、版权与评论设置</p>
+            </div>
           </div>
         </div>
 
         <div class="install-tip-card">
-          <strong>开始之前</strong>
-          <p>请先确认数据库、上传目录和后端服务已经可用，然后继续下一步。</p>
+          <div class="install-tip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <div>
+            <strong>开始之前</strong>
+            <p>请先确认数据库、上传目录和后端服务已经可用，然后继续下一步。</p>
+          </div>
         </div>
       </aside>
 
       <div class="install-card">
         <div class="install-card-header">
           <div>
-            <p class="install-card-kicker">安装配置</p>
-            <h2>填写基础信息</h2>
+            <p class="install-card-kicker">Step {{ currentStep }} / 3</p>
+            <h2>{{ stepTitles[currentStep - 1] }}</h2>
           </div>
-          <p class="install-card-subtitle">带 * 的信息建议保持准确，便于后续管理与部署。</p>
+          <p class="install-card-subtitle">{{ stepSubtitles[currentStep - 1] }}</p>
         </div>
 
-        <section class="install-note">
-          <div>
-            <strong>页脚信息说明</strong>
-            <p>备案与版权信息将用于站点底部展示，支持 HTML 片段输入，建议按实际需要填写。</p>
-          </div>
-        </section>
-
         <form class="install-form" @submit.prevent="submitInstall">
-          <div class="install-grid">
-            <label>
-              <span>站点标题</span>
-              <input v-model="form.site_title" required placeholder="例如：MaDongDong Blog" />
-            </label>
-            <label>
-              <span>副标题</span>
-              <input v-model="form.site_subtitle" placeholder="例如：记录技术、生活与长期主义" />
-            </label>
-            <label>
-              <span>管理员用户名</span>
-              <input v-model="form.admin_username" required placeholder="例如：admin" />
-            </label>
-            <label>
-              <span>管理员密码</span>
-              <input v-model="form.admin_password" type="password" required placeholder="请设置强密码" />
-            </label>
-            <label>
-              <span>管理员昵称</span>
-              <input v-model="form.admin_nickname" required placeholder="例如：系统管理员" />
-            </label>
-            <label>
-              <span>管理员邮箱</span>
-              <input v-model="form.admin_email" type="email" required placeholder="例如：admin@example.com" />
-            </label>
-            <label class="install-textarea-field">
-              <span>ICP备案</span>
-              <textarea v-model="form.icp_beian" rows="4" placeholder="请输入备案信息，可填写 HTML 片段"></textarea>
-            </label>
-            <label>
-              <span>版权信息</span>
-              <input v-model="form.copyright_text" placeholder="例如：© MaDongDong Blog" />
-            </label>
-            <label>
-              <span>首页每页文章数</span>
-              <input v-model.number="form.homepage_page_size" type="number" min="1" max="100" />
-            </label>
-            <label class="checkbox-row checkbox-card">
-              <input v-model="form.comment_requires_review" type="checkbox" />
-              <div>
-                <span>评论需要审核</span>
-                <p>开启后，前台提交的评论会先进入审核流程。</p>
+          <!-- Step 1: Site Info -->
+          <div v-show="currentStep === 1" class="install-step-content">
+            <div class="install-grid">
+              <label class="install-field">
+                <span class="install-field-label">站点标题 <em>*</em></span>
+                <input v-model="form.site_title" required placeholder="例如：MaDongDong Blog" />
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">副标题</span>
+                <input v-model="form.site_subtitle" placeholder="例如：记录技术、生活与长期主义" />
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">首页每页文章数</span>
+                <input v-model.number="form.homepage_page_size" type="number" min="1" max="100" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 2: Admin Account -->
+          <div v-show="currentStep === 2" class="install-step-content">
+            <div class="install-grid">
+              <label class="install-field">
+                <span class="install-field-label">管理员用户名 <em>*</em></span>
+                <input v-model="form.admin_username" required placeholder="例如：admin" autocomplete="username" />
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">管理员密码 <em>*</em></span>
+                <div class="install-password-shell">
+                  <input :type="showPassword ? 'text' : 'password'" v-model="form.admin_password" required placeholder="请设置强密码" autocomplete="new-password" />
+                  <button type="button" class="install-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
+                    <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 5c-5.25 0-9.14 4.38-11 7 1.86 2.62 5.75 7 11 7s9.14-4.38 11-7c-1.86-2.62-5.75-7-11-7Zm0 12c-4.09 0-7.38-3.1-9.08-5 1.7-1.9 5-5 9.08-5s7.38 3.1 9.08 5c-1.7 1.9-5 5-9.08 5Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                </div>
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">管理员昵称 <em>*</em></span>
+                <input v-model="form.admin_nickname" required placeholder="例如：系统管理员" />
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">管理员邮箱 <em>*</em></span>
+                <input v-model="form.admin_email" type="email" required placeholder="例如：admin@example.com" autocomplete="email" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Step 3: Advanced Options -->
+          <div v-show="currentStep === 3" class="install-step-content">
+            <div class="install-grid">
+              <label class="install-field install-field-wide">
+                <span class="install-field-label">ICP 备案</span>
+                <textarea v-model="form.icp_beian" rows="3" placeholder="请输入备案信息，支持 HTML 片段"></textarea>
+              </label>
+              <label class="install-field">
+                <span class="install-field-label">版权信息</span>
+                <input v-model="form.copyright_text" placeholder="例如：© MaDongDong Blog" />
+              </label>
+              <label class="install-checkbox-card">
+                <input v-model="form.comment_requires_review" type="checkbox" class="install-checkbox-input" />
+                <div class="install-checkbox-box">
+                  <svg class="install-checkbox-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div>
+                  <span>评论需要审核</span>
+                  <p>开启后，前台提交的评论会先进入审核流程。</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="install-note">
+              <div class="install-note-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
               </div>
-            </label>
+              <div>
+                <strong>页脚信息说明</strong>
+                <p>备案与版权信息将用于站点底部展示，支持 HTML 片段输入，建议按实际需要填写。</p>
+              </div>
+            </div>
           </div>
 
           <div class="install-feedback">
-            <p v-if="errorMessage" class="message error">{{ errorMessage }}</p>
-            <p v-if="successMessage" class="message success">{{ successMessage }}</p>
+            <p v-if="errorMessage" class="install-message error">{{ errorMessage }}</p>
+            <p v-if="successMessage" class="install-message success">{{ successMessage }}</p>
           </div>
 
-          <div class="actions">
-            <button type="submit" :disabled="submitting">{{ submitting ? '正在初始化...' : '确认并安装' }}</button>
+          <div class="install-actions">
+            <button v-if="currentStep > 1" type="button" class="install-btn-secondary" @click="currentStep--">
+              上一步
+            </button>
+            <div class="install-actions-right">
+              <button v-if="currentStep < 3" type="button" class="install-btn-primary" @click="currentStep++">
+                下一步
+              </button>
+              <button v-else type="submit" class="install-btn-primary install-btn-submit" :disabled="submitting">
+                <svg v-if="submitting" class="install-spinner" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+                </svg>
+                <span>{{ submitting ? '正在初始化...' : '确认并安装' }}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -118,9 +188,15 @@ import { onMounted, reactive, ref } from 'vue'
 import { webApi } from '../api'
 import { buildPageTitle } from '../site-meta'
 
+const currentStep = ref(1)
+const showPassword = ref(false)
 const submitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+const stepTitles = ['站点信息', '管理员账号', '高级选项']
+const stepSubtitles = ['配置站点名称与基础设置', '创建后台管理账号', '备案、版权与评论设置']
+
 const form = reactive({
   site_title: 'MaDongDong Blog',
   site_subtitle: '记录技术、生活与长期主义',
@@ -265,26 +341,63 @@ onMounted(() => {
   font-size: 15px;
 }
 
-.install-checklist {
+.install-steps {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
-.install-check-item {
+.install-step {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 14px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.install-step.active {
+  background: rgba(14, 165, 164, 0.06);
+  border-color: rgba(14, 165, 164, 0.16);
+}
+
+.install-step.done .install-step-num {
+  background: var(--accent);
+  color: #fff;
+}
+
+.install-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex: 0 0 auto;
+  background: var(--bg-soft);
+  color: var(--text-soft);
+  border: 1px solid var(--line);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.install-step.active .install-step-num {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.install-step-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text);
 }
 
-.install-check-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  margin-top: 7px;
-  background: var(--accent);
-  box-shadow: 0 0 0 5px rgba(14, 165, 164, 0.12);
-  flex: 0 0 auto;
+.install-step-desc {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-soft);
 }
 
 .install-tip-card {
@@ -292,15 +405,31 @@ onMounted(() => {
   border-radius: 18px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.5);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 :global([data-theme='dark']) .install-tip-card {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.install-tip-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--accent);
+}
+
+.install-tip-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
 .install-tip-card strong {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .install-tip-card p {
@@ -318,7 +447,7 @@ onMounted(() => {
   justify-content: space-between;
   gap: 18px;
   align-items: end;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .install-card-kicker {
@@ -346,79 +475,207 @@ onMounted(() => {
   gap: 18px;
 }
 
+.install-step-content {
+  display: grid;
+  gap: 16px;
+}
+
 .install-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
-.install-grid label,
-.checkbox-card {
+.install-field {
+  display: grid;
+  gap: 6px;
+  padding: 14px 14px 12px;
   border: 1px solid var(--line);
   background: var(--bg-panel);
   border-radius: 18px;
-  padding: 14px 14px 12px;
-  display: grid;
-  gap: 8px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  cursor: text;
 }
 
-.install-grid label span,
-.checkbox-card span {
-  font-size: 13px;
-  color: var(--text-soft);
-}
-
-.install-grid input[type='text'],
-.install-grid input[type='email'],
-.install-grid input[type='password'],
-.install-grid input[type='number'],
-.install-grid input:not([type]) {
-  width: 100%;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.88);
-  border-radius: 12px;
-  padding: 12px 14px;
-  color: var(--text);
-  outline: none;
-}
-
-:global([data-theme='dark']) .install-grid input[type='text'],
-:global([data-theme='dark']) .install-grid input[type='email'],
-:global([data-theme='dark']) .install-grid input[type='password'],
-:global([data-theme='dark']) .install-grid input[type='number'],
-:global([data-theme='dark']) .install-grid input:not([type]) {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.install-grid input:focus {
+.install-field:focus-within {
   border-color: rgba(14, 165, 164, 0.35);
   box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
 }
 
-.checkbox-card {
+.install-field-wide {
   grid-column: 1 / -1;
-  grid-template-columns: auto 1fr;
-  align-items: center;
 }
 
-.checkbox-card p {
+.install-field-label {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.install-field-label em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.install-field input,
+.install-field textarea {
+  width: 100%;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--text);
+  outline: none;
+  font: inherit;
+  resize: vertical;
+}
+
+:global([data-theme='dark']) .install-field input,
+:global([data-theme='dark']) .install-field textarea {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.install-field input:focus,
+.install-field textarea:focus {
+  border-color: rgba(14, 165, 164, 0.35);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.12);
+}
+
+.install-password-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.install-password-shell input {
+  padding-right: 0;
+}
+
+.install-password-toggle {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+}
+
+.install-password-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.install-checkbox-card {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  border-radius: 18px;
+  cursor: pointer;
+  transition: border-color 0.18s ease;
+}
+
+.install-checkbox-card:hover {
+  border-color: rgba(14, 165, 164, 0.28);
+}
+
+.install-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.install-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  transition: background 0.18s ease, border-color 0.18s ease;
+  flex: 0 0 auto;
+}
+
+.install-checkbox-input:checked + .install-checkbox-box {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.install-checkbox-icon {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.install-checkbox-input:checked + .install-checkbox-box .install-checkbox-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.install-checkbox-card > div:last-child span {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.install-checkbox-card > div:last-child p {
   margin: 2px 0 0;
   color: var(--text-soft);
   line-height: 1.6;
   font-size: 12px;
 }
 
-.checkbox-row input {
+.install-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(14, 165, 164, 0.04);
+  border: 1px solid rgba(14, 165, 164, 0.12);
+}
+
+.install-note-icon {
   width: 18px;
   height: 18px;
-  accent-color: var(--accent);
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.install-note-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.install-note strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+}
+
+.install-note p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.6;
+  font-size: 12px;
 }
 
 .install-feedback {
   min-height: 24px;
 }
 
-.message {
+.install-message {
   margin: 0;
   padding: 12px 14px;
   border-radius: 14px;
@@ -426,43 +683,84 @@ onMounted(() => {
   line-height: 1.6;
 }
 
-.message.error {
+.install-message.error {
   color: #9f1239;
   background: rgba(244, 63, 94, 0.1);
   border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
-.message.success {
+.install-message.success {
   color: #065f46;
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-.actions {
+.install-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
-.actions button {
+.install-actions-right {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.install-btn-primary,
+.install-btn-secondary {
   border: none;
   border-radius: 999px;
   padding: 12px 22px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.install-btn-primary {
   color: #05131d;
   background: linear-gradient(135deg, var(--accent), #93c5fd);
   box-shadow: 0 10px 26px rgba(14, 165, 164, 0.2);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.actions button:hover:not(:disabled) {
+.install-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 14px 30px rgba(14, 165, 164, 0.24);
 }
 
-.actions button:disabled {
+.install-btn-primary:disabled {
   opacity: 0.72;
   cursor: not-allowed;
+}
+
+.install-btn-secondary {
+  color: var(--text-soft);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+}
+
+.install-btn-secondary:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.install-btn-submit {
+  min-width: 140px;
+  justify-content: center;
+}
+
+.install-spinner {
+  width: 18px;
+  height: 18px;
+  animation: install-spin 0.8s linear infinite;
+}
+
+@keyframes install-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 980px) {
@@ -491,12 +789,19 @@ onMounted(() => {
     border-radius: 20px;
   }
 
-  .actions {
-    justify-content: stretch;
+  .install-actions {
+    flex-direction: column;
   }
 
-  .actions button {
+  .install-actions-right {
     width: 100%;
+    margin-left: 0;
+  }
+
+  .install-btn-primary,
+  .install-btn-secondary {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
