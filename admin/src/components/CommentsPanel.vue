@@ -21,6 +21,10 @@
         <option value="oldest">评论时间：最早优先</option>
       </select>
       <button class="article-reset-btn" type="button" @click="resetFilters">重置筛选</button>
+      <button class="article-reset-btn" type="button" title="刷新评论列表" @click="emit('refresh')">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
+        刷新
+      </button>
     </div>
 
     <div class="comments-toolbar">
@@ -153,6 +157,7 @@ const emit = defineEmits<{
   'bulk-approve': [commentIds: number[]]
   'bulk-reject': [commentIds: number[]]
   'bulk-delete': [commentIds: number[]]
+  refresh: []
 }>()
 
 const keyword = ref('')

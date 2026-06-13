@@ -51,7 +51,7 @@
 
 .comments-filter-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.8fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 2.8fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
   gap: 14px;
   align-items: center;
 }

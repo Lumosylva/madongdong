@@ -23,6 +23,7 @@
 - 速率限制（按端点配置，防止暴力破解）
 - 登录失败锁定（6 次失败锁定 15 分钟）
 - 数学验证码（HMAC 签名，防止批量注册和暴力破解）
+- Cookie 隔离（admin / web 前端使用独立 Cookie 命名空间）
 
 ### 前台（web）
 
@@ -202,6 +203,7 @@ CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
 
 ```env
 VITE_API_BASE=/api/v1
+VITE_APP_NAME=MadongDong
 VITE_ADMIN_BASE_PATH=/admin
 ```
 
@@ -209,30 +211,30 @@ VITE_ADMIN_BASE_PATH=/admin
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_WEB_BASE_URL=http://localhost:5173
+VITE_APP_NAME=MadongDong Admin
+VITE_WEB_BASE_URL=
 ```
 
 ---
 
 ## 默认管理员账号
 
-首次启动后访问 `http://127.0.0.1:5173/install` 进入安装向导，可配置：
-
-- 站点标题、副标题、域名（自动检测）
-- JWT 签名密钥（自动生成或手动设置）
-- 数据库连接（默认 SQLite）
-- 管理员账号信息
-
-默认管理员账号（安装向导预填）：
+首次启动自动初始化：
 
 - 用户名：`admin`
 - 密码：`admin123456`
 
-安装完成后配置自动写入 `.env` 文件，重启后端生效。
-
 ---
 
 ## 主要接口
+
+### 安装
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/v1/install/status` | 安装状态 |
+| GET | `/api/v1/install/secret-key` | 生成随机密钥 |
+| POST | `/api/v1/install` | 执行首次安装 |
 
 ### 后台认证
 
@@ -337,14 +339,6 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | POST | `/api/v1/web/auth/revoke` | 登出 |
 | GET | `/api/v1/web/auth/me` | 获取当前用户 |
 | PUT | `/api/v1/web/auth/me` | 更新个人资料 |
-
-### 安装接口
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/v1/install/status` | 获取安装状态 |
-| GET | `/api/v1/install/secret-key` | 生成随机 JWT 密钥 |
-| POST | `/api/v1/install` | 执行首次安装（含域名、密钥、数据库配置） |
 
 ---
 

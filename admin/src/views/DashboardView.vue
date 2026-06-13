@@ -602,6 +602,7 @@ const activePanelListeners = computed(() => {
         'bulk-approve': bulkApproveComments,
         'bulk-reject': bulkRejectComments,
         'bulk-delete': bulkDeleteComments,
+        refresh: refreshComments,
       }
     case 'friend-links':
       return {
@@ -905,6 +906,15 @@ const bulkDeleteComments = async (commentIds: number[]) => {
   if (!targets.length) return
   await adminApi.deleteComments(targets)
   await loadAll()
+}
+
+const refreshComments = async () => {
+  try {
+    const res = await adminApi.getComments()
+    comments.value = res.data
+  } catch {
+    // ignore
+  }
 }
 
 const createCategory = async (payload: { name: string; slug: string; description: string | null }) => {
