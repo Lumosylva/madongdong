@@ -53,6 +53,7 @@ app.add_middleware(
         f"{settings.api_v1_prefix}/web/auth/register": (3, 300),
         f"{settings.api_v1_prefix}/web/comments": (10, 60),
         f"{settings.api_v1_prefix}/web/friend-links": (5, 300),
+        f"{settings.api_v1_prefix}/install/status": (30, 60),
         f"{settings.api_v1_prefix}/install": (3, 600),
         f"{settings.api_v1_prefix}/admin/media/upload": (20, 60),
     },

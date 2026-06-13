@@ -94,7 +94,7 @@ def create_access_token(subject: int, roles: list[str] | None = None) -> str:
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
     expire_timestamp = int(expire.timestamp())
-    payload: dict[str, object] = {"sub": subject, "exp": expire_timestamp, "type": "access"}
+    payload: dict[str, object] = {"sub": str(subject), "exp": expire_timestamp, "type": "access"}
     if roles:
         payload["roles"] = roles
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
@@ -105,7 +105,7 @@ def create_refresh_token(subject: int, roles: list[str] | None = None) -> str:
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.refresh_token_expire_minutes)
     expire_timestamp = int(expire.timestamp())
-    payload: dict[str, object] = {"sub": subject, "exp": expire_timestamp, "type": "refresh", "jti": _new_jti()}
+    payload: dict[str, object] = {"sub": str(subject), "exp": expire_timestamp, "type": "refresh", "jti": _new_jti()}
     if roles:
         payload["roles"] = roles
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)

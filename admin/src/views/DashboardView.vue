@@ -55,9 +55,9 @@
               @mouseleave="isSidebarCollapsed && closeArticleFlyoutDelayed()"
             >
               <a
-                href="javascript:void(0)"
+                href="#"
                 :class="{ active: currentView === item.key }"
-                @click="setView(item.key)"
+                @click.prevent="setView(item.key)"
               >
                 <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
                 <span class="sidebar-text">{{ item.label }}</span>
@@ -93,9 +93,9 @@
                 <a
                   v-for="sub in articleSubMenus"
                   :key="sub.key"
-                  href="javascript:void(0)"
+                  href="#"
                   :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
-                  @click="setArticleSubView(sub.key)"
+                  @click.prevent="setArticleSubView(sub.key)"
                 >
                   <span class="sidebar-text">{{ sub.label }}</span>
                 </a>
@@ -104,10 +104,10 @@
 
             <a
               v-else
-              href="javascript:void(0)"
+              href="#"
               :class="{ active: currentView === item.key }"
               :data-label="item.label"
-              @click="setView(item.key)"
+              @click.prevent="setView(item.key)"
             >
               <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
               <span class="sidebar-text">{{ item.label }}</span>
