@@ -119,11 +119,10 @@ const submit = async () => {
   status.value = ''
 
   try {
-    const token = await webApi.loginReader({
+    await webApi.loginReader({
       username: username.value.trim(),
       password: password.value,
     })
-    localStorage.setItem('md_web_token', token.access_token)
     if (rememberMe.value) {
       localStorage.setItem('md-login-username', username.value.trim())
     } else {

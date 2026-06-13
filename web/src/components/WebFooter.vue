@@ -4,16 +4,23 @@
       <RouterLink to="/friend-links" class="footer-friend-links-link">友情链接</RouterLink>
 
       <div class="footer-copy-section">
-        <span v-html="icpBeian || '页脚信息待配置'"></span>
+        <span v-html="sanitizedIcp"></span>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import DOMPurify from 'dompurify'
+import { computed } from 'vue'
+
+const props = defineProps<{
   icpBeian?: string | null
 }>()
+
+const sanitizedIcp = computed(() => {
+  return DOMPurify.sanitize(props.icpBeian || '页脚信息待配置', { USE_PROFILES: { html: true } })
+})
 </script>
 
 <style scoped>

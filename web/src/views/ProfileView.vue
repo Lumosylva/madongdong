@@ -269,8 +269,8 @@ onMounted(async () => {
     // ignore
   }
 
-  const token = localStorage.getItem('md_web_token')
-  if (!token) {
+  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+  if (!hasCookie) {
     isLoggedIn.value = false
     return
   }

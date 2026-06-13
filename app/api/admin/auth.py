@@ -1,16 +1,18 @@
 """后台认证接口。"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.security import (
+    clear_auth_cookies,
     create_access_token,
     create_refresh_token,
     get_current_user,
     persist_refresh_token,
     require_token_role,
     revoke_all_user_refresh_tokens,
+    set_auth_cookies,
     verify_password,
 )
 from app.models.auth import User
@@ -47,12 +49,19 @@ router = APIRouter(prefix="/admin/auth", tags=["admin-auth"])
 @router.post("/login", summary="后台登录")
 async def login(
     payload: LoginRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     """后台管理员或作者登录。"""
 
+    from app.core.login_lockout import tracker
+
+    lock_key = f"admin:{payload.username}"
+    tracker.check(lock_key)
+
     user = await get_user_by_username(session, payload.username)
     if user is None or not verify_password(payload.password, user.password_hash):
+        tracker.record_failure(lock_key)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户名或密码错误")
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="当前用户已被禁用")
@@ -65,12 +74,14 @@ async def login(
     token = create_access_token(user.username, roles=user_roles)
     refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
+    set_auth_cookies(response, token, refresh)
     return success_response(TokenResponse(access_token=token, refresh_token=refresh).model_dump())
 
 
 @router.post("/refresh", summary="刷新访问令牌")
 async def refresh_token(
     payload: RefreshRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     """使用刷新令牌获取新的访问令牌和刷新令牌。"""
@@ -109,12 +120,14 @@ async def refresh_token(
     new_access = create_access_token(user.username, roles=user_roles)
     new_refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
+    set_auth_cookies(response, new_access, new_refresh)
     return success_response(TokenResponse(access_token=new_access, refresh_token=new_refresh).model_dump())
 
 
 @router.post("/revoke", summary="撤销刷新令牌（登出）")
 async def revoke_token(
     payload: RevokeRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
@@ -142,6 +155,7 @@ async def revoke_token(
             rt.revoked = True
             await session.commit()
 
+    clear_auth_cookies(response)
     return success_response(None)
 
 

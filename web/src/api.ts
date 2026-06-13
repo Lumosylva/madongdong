@@ -4,13 +4,12 @@ import { resolveAssetUrl } from '../../assets'
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
 
-const getToken = () => localStorage.getItem('md_web_token') || ''
-
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const { headers: extraHeaders, ...rest } = init ?? {}
   const response = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
     ...rest,
     headers: {
       'Content-Type': 'application/json',
@@ -69,25 +68,27 @@ export const webApi = {
     })
   },
   submitComment(payload: Record<string, unknown>) {
-    const token = getToken()
     return request('/web/comments', {
       method: 'POST',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
       body: JSON.stringify(payload),
     })
   },
-  registerReader(payload: { username: string; password: string; nickname: string; email: string }) {
+  registerReader(payload: { username: string; password: string; nickname: string; email: string; captcha_token: string; captcha_answer: string }) {
     return request('/web/auth/register', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
   },
   loginReader(payload: { username: string; password: string }) {
-    return request<{ access_token: string; token_type: string }>('/web/auth/login', {
+    return request<{ access_token: string; refresh_token: string; token_type: string }>('/web/auth/login', {
       method: 'POST',
       body: JSON.stringify(payload),
+    })
+  },
+  logoutReader() {
+    return request('/web/auth/revoke', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token: '' }),
     })
   },
   getFriendLinks() {
@@ -103,16 +104,9 @@ export const webApi = {
     })
   },
   async getCurrentWebUser() {
-    const token = getToken()
-    if (!token) {
-      throw new Error('未登录')
-    }
-
     const response = await fetch(`${API_BASE}/web/auth/me`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
     })
 
     if (!response.ok) {
@@ -123,17 +117,10 @@ export const webApi = {
     return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
   },
   async updateCurrentWebUser(payload: { nickname: string; email: string; avatar?: string | null; password?: string | null }) {
-    const token = getToken()
-    if (!token) {
-      throw new Error('未登录')
-    }
-
     const response = await fetch(`${API_BASE}/web/auth/me`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
 

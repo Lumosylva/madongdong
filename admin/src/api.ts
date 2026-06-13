@@ -12,23 +12,21 @@ type WrappedResponse<T> = {
   data: T
 }
 
-const getToken = () => localStorage.getItem('blog_admin_token') || ''
-
-const clearToken = () => localStorage.removeItem('blog_admin_token')
+export const isLoggedIn = () => document.cookie.split('; ').some(c => c.startsWith('logged_in='))
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
+    ...init,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: getToken() ? `Bearer ${getToken()}` : '',
       ...(init?.headers ?? {}),
     },
-    ...init,
   })
 
   if (!response.ok) {
     if (response.status === 401) {
-      clearToken()
+      document.cookie = 'logged_in=; path=/; max-age=0'
     }
 
     const rawText = await response.text()
@@ -56,6 +54,12 @@ export const adminApi = {
     return request<LoginResponse>('/admin/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
+    })
+  },
+  logout() {
+    return request('/admin/auth/revoke', {
+      method: 'POST',
+      body: JSON.stringify({ refresh_token: '' }),
     })
   },
   getMe(): Promise<WrappedResponse<AdminUser>> {
@@ -224,15 +228,13 @@ export const adminApi = {
 
     const response = await fetch(`${API_BASE}/admin/media/upload`, {
       method: 'POST',
-      headers: {
-        Authorization: getToken() ? `Bearer ${getToken()}` : '',
-      },
+      credentials: 'include',
       body: formData,
     })
 
     if (!response.ok) {
       if (response.status === 401) {
-        clearToken()
+        document.cookie = 'logged_in=; path=/; max-age=0'
       }
       throw new Error(await response.text())
     }

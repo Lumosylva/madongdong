@@ -128,8 +128,8 @@ const loadData = async () => {
 }
 
 const hydrateWelcomeName = async () => {
-  const token = localStorage.getItem('md_web_token')
-  if (!token) return
+  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+  if (!hasCookie) return
 
   if (localStorage.getItem(welcomeShownKey) === '1') {
     return

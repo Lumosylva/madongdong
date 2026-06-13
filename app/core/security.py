@@ -7,7 +7,7 @@ import secrets
 from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -43,6 +43,46 @@ def _hash_token(token: str) -> str:
 
 def _new_jti() -> str:
     return secrets.token_urlsafe(32)
+
+
+_COOKIE_SAMESITE = "lax"
+
+
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+    """将令牌设置为 httpOnly Cookie。"""
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite=_COOKIE_SAMESITE,
+        path="/",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite=_COOKIE_SAMESITE,
+        path="/",
+        max_age=settings.refresh_token_expire_minutes * 60,
+    )
+    response.set_cookie(
+        key="logged_in",
+        value="1",
+        httponly=False,
+        samesite=_COOKIE_SAMESITE,
+        path="/",
+        max_age=settings.refresh_token_expire_minutes * 60,
+    )
+
+
+def clear_auth_cookies(response: Response) -> None:
+    """清除认证 Cookie。"""
+
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="refresh_token", path="/")
+    response.delete_cookie(key="logged_in", path="/")
 
 
 def create_access_token(subject: str, roles: list[str] | None = None) -> str:
@@ -118,18 +158,23 @@ async def _is_token_revoked(session: AsyncSession, jti: str) -> bool:
 
 
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
     session: AsyncSession = Depends(get_db_session),
 ) -> User:
     """获取当前登录用户。"""
 
-    if credentials is None:
+    token: str | None = None
+    if credentials:
+        token = credentials.credentials
+    else:
+        token = request.cookies.get("access_token")
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="未提供认证令牌",
         )
-
-    token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         token_data = TokenPayload(**payload)
@@ -157,15 +202,18 @@ async def get_current_user(
 
 
 async def get_current_user_optional(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
     session: AsyncSession = Depends(get_db_session),
 ) -> User | None:
     """获取可选登录用户。"""
 
     if credentials is None:
-        return None
-
-    token = credentials.credentials
+        token = request.cookies.get("access_token")
+        if not token:
+            return None
+    else:
+        token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         token_data = TokenPayload(**payload)

@@ -52,6 +52,13 @@
               </svg>
             </button>
           </label>
+          <label class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">🔢</span>
+            <input v-model="captchaAnswer" :placeholder="captchaQuestion || '请输入计算结果'" />
+            <button type="button" class="auth-password-toggle" title="刷新验证码" @click="loadCaptcha">
+              <svg viewBox="0 0 24 24" class="auth-password-icon" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </label>
           <p class="auth-field-hint">注册后可自动登录并进入首页。</p>
         </div>
 
@@ -90,6 +97,9 @@ const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
 const siteLogoUrl = ref('')
+const captchaQuestion = ref('')
+const captchaToken = ref('')
+const captchaAnswer = ref('')
 const authNavItems = computed(() => [
   { id: 1, title: '首页', path: '/', sort_order: 1, is_visible: true, target: null, description: null },
   { id: 2, title: '登录', path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
@@ -104,6 +114,18 @@ const applyTheme = (value: ThemeMode) => {
 
 const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const loadCaptcha = async () => {
+  try {
+    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
+    const data = await res.json() as { question: string; token: string }
+    captchaQuestion.value = data.question
+    captchaToken.value = data.token
+    captchaAnswer.value = ''
+  } catch {
+    captchaQuestion.value = '加载失败，请刷新'
+  }
 }
 
 const loadSiteLogo = async () => {
@@ -128,12 +150,13 @@ const submit = async () => {
       nickname: nickname.value.trim(),
       email: email.value.trim(),
       password: password.value,
+      captcha_token: captchaToken.value,
+      captcha_answer: captchaAnswer.value,
     })
-    const token = await webApi.loginReader({
+    await webApi.loginReader({
       username: username.value.trim(),
       password: password.value,
     })
-    localStorage.setItem('md_web_token', token.access_token)
     status.value = 'success'
     message.value = '注册成功，正在自动登录并跳转首页...'
     const displayName = nickname.value.trim() || username.value.trim()
@@ -150,6 +173,7 @@ const submit = async () => {
   } catch (error) {
     status.value = 'error'
     message.value = error instanceof Error ? error.message : '注册失败'
+    await loadCaptcha()
   } finally {
     submitting.value = false
   }
@@ -159,6 +183,6 @@ onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
   document.title = buildPageTitle('用户注册')
-  await loadSiteLogo()
+  await Promise.all([loadSiteLogo(), loadCaptcha()])
 })
 </script>

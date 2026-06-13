@@ -1,11 +1,12 @@
 """前台公开接口。"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.security import (
+    clear_auth_cookies,
     create_access_token,
     create_refresh_token,
     get_current_user,
@@ -13,6 +14,7 @@ from app.core.security import (
     persist_refresh_token,
     require_token_role,
     revoke_all_user_refresh_tokens,
+    set_auth_cookies,
     verify_password,
 )
 from app.models.auth import User
@@ -182,11 +184,19 @@ async def submit_friend_link(
     return FriendLinkPublicResponse.model_validate(link)
 
 
+@router.get('/captcha', summary='获取验证码')
+async def get_captcha():
+    from app.core.captcha import generate_captcha
+    return generate_captcha()
+
+
 @router.post('/auth/register', summary='读者注册')
 async def reader_register(
     payload: ReaderRegisterRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> CurrentUserResponse:
+    from app.core.captcha import verify_captcha
+    verify_captcha(payload.captcha_token, payload.captcha_answer)
     user = await register_reader_user(
         session=session,
         username=payload.username,
@@ -200,6 +210,7 @@ async def reader_register(
 @router.post('/auth/login', summary='读者登录')
 async def reader_login(
     payload: LoginRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> TokenResponse:
     user = await get_user_by_username(session, payload.username)
@@ -216,12 +227,14 @@ async def reader_login(
     token = create_access_token(user.username, roles=user_roles)
     refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
+    set_auth_cookies(response, token, refresh)
     return TokenResponse(access_token=token, refresh_token=refresh)
 
 
 @router.post('/auth/refresh', summary='刷新访问令牌')
 async def reader_refresh_token(
     payload: RefreshRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> TokenResponse:
     """使用刷新令牌获取新的访问令牌和刷新令牌。"""
@@ -260,12 +273,14 @@ async def reader_refresh_token(
     new_access = create_access_token(user.username, roles=user_roles)
     new_refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
+    set_auth_cookies(response, new_access, new_refresh)
     return TokenResponse(access_token=new_access, refresh_token=new_refresh)
 
 
 @router.post('/auth/revoke', summary='撤销刷新令牌（登出）')
 async def reader_revoke_token(
     payload: RevokeRequest,
+    response: Response,
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> None:
@@ -292,6 +307,8 @@ async def reader_revoke_token(
         if rt:
             rt.revoked = True
             await session.commit()
+
+    clear_auth_cookies(response)
 
 
 @router.get('/auth/me', summary='获取前台当前登录用户')

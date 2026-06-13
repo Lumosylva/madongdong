@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     app_name: str = "MaDongDong Blog"
     api_v1_prefix: str = "/api/v1"
     debug: bool = False
+    sql_echo: bool = False
 
     sqlite_file: str = "madongdong.db"
     database_url: str = "sqlite+aiosqlite:///./madongdong.db"

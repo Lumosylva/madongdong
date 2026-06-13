@@ -47,6 +47,8 @@ class ReaderRegisterRequest(BaseModel):
     password: str = Field(min_length=6, max_length=128)
     nickname: str = Field(min_length=1, max_length=100)
     email: EmailStr
+    captcha_token: str = Field(min_length=1)
+    captcha_answer: str = Field(min_length=1)
 
 
 class PermissionOut(BaseModel):

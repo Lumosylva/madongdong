@@ -729,7 +729,11 @@ const openProfile = async () => {
 
 const logout = async () => {
   isUserMenuOpen.value = false
-  localStorage.removeItem('blog_admin_token')
+  try {
+    await adminApi.logout()
+  } catch {
+    // ignore
+  }
   await router.push('/login')
 }
 
@@ -799,7 +803,7 @@ const loadAll = async () => {
   } catch (error) {
     const message = error instanceof Error ? error.message : '加载后台数据失败'
     if (message.includes('401') || message.includes('未提供认证令牌') || message.includes('无效的认证令牌')) {
-      localStorage.removeItem('blog_admin_token')
+      document.cookie = 'logged_in=; path=/; max-age=0'
       await router.push('/login')
       return
     }

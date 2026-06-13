@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from sqlalchemy import inspect, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import engine
 from app.core.security import get_password_hash
 from app.models.article import Category
 from app.models.auth import Permission, Role, User
 from app.models.site import NavItem, SiteSetting
 from app.schemas.install import InstallRequest
+
+_INSTALLED_MARKER = Path(settings.upload_dir).parent / ".installed"
 
 DEFAULT_ROLES = {
     'admin': '系统管理员',
@@ -67,6 +72,9 @@ async def _ensure_schema_ready(session: AsyncSession) -> bool:
 
 async def get_install_state(session: AsyncSession) -> tuple[bool, bool]:
     """检查系统是否已安装。"""
+
+    if _INSTALLED_MARKER.exists():
+        return True, True
 
     try:
         schema_ready = await _ensure_schema_ready(session)
@@ -183,3 +191,6 @@ async def perform_install(session: AsyncSession, payload: InstallRequest) -> Non
         session.add(Category(name='未分类', slug='uncategorized', description='系统默认文章分类'))
 
     await session.commit()
+
+    _INSTALLED_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    _INSTALLED_MARKER.write_text("installed")

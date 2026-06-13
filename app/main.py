@@ -18,6 +18,7 @@ from app.api.web import router as web_router
 from app.core.config import settings
 from app.core.init_db import init_db
 from app.core.rate_limit import RateLimitMiddleware
+from app.core.security_headers import SecurityHeadersMiddleware
 
 
 @asynccontextmanager
@@ -38,8 +39,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "Retry-After"],
 )
 app.add_middleware(
     RateLimitMiddleware,
@@ -54,6 +56,7 @@ app.add_middleware(
     },
     default=(120, 60),
 )
+app.add_middleware(SecurityHeadersMiddleware)
 app.mount(settings.upload_url_prefix, StaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(health_router)

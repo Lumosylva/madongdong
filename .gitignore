@@ -32,3 +32,4 @@ AGENTS.md
 admin\.env
 web\.env
 SECURITY_AUDIT.md
+.installed

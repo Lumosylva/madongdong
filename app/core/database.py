@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
     """SQLAlchemy 模型基类。"""
 
 
-engine = create_async_engine(settings.database_url, echo=settings.debug, future=True)
+engine = create_async_engine(settings.database_url, echo=settings.sql_echo, future=True)
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,

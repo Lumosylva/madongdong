@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { adminApi } from './api'
+import { adminApi, isLoggedIn } from './api'
 import DashboardView from './views/DashboardView.vue'
 import LoginView from './views/LoginView.vue'
 import MdEditorV3ProbeView from './views/MdEditorV3ProbeView.vue'
-
-const hasToken = () => Boolean(localStorage.getItem('blog_admin_token'))
 
 const routerBase = (import.meta.env.BASE_URL || '/admin').replace(/\/$/, '') || '/admin'
 
@@ -20,18 +18,18 @@ export const router = createRouter({
 
 router.beforeEach(async (to) => {
   if (!to.meta.requiresAuth) {
-    if (to.name === 'login' && hasToken()) {
+    if (to.name === 'login' && isLoggedIn()) {
       try {
         await adminApi.getMe()
         return '/'
       } catch {
-        localStorage.removeItem('blog_admin_token')
+        document.cookie = 'logged_in=; path=/; max-age=0'
       }
     }
     return true
   }
 
-  if (!hasToken()) {
+  if (!isLoggedIn()) {
     return '/login'
   }
 
@@ -39,7 +37,7 @@ router.beforeEach(async (to) => {
     await adminApi.getMe()
     return true
   } catch {
-    localStorage.removeItem('blog_admin_token')
+    document.cookie = 'logged_in=; path=/; max-age=0'
     return '/login'
   }
 })

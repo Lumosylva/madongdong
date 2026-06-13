@@ -85,7 +85,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { adminApi } from '../api'
+import { adminApi, isLoggedIn } from '../api'
 import { buildPageTitle } from '../site-meta'
 
 const router = useRouter()
@@ -103,8 +103,7 @@ const submit = async () => {
   loading.value = true
   errorMessage.value = ''
   try {
-    const response = await adminApi.login(username.value, password.value)
-    localStorage.setItem('blog_admin_token', response.data.access_token)
+    await adminApi.login(username.value, password.value)
     await router.push('/')
   } catch (error) {
     const message = error instanceof Error ? error.message : '登录失败，请稍后重试'
@@ -123,15 +122,14 @@ const submit = async () => {
 onMounted(async () => {
   applyTitle()
 
-  const token = localStorage.getItem('blog_admin_token')
-  if (!token) {
+  if (!isLoggedIn()) {
     return
   }
   try {
     await adminApi.getMe()
     await router.replace('/')
   } catch {
-    localStorage.removeItem('blog_admin_token')
+    document.cookie = 'logged_in=; path=/; max-age=0'
   }
 })
 </script>
