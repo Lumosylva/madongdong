@@ -158,7 +158,7 @@ onMounted(async () => {
     await adminApi.getMe()
     await router.replace('/')
   } catch {
-    document.cookie = 'logged_in=; path=/; max-age=0'
+    document.cookie = 'admin_logged_in=; path=/; max-age=0'
   }
 })
 </script>

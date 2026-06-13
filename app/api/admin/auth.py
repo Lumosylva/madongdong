@@ -79,7 +79,7 @@ async def login(
     token = create_access_token(user.id, roles=user_roles)
     refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
-    set_auth_cookies(response, token, refresh)
+    set_auth_cookies(response, token, refresh, source="admin")
     return success_response({"message": "登录成功"})
 
 
@@ -125,7 +125,7 @@ async def refresh_token(
     new_access = create_access_token(user.id, roles=user_roles)
     new_refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
-    set_auth_cookies(response, new_access, new_refresh)
+    set_auth_cookies(response, new_access, new_refresh, source="admin")
     return success_response(TokenResponse(access_token=new_access, refresh_token=new_refresh).model_dump())
 
 
@@ -145,13 +145,13 @@ async def revoke_token(
     from sqlalchemy import select as _select
 
     if not payload.refresh_token:
-        clear_auth_cookies(response)
+        clear_auth_cookies(response, source="admin")
         return success_response(None)
 
     try:
         data = _jwt.decode(payload.refresh_token, _settings.secret_key, algorithms=[_settings.algorithm])
     except (JWTError, ValueError):
-        clear_auth_cookies(response)
+        clear_auth_cookies(response, source="admin")
         return success_response(None)
 
     if data.get("sub") != current_user.username:
@@ -165,7 +165,7 @@ async def revoke_token(
             rt.revoked = True
             await session.commit()
 
-    clear_auth_cookies(response)
+    clear_auth_cookies(response, source="admin")
     return success_response(None)
 
 

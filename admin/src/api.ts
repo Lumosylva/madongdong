@@ -12,7 +12,7 @@ type WrappedResponse<T> = {
   data: T
 }
 
-export const isLoggedIn = () => document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+export const isLoggedIn = () => document.cookie.split('; ').some(c => c.startsWith('admin_logged_in='))
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -26,7 +26,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     if (response.status === 401) {
-      document.cookie = 'logged_in=; path=/; max-age=0'
+      document.cookie = 'admin_logged_in=; path=/; max-age=0'
     }
 
     const rawText = await response.text()
@@ -234,7 +234,7 @@ export const adminApi = {
 
     if (!response.ok) {
       if (response.status === 401) {
-        document.cookie = 'logged_in=; path=/; max-age=0'
+        document.cookie = 'admin_logged_in=; path=/; max-age=0'
       }
       throw new Error(await response.text())
     }

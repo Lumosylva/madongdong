@@ -238,7 +238,7 @@ async def reader_login(
     token = create_access_token(user.id, roles=user_roles)
     refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
-    set_auth_cookies(response, token, refresh)
+    set_auth_cookies(response, token, refresh, source="web")
     return {"access_token": token, "refresh_token": refresh, "token_type": "bearer"}
 
 
@@ -284,7 +284,7 @@ async def reader_refresh_token(
     new_access = create_access_token(user.id, roles=user_roles)
     new_refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
-    set_auth_cookies(response, new_access, new_refresh)
+    set_auth_cookies(response, new_access, new_refresh, source="web")
     return TokenResponse(access_token=new_access, refresh_token=new_refresh)
 
 
@@ -304,13 +304,13 @@ async def reader_revoke_token(
     from sqlalchemy import select as _select
 
     if not payload.refresh_token:
-        clear_auth_cookies(response)
+        clear_auth_cookies(response, source="web")
         return
 
     try:
         data = _jwt.decode(payload.refresh_token, _settings.secret_key, algorithms=[_settings.algorithm])
     except (JWTError, ValueError):
-        clear_auth_cookies(response)
+        clear_auth_cookies(response, source="web")
         return
 
     if data.get('sub') != current_user.username:
@@ -324,7 +324,7 @@ async def reader_revoke_token(
             rt.revoked = True
             await session.commit()
 
-    clear_auth_cookies(response)
+    clear_auth_cookies(response, source="web")
 
 
 @router.get('/auth/me', summary='获取前台当前登录用户')

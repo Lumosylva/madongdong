@@ -128,7 +128,7 @@ const loadData = async () => {
 }
 
 const hydrateWelcomeName = async () => {
-  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
   if (!hasCookie) return
 
   if (localStorage.getItem(welcomeShownKey) === '1') {

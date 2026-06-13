@@ -23,7 +23,7 @@ router.beforeEach(async (to) => {
         await adminApi.getMe()
         return '/'
       } catch {
-        document.cookie = 'logged_in=; path=/; max-age=0'
+        document.cookie = 'admin_logged_in=; path=/; max-age=0'
       }
     }
     return true

@@ -269,7 +269,7 @@ onMounted(async () => {
     // ignore
   }
 
-  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
   if (!hasCookie) {
     isLoggedIn.value = false
     return

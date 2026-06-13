@@ -191,7 +191,7 @@ const accountMenuRef = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
 const isLoggedIn = computed(() => {
-  return document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+  return document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
 })
 const accountName = computed(() => localStorage.getItem('md-reader-nickname') || '已登录用户')
 const accountEntryLabel = computed(() => (isLoggedIn.value ? `账户：${accountName.value}` : '登录 / 注册'))
@@ -366,9 +366,9 @@ const logout = async () => {
   } catch {
     // ignore errors
   }
-  document.cookie = 'logged_in=; path=/; max-age=0'
-  document.cookie = 'access_token=; path=/; max-age=0'
-  document.cookie = 'refresh_token=; path=/; max-age=0'
+  document.cookie = 'web_logged_in=; path=/; max-age=0'
+  document.cookie = 'web_access_token=; path=/; max-age=0'
+  document.cookie = 'web_refresh_token=; path=/; max-age=0'
   localStorage.removeItem('md-reader-nickname')
   localStorage.removeItem('md-reader-email')
   accountMenuOpen.value = false

@@ -48,12 +48,18 @@ def _new_jti() -> str:
 _COOKIE_SAMESITE = "lax"
 
 
-def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
+def _cookie_keys(source: str) -> tuple[str, str, str]:
+    prefix = f"{source}_" if source else ""
+    return f"{prefix}access_token", f"{prefix}refresh_token", f"{prefix}logged_in"
+
+
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str, source: str = "") -> None:
     """将令牌设置为 httpOnly Cookie。"""
 
     secure = settings.cookie_secure
+    at_key, rt_key, li_key = _cookie_keys(source)
     response.set_cookie(
-        key="access_token",
+        key=at_key,
         value=access_token,
         httponly=True,
         samesite=_COOKIE_SAMESITE,
@@ -62,7 +68,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         max_age=settings.access_token_expire_minutes * 60,
     )
     response.set_cookie(
-        key="refresh_token",
+        key=rt_key,
         value=refresh_token,
         httponly=True,
         samesite=_COOKIE_SAMESITE,
@@ -71,7 +77,7 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
         max_age=settings.refresh_token_expire_minutes * 60,
     )
     response.set_cookie(
-        key="logged_in",
+        key=li_key,
         value="1",
         httponly=False,
         samesite=_COOKIE_SAMESITE,
@@ -81,12 +87,13 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str) 
     )
 
 
-def clear_auth_cookies(response: Response) -> None:
+def clear_auth_cookies(response: Response, source: str = "") -> None:
     """清除认证 Cookie。"""
 
-    response.delete_cookie(key="access_token", path="/")
-    response.delete_cookie(key="refresh_token", path="/")
-    response.delete_cookie(key="logged_in", path="/")
+    at_key, rt_key, li_key = _cookie_keys(source)
+    response.delete_cookie(key=at_key, path="/")
+    response.delete_cookie(key=rt_key, path="/")
+    response.delete_cookie(key=li_key, path="/")
 
 
 def create_access_token(subject: int, roles: list[str] | None = None) -> str:
@@ -172,7 +179,11 @@ async def get_current_user(
     if credentials:
         token = credentials.credentials
     else:
-        token = request.cookies.get("access_token")
+        token = (
+            request.cookies.get("admin_access_token")
+            or request.cookies.get("web_access_token")
+            or request.cookies.get("access_token")
+        )
 
     if not token:
         raise HTTPException(
@@ -213,7 +224,11 @@ async def get_current_user_optional(
     """获取可选登录用户。"""
 
     if credentials is None:
-        token = request.cookies.get("access_token")
+        token = (
+            request.cookies.get("admin_access_token")
+            or request.cookies.get("web_access_token")
+            or request.cookies.get("access_token")
+        )
         if not token:
             return None
     else:

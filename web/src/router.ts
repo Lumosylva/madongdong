@@ -114,7 +114,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresAuth) {
-    const loggedIn = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+    const loggedIn = document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
     if (!loggedIn) {
       return { name: 'login' }
     }
