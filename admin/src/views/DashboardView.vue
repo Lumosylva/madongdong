@@ -193,6 +193,10 @@ const siteSubtitle = ref('')
 const siteLogo = ref('')
 const icpBeian = ref('')
 const copyrightText = ref('')
+const serverDomain = ref('')
+const serverSecretKey = ref('')
+const serverDatabaseUrl = ref('')
+const serverUploadDir = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -544,6 +548,10 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         logoCropApplied: logoCropApplied.value,
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
+        serverDomain: serverDomain.value,
+        serverSecretKey: serverSecretKey.value,
+        serverDatabaseUrl: serverDatabaseUrl.value,
+        serverUploadDir: serverUploadDir.value,
       }
     default:
       return {}
@@ -635,8 +643,18 @@ const activePanelListeners = computed(() => {
         'update:icpBeian': (value: string) => {
           icpBeian.value = value
         },
+        'update:serverDomain': (value: string) => {
+          serverDomain.value = value
+        },
+        'update:serverSecretKey': (value: string) => {
+          serverSecretKey.value = value
+        },
+        'detect-domain': () => {
+          serverDomain.value = window.location.hostname
+        },
         'select-logo': handleSiteLogoSelect,
         save: saveSite,
+        'save-server-config': saveServerConfig,
       }
     default:
       return {}
@@ -780,7 +798,7 @@ const loadAll = async () => {
   try {
     const meRes = await adminApi.getMe()
     currentUser.value = meRes.data
-    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, linkRes, siteRes, userRes] = await Promise.all([
+    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, linkRes, siteRes, userRes, serverCfgRes] = await Promise.all([
       adminApi.getArticles(),
       adminApi.getDeletedArticles(),
       adminApi.getCategories(),
@@ -789,6 +807,7 @@ const loadAll = async () => {
       adminApi.getFriendLinks(),
       adminApi.getSiteSettings(),
       isAdmin.value ? adminApi.getUsers() : Promise.resolve({ data: [] }),
+      adminApi.getServerConfig(),
     ])
     articles.value = articleRes.data
     deletedArticles.value = deletedRes.data
@@ -804,6 +823,11 @@ const loadAll = async () => {
     applyAdminMeta()
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
+    if (serverCfgRes.data) {
+      serverDomain.value = serverCfgRes.data.site_domain || ''
+      serverDatabaseUrl.value = serverCfgRes.data.database_url || ''
+      serverUploadDir.value = serverCfgRes.data.upload_dir || ''
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : '加载后台数据失败'
     if (message.includes('401') || message.includes('未提供认证令牌') || message.includes('无效的认证令牌')) {
@@ -1117,6 +1141,19 @@ const saveSite = async () => {
     showSiteToast('设置保存成功', 'success')
   } catch (error) {
     showSiteToast(error instanceof Error ? error.message : '设置保存失败', 'error')
+  }
+}
+
+const saveServerConfig = async () => {
+  try {
+    const res = await adminApi.updateServerConfig({
+      secret_key: serverSecretKey.value,
+      site_domain: serverDomain.value,
+    })
+    serverSecretKey.value = ''
+    showSiteToast(res.data?.message || '服务器配置保存成功', 'success')
+  } catch (error) {
+    showSiteToast(error instanceof Error ? error.message : '服务器配置保存失败', 'error')
   }
 }
 

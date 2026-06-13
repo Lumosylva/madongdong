@@ -428,6 +428,18 @@ CORS_ORIGINS=["https://your-domain.com"]
 
 ## 预览
 
+### 初始化安装步骤一
+
+![](assets/images/22.png)
+
+### 初始化安装步骤二
+
+![](assets/images/23.png)
+
+### 初始化安装步骤三
+
+![](assets/images/24.png)
+
 ### 首页
 
 ![](assets/images/01.png)

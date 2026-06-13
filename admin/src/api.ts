@@ -205,6 +205,15 @@ export const adminApi = {
       body: JSON.stringify(payload),
     })
   },
+  getServerConfig(): Promise<WrappedResponse<{ secret_key: string; database_url: string; site_domain: string; upload_dir: string }>> {
+    return request<WrappedResponse<{ secret_key: string; database_url: string; site_domain: string; upload_dir: string }>>('/admin/site/server-config')
+  },
+  updateServerConfig(payload: { secret_key?: string; site_domain?: string }): Promise<WrappedResponse<{ message: string }>> {
+    return request<WrappedResponse<{ message: string }>>('/admin/site/server-config', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
   getFriendLinks(): Promise<WrappedResponse<FriendLinkItem[]>> {
     return request<WrappedResponse<FriendLinkItem[]>>('/admin/friend-links')
   },

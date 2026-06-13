@@ -203,13 +203,20 @@ def _write_env_file(payload: InstallRequest) -> None:
 
     secret = payload.secret_key.strip() or generate_secret_key()
     database_url = payload.database_url.strip() or "sqlite+aiosqlite:///./madongdong.db"
-    domain = payload.site_domain.strip()
+    domain = payload.site_domain.strip().lower()
 
     cors_origins = '["http://localhost:5173","http://localhost:5174"]'
     if domain:
-        protocol = "https" if "://" not in domain else ""
-        origin = f"{protocol}://{domain.lstrip('/')}" if protocol else domain
-        cors_origins = f'["{origin}","http://localhost:5173","http://localhost:5174"]'
+        has_protocol = "://" in domain
+        has_www = domain.startswith("www.")
+        bare = domain.split("://", 1)[1] if has_protocol else domain
+        bare = bare.removeprefix("www.")
+
+        origins = []
+        for proto in ("https", "http"):
+            origins.append(f"{proto}://{bare}")
+            origins.append(f"{proto}://www.{bare}")
+        cors_origins = "[" + ",".join(f'"{o}"' for o in origins) + "]"
 
     lines = [
         "# MaDongDong Blog 后端环境变量",
@@ -222,6 +229,8 @@ def _write_env_file(payload: InstallRequest) -> None:
         "COOKIE_SECURE=false",
         "TRUSTED_PROXY=false",
         f"CORS_ORIGINS={cors_origins}",
+        "UPLOAD_DIR=app/static/uploads",
+        "UPLOAD_MAX_SIZE=10485760",
     ]
 
     _ENV_FILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
