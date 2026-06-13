@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import require_role
+from app.core.security import require_token_role
 from app.models.auth import User
 from app.models.friend_link import FriendLink
 from app.schemas.friend_link import FriendLinkAdminUpdateRequest, FriendLinkPublicResponse
@@ -17,7 +17,7 @@ router = APIRouter(prefix='/admin/friend-links', tags=['admin-friend-links'])
 @router.get('', summary='查询友情链接')
 async def list_friend_links(
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role('admin')),
+    _: User = Depends(require_token_role('admin')),
 ) -> dict[str, object]:
     result = await session.execute(select(FriendLink).order_by(FriendLink.id.desc()))
     items = [FriendLinkPublicResponse.model_validate(item).model_dump() for item in result.scalars().all()]
@@ -29,7 +29,7 @@ async def update_friend_link(
     link_id: int,
     payload: FriendLinkAdminUpdateRequest,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role('admin')),
+    _: User = Depends(require_token_role('admin')),
 ) -> dict[str, object]:
     result = await session.execute(select(FriendLink).where(FriendLink.id == link_id))
     item = result.scalar_one_or_none()
@@ -56,7 +56,7 @@ async def update_friend_link(
 async def delete_friend_link(
     link_id: int,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role('admin')),
+    _: User = Depends(require_token_role('admin')),
 ) -> dict[str, object]:
     result = await session.execute(select(FriendLink).where(FriendLink.id == link_id))
     item = result.scalar_one_or_none()

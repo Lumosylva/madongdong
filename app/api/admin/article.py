@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import get_current_user, require_role
+from app.core.security import get_current_user, require_token_role
 from app.models.auth import User
 from app.schemas.article import (
     ArticleCreate,
@@ -69,7 +69,8 @@ async def get_article_detail(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     article = await get_article_or_404(session, article_id)
-    if all(role.name != "admin" for role in current_user.roles) and article.author_id != current_user.id:
+    token_roles = getattr(current_user, "_token_roles", [])
+    if "admin" not in token_roles and article.author_id != current_user.id:
         return success_response({})
     return success_response(ArticleDetailResponse.model_validate(article).model_dump())
 
@@ -121,7 +122,7 @@ async def approve_article_endpoint(
     article_id: int,
     payload: ArticleReviewRequest,
     session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     article = await approve_article(session, article_id, current_user, payload.comment)
     return success_response(ArticleDetailResponse.model_validate(article).model_dump())
@@ -132,7 +133,7 @@ async def reject_article_endpoint(
     article_id: int,
     payload: ArticleReviewRequest,
     session: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     article = await reject_article(session, article_id, current_user, payload.comment)
     return success_response(ArticleDetailResponse.model_validate(article).model_dump())
@@ -151,7 +152,7 @@ async def get_categories(
 async def create_category_endpoint(
     payload: CategoryCreate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     category = await create_category(session, payload.name, payload.slug, payload.description)
     return success_response(CategoryResponse.model_validate(category).model_dump())
@@ -162,7 +163,7 @@ async def update_category_endpoint(
     category_id: int,
     payload: CategoryUpdate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     category = await update_category(session, category_id, payload.name, payload.slug, payload.description)
     return success_response(CategoryResponse.model_validate(category).model_dump())
@@ -172,7 +173,7 @@ async def update_category_endpoint(
 async def delete_category_endpoint(
     category_id: int,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     await delete_category(session, category_id)
     return success_response({"deleted": True, "id": category_id})
@@ -191,7 +192,7 @@ async def get_tags(
 async def create_tag_endpoint(
     payload: TagCreate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     tag = await create_tag(session, payload.name, payload.slug)
     return success_response(TagResponse.model_validate(tag).model_dump())
@@ -202,7 +203,7 @@ async def update_tag_endpoint(
     tag_id: int,
     payload: TagUpdate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     tag = await update_tag(session, tag_id, payload.name, payload.slug)
     return success_response(TagResponse.model_validate(tag).model_dump())

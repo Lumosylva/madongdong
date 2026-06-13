@@ -11,6 +11,7 @@ from app.core.security import (
     get_current_user,
     get_current_user_optional,
     persist_refresh_token,
+    require_token_role,
     revoke_all_user_refresh_tokens,
     verify_password,
 )
@@ -211,8 +212,9 @@ async def reader_login(
     if 'reader' not in role_names:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台登录')
 
-    token = create_access_token(user.username)
-    refresh = create_refresh_token(user.username)
+    user_roles = list(role_names)
+    token = create_access_token(user.username, roles=user_roles)
+    refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
     return TokenResponse(access_token=token, refresh_token=refresh)
 
@@ -254,8 +256,9 @@ async def reader_refresh_token(
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='用户不存在或已被禁用')
 
-    new_access = create_access_token(user.username)
-    new_refresh = create_refresh_token(user.username)
+    user_roles = [str(role.name or '').strip().lower() for role in user.roles]
+    new_access = create_access_token(user.username, roles=user_roles)
+    new_refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
     return TokenResponse(access_token=new_access, refresh_token=new_refresh)
 
@@ -293,23 +296,17 @@ async def reader_revoke_token(
 
 @router.get('/auth/me', summary='获取前台当前登录用户')
 async def reader_me(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_token_role('reader')),
 ) -> CurrentUserResponse:
-    role_names = {str(role.name or '').strip().lower() for role in current_user.roles}
-    if 'reader' not in role_names:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台使用')
     return CurrentUserResponse.model_validate(current_user)
 
 
 @router.put('/auth/me', summary='更新前台当前登录用户资料')
 async def reader_update_me(
     payload: ProfileUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_token_role('reader')),
     session: AsyncSession = Depends(get_db_session),
 ) -> CurrentUserResponse:
-    role_names = {str(role.name or '').strip().lower() for role in current_user.roles}
-    if 'reader' not in role_names:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台使用')
     user = await update_current_user_profile(
         session,
         current_user,

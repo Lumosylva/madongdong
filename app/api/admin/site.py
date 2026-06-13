@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.core.security import require_role
+from app.core.security import require_token_role
 from app.models.auth import User
 from app.schemas.site import NavItemCreate, NavItemResponse, NavItemUpdate, SiteSettingResponse, SiteSettingUpdate
 from app.services.site import (
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/admin/site", tags=["admin-site"])
 @router.get("/settings", summary="获取站点配置")
 async def get_site_setting_endpoint(
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     setting = await get_or_create_site_setting(session)
     return success_response(SiteSettingResponse.model_validate(setting).model_dump())
@@ -32,7 +32,7 @@ async def get_site_setting_endpoint(
 async def update_site_setting_endpoint(
     payload: SiteSettingUpdate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     setting = await update_site_setting(
         session=session,
@@ -50,7 +50,7 @@ async def update_site_setting_endpoint(
 @router.get("/nav-items", summary="查询导航项")
 async def get_nav_items_endpoint(
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     items = await list_nav_items(session)
     return success_response([NavItemResponse.model_validate(item).model_dump() for item in items])
@@ -60,7 +60,7 @@ async def get_nav_items_endpoint(
 async def create_nav_item_endpoint(
     payload: NavItemCreate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     item = await create_nav_item(
         session=session,
@@ -79,7 +79,7 @@ async def update_nav_item_endpoint(
     nav_id: int,
     payload: NavItemUpdate,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     item = await update_nav_item(
         session=session,

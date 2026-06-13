@@ -9,7 +9,7 @@ from app.core.security import (
     create_refresh_token,
     get_current_user,
     persist_refresh_token,
-    require_role,
+    require_token_role,
     revoke_all_user_refresh_tokens,
     verify_password,
 )
@@ -105,8 +105,9 @@ async def refresh_token(
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在或已被禁用")
 
-    new_access = create_access_token(user.username)
-    new_refresh = create_refresh_token(user.username)
+    user_roles = [role.name for role in user.roles]
+    new_access = create_access_token(user.username, roles=user_roles)
+    new_refresh = create_refresh_token(user.username, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
     return success_response(TokenResponse(access_token=new_access, refresh_token=new_refresh).model_dump())
 
@@ -172,7 +173,7 @@ async def update_me(
 
 @router.get("/users", summary="获取用户列表")
 async def get_users(
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     users = await list_users(session)
@@ -194,7 +195,7 @@ async def get_users(
 @router.post("/users", summary="创建用户")
 async def create_admin_user(
     payload: AdminUserCreateRequest,
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     user = await create_user(
@@ -223,7 +224,7 @@ async def create_admin_user(
 async def update_admin_user(
     user_id: int,
     payload: AdminUserUpdateRequest,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     user = await get_user_by_id(session, user_id)
@@ -257,7 +258,7 @@ async def update_admin_user(
 @router.delete("/users/{user_id}", summary="删除用户")
 async def delete_admin_user(
     user_id: int,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     if user_id == current_user.id:
@@ -272,7 +273,7 @@ async def delete_admin_user(
 @router.post("/users/batch/delete", summary="批量删除用户")
 async def batch_delete_admin_users(
     payload: AdminUserBatchDeleteRequest,
-    current_user: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     ids = [user_id for user_id in payload.user_ids if user_id != current_user.id]
@@ -283,7 +284,7 @@ async def batch_delete_admin_users(
 @router.post("/users/batch/role", summary="批量变更角色")
 async def batch_change_role(
     payload: AdminUserBatchRoleRequest,
-    _: User = Depends(require_role("admin")),
+    _: User = Depends(require_token_role("admin")),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, object]:
     await change_users_role(session, payload.user_ids, payload.role_name)
