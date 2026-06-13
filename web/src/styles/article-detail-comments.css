@@ -1,41 +1,40 @@
 undefined
 .comment-item-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 8px;
 }
 
 .comment-item-head strong {
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
+  flex: 0 0 auto;
 }
 
-.comment-item-head span {
-  color: var(--text-soft);
-  font-size: 12px;
-  line-height: 1.5;
-  flex-shrink: 0;
-}
-
-.comment-client-meta {
-  margin: 2px 0 10px;
+.comment-client-meta-inline {
   color: var(--text-soft);
   font-size: 12px;
   line-height: 1.5;
   letter-spacing: 0.01em;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.comment-client-meta:empty {
-  display: none;
+.comment-time {
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
-:root[data-theme='dark'] .comment-client-meta {
+:root[data-theme='dark'] .comment-client-meta-inline {
   color: color-mix(in srgb, var(--text-soft) 88%, white 12%);
 }
 

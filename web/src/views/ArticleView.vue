@@ -165,10 +165,8 @@
           <div class="comment-body">
             <div class="comment-item-head">
               <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
-              <span>{{ formatRelativeTime(comment.created_at) }}</span>
-            </div>
-            <div v-if="getClientMetaText(comment)" class="comment-client-meta">
-              {{ getClientMetaText(comment) }}
+              <span v-if="getClientMetaText(comment)" class="comment-client-meta-inline">{{ getClientMetaText(comment) }}</span>
+              <span class="comment-time">{{ formatRelativeTime(comment.created_at) }}</span>
             </div>
             <p>{{ comment.content }}</p>
           </div>
