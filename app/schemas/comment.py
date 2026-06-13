@@ -12,7 +12,7 @@ class CommentCreate(BaseModel):
     """创建评论请求。"""
 
     article_id: int
-    content: str = Field(min_length=1)
+    content: str = Field(min_length=1, max_length=2000)
     parent_id: int | None = None
     guest_nickname: str | None = Field(default=None, max_length=100)
     guest_email: EmailStr | None = None

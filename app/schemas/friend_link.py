@@ -1,6 +1,9 @@
 """友情链接相关数据结构。"""
 
+from __future__ import annotations
+
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -27,7 +30,7 @@ class FriendLinkAdminUpdateRequest(BaseModel):
     url: str | None = Field(default=None, max_length=500)
     description: str | None = Field(default=None, max_length=500)
     email: str | None = Field(default=None, max_length=255)
-    status: str | None = Field(default=None, max_length=20)
+    status: Literal['pending', 'approved', 'rejected'] | None = None
     source: str | None = Field(default=None, max_length=20)
 
     @field_validator('url')

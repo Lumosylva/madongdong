@@ -93,7 +93,7 @@ export const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
-      meta: { title: '个人中心' },
+      meta: { title: '个人中心', requiresAuth: true },
     },
   ],
 })
@@ -112,5 +112,13 @@ router.beforeEach(async (to) => {
   } catch {
     return { name: 'install' }
   }
+
+  if (to.meta.requiresAuth) {
+    const loggedIn = document.cookie.split('; ').some(c => c.startsWith('logged_in='))
+    if (!loggedIn) {
+      return { name: 'login' }
+    }
+  }
+
   return true
 })

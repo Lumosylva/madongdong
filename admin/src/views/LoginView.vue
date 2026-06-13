@@ -89,8 +89,8 @@ import { adminApi, isLoggedIn } from '../api'
 import { buildPageTitle } from '../site-meta'
 
 const router = useRouter()
-const username = ref('admin')
-const password = ref('admin123456')
+const username = ref('')
+const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)

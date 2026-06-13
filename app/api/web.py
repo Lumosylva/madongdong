@@ -25,7 +25,7 @@ from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
 from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
-from app.services.auth import get_user_by_username, register_reader_user, update_current_user_profile
+from app.services.auth import get_user_by_id, get_user_by_username, register_reader_user, update_current_user_profile
 from app.services.comment import create_comment
 from app.services.web import (
     get_archive_data,
@@ -213,8 +213,14 @@ async def reader_login(
     response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> TokenResponse:
+    from app.core.login_lockout import tracker
+
+    lock_key = f"reader:{payload.username}"
+    tracker.check(lock_key)
+
     user = await get_user_by_username(session, payload.username)
     if user is None or not verify_password(payload.password, user.password_hash):
+        tracker.record_failure(lock_key)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='用户名或密码错误')
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='当前用户已被禁用')
@@ -223,9 +229,10 @@ async def reader_login(
     if 'reader' not in role_names:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='该账号不支持在前台登录')
 
+    tracker.reset(lock_key)
     user_roles = list(role_names)
-    token = create_access_token(user.username, roles=user_roles)
-    refresh = create_refresh_token(user.username, roles=user_roles)
+    token = create_access_token(user.id, roles=user_roles)
+    refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
     set_auth_cookies(response, token, refresh)
     return TokenResponse(access_token=token, refresh_token=refresh)
@@ -265,13 +272,13 @@ async def reader_refresh_token(
     rt.revoked = True
     await session.commit()
 
-    user = await get_user_by_username(session, data['sub'])
+    user = await get_user_by_id(session, data['sub'])
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='用户不存在或已被禁用')
 
     user_roles = [str(role.name or '').strip().lower() for role in user.roles]
-    new_access = create_access_token(user.username, roles=user_roles)
-    new_refresh = create_refresh_token(user.username, roles=user_roles)
+    new_access = create_access_token(user.id, roles=user_roles)
+    new_refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
     set_auth_cookies(response, new_access, new_refresh)
     return TokenResponse(access_token=new_access, refresh_token=new_refresh)

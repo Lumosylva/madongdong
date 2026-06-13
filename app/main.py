@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app.api.admin.site import router as admin_site_router
 from app.api.admin.article import router as admin_article_router
@@ -18,6 +17,7 @@ from app.api.web import router as web_router
 from app.core.config import settings
 from app.core.init_db import init_db
 from app.core.rate_limit import RateLimitMiddleware
+from app.core.safe_static import SafeStaticFiles
 from app.core.security_headers import SecurityHeadersMiddleware
 
 
@@ -33,6 +33,8 @@ app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,
     lifespan=lifespan,
+    docs_url="/docs" if settings.debug else None,
+    redoc_url="/redoc" if settings.debug else None,
 )
 
 app.add_middleware(
@@ -57,7 +59,7 @@ app.add_middleware(
     default=(120, 60),
 )
 app.add_middleware(SecurityHeadersMiddleware)
-app.mount(settings.upload_url_prefix, StaticFiles(directory=settings.upload_dir), name="uploads")
+app.mount(settings.upload_url_prefix, SafeStaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(health_router)
 app.include_router(install_router, prefix=settings.api_v1_prefix)

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class TokenPayload(BaseModel):
     """JWT 载荷。"""
 
-    sub: str
+    sub: int
     exp: int
     type: str = "access"
     jti: str | None = None

@@ -52,13 +52,28 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def _ensure_secret_key(self) -> "Settings":
+    def _validate_settings(self) -> "Settings":
         if not self.secret_key:
             self.secret_key = secrets.token_urlsafe(48)
             logger.warning(
                 "SECRET_KEY 未设置，已自动生成随机密钥。"
                 "生产环境请在 .env 中显式设置 SECRET_KEY，否则每次重启后已有 Token 将失效。"
             )
+
+        if "*" in self.cors_origins:
+            raise ValueError(
+                "CORS_ORIGINS 不允许包含 '*'，请在 .env 中设置具体的生产域名"
+            )
+
+        all_localhost = all(
+            "localhost" in o or "127.0.0.1" in o
+            for o in self.cors_origins
+        )
+        if all_localhost:
+            logger.warning(
+                "CORS_ORIGINS 仅包含 localhost 地址，生产环境请在 .env 中配置实际域名"
+            )
+
         return self
 
     model_config = SettingsConfigDict(

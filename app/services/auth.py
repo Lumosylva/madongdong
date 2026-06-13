@@ -163,7 +163,7 @@ async def register_reader_user(
     role_result = await session.execute(select(Role).where(Role.name == "reader"))
     reader_role = role_result.scalar_one_or_none()
     if reader_role is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="默认读者角色不存在")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="注册服务暂不可用")
 
     user = User(
         username=username,

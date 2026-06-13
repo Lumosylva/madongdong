@@ -86,7 +86,8 @@ async def upload_media_file(
     if folder_id is not None:
         folder = await get_media_folder_or_404(session, folder_id)
 
-    suffix = Path(upload_file.filename or "file").suffix.lower()
+    safe_name = Path(upload_file.filename or "file").name
+    suffix = Path(safe_name).suffix.lower()
 
     if suffix not in settings.upload_allowed_extensions:
         raise HTTPException(

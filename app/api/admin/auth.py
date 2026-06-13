@@ -72,8 +72,8 @@ async def login(
 
     tracker.reset(lock_key)
     user_roles = list(role_names)
-    token = create_access_token(user.username, roles=user_roles)
-    refresh = create_refresh_token(user.username, roles=user_roles)
+    token = create_access_token(user.id, roles=user_roles)
+    refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, refresh)
     set_auth_cookies(response, token, refresh)
     return success_response(TokenResponse(access_token=token, refresh_token=refresh).model_dump())
@@ -113,13 +113,13 @@ async def refresh_token(
     rt.revoked = True
     await session.commit()
 
-    user = await get_user_by_username(session, data["sub"])
+    user = await get_user_by_id(session, data["sub"])
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在或已被禁用")
 
     user_roles = [role.name for role in user.roles]
-    new_access = create_access_token(user.username, roles=user_roles)
-    new_refresh = create_refresh_token(user.username, roles=user_roles)
+    new_access = create_access_token(user.id, roles=user_roles)
+    new_refresh = create_refresh_token(user.id, roles=user_roles)
     await persist_refresh_token(session, user.id, new_refresh)
     set_auth_cookies(response, new_access, new_refresh)
     return success_response(TokenResponse(access_token=new_access, refresh_token=new_refresh).model_dump())

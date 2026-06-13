@@ -61,7 +61,7 @@ class ArticleEditorPayload(BaseModel):
 
     title: str = Field(min_length=1, max_length=255)
     summary: str = Field(min_length=1, max_length=500)
-    content_markdown: str = Field(min_length=1)
+    content_markdown: str = Field(min_length=1, max_length=500000)
     cover_url: str | None = Field(default=None, max_length=500)
     category_id: int
     tag_ids: list[int] = Field(default_factory=list)

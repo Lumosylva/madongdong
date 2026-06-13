@@ -19,7 +19,7 @@ from app.core.database import get_db_session
 from app.models.auth import User
 from app.models.refresh_token import RefreshToken
 from app.schemas.auth import TokenPayload
-from app.services.auth import get_user_by_username
+from app.services.auth import get_user_by_id, get_user_by_username
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security_scheme = HTTPBearer(auto_error=False)
@@ -85,7 +85,7 @@ def clear_auth_cookies(response: Response) -> None:
     response.delete_cookie(key="logged_in", path="/")
 
 
-def create_access_token(subject: str, roles: list[str] | None = None) -> str:
+def create_access_token(subject: int, roles: list[str] | None = None) -> str:
     """创建访问令牌。"""
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
@@ -96,7 +96,7 @@ def create_access_token(subject: str, roles: list[str] | None = None) -> str:
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
-def create_refresh_token(subject: str, roles: list[str] | None = None) -> str:
+def create_refresh_token(subject: int, roles: list[str] | None = None) -> str:
     """创建刷新令牌。"""
 
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.refresh_token_expire_minutes)
@@ -191,7 +191,7 @@ async def get_current_user(
             detail="令牌已被撤销",
         )
 
-    user = await get_user_by_username(session, token_data.sub)
+    user = await get_user_by_id(session, token_data.sub)
     if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -214,6 +214,7 @@ async def get_current_user_optional(
             return None
     else:
         token = credentials.credentials
+
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         token_data = TokenPayload(**payload)
@@ -224,7 +225,7 @@ async def get_current_user_optional(
     if jti and await _is_token_revoked(session, jti):
         return None
 
-    user = await get_user_by_username(session, token_data.sub)
+    user = await get_user_by_id(session, token_data.sub)
     if user is None or not user.is_active:
         return None
     user._token_roles = token_data.roles
