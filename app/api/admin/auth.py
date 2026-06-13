@@ -70,6 +70,7 @@ async def login(
     if not any(role_name in role_names for role_name in ["admin", "author"]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅系统管理员和内容作者可登录后台")
 
+    tracker.reset(lock_key)
     user_roles = list(role_names)
     token = create_access_token(user.username, roles=user_roles)
     refresh = create_refresh_token(user.username, roles=user_roles)
