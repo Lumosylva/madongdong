@@ -79,7 +79,7 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
-  loginReader(payload: { username: string; password: string }) {
+  loginReader(payload: { username: string; password: string; captcha_token?: string; captcha_answer?: string }) {
     return request<{ access_token: string; refresh_token: string; token_type: string }>('/web/auth/login', {
       method: 'POST',
       body: JSON.stringify(payload),

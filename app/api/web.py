@@ -213,7 +213,11 @@ async def reader_login(
     response: Response,
     session: AsyncSession = Depends(get_db_session),
 ) -> TokenResponse:
+    from app.core.captcha import verify_captcha
     from app.core.login_lockout import tracker
+
+    if payload.captcha_token:
+        verify_captcha(payload.captcha_token, payload.captcha_answer)
 
     lock_key = f"reader:{payload.username}"
     tracker.check(lock_key)

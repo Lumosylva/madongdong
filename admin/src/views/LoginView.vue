@@ -74,6 +74,16 @@
           </div>
         </label>
 
+        <label class="login-field">
+          <span>验证码</span>
+          <div class="login-captcha-row">
+            <input v-model="captchaAnswer" :placeholder="captchaQuestion || '请输入计算结果'" />
+            <button type="button" class="login-captcha-refresh" title="刷新验证码" @click="loadCaptcha">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
+            </button>
+          </div>
+        </label>
+
         <button type="submit" class="login-submit-btn" :disabled="loading">{{ loading ? '登录中...' : '登录' }}</button>
         <p v-if="errorMessage" class="error-message login-error">{{ errorMessage }}</p>
       </form>
@@ -94,16 +104,31 @@ const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
+const captchaQuestion = ref('')
+const captchaToken = ref('')
+const captchaAnswer = ref('')
 
 const applyTitle = () => {
   document.title = buildPageTitle('登录')
+}
+
+const loadCaptcha = async () => {
+  try {
+    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
+    const data = await res.json() as { question: string; token: string }
+    captchaQuestion.value = data.question
+    captchaToken.value = data.token
+    captchaAnswer.value = ''
+  } catch {
+    captchaQuestion.value = '加载失败，请刷新'
+  }
 }
 
 const submit = async () => {
   loading.value = true
   errorMessage.value = ''
   try {
-    await adminApi.login(username.value, password.value)
+    await adminApi.login(username.value, password.value, captchaToken.value, captchaAnswer.value)
     await router.push('/')
   } catch (error) {
     const message = error instanceof Error ? error.message : '登录失败，请稍后重试'
@@ -111,6 +136,9 @@ const submit = async () => {
       errorMessage.value = '用户名或密码错误，请检查后重试'
     } else if (message.includes('仅系统管理员和内容作者可登录后台')) {
       errorMessage.value = '无后台访问权限，请联系管理员分配角色'
+    } else if (message.includes('验证码')) {
+      errorMessage.value = message
+      await loadCaptcha()
     } else {
       errorMessage.value = message || '登录失败，请稍后重试'
     }
@@ -121,6 +149,7 @@ const submit = async () => {
 
 onMounted(async () => {
   applyTitle()
+  await loadCaptcha()
 
   if (!isLoggedIn()) {
     return
@@ -133,3 +162,30 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.login-captcha-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.login-captcha-refresh {
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.login-captcha-refresh:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+</style>

@@ -49,6 +49,15 @@
             <input v-model="rememberMe" type="checkbox" />
             <span>记住我</span>
           </label>
+          <label class="auth-input-shell auth-password-shell">
+            <span class="auth-input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input v-model="captchaAnswer" :placeholder="captchaQuestion || '请输入计算结果'" />
+            <button type="button" class="auth-password-toggle" title="刷新验证码" @click="loadCaptcha">
+              <svg viewBox="0 0 24 24" class="auth-password-icon" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </label>
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">
@@ -86,6 +95,9 @@ const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
 const siteLogoUrl = ref('')
+const captchaQuestion = ref('')
+const captchaToken = ref('')
+const captchaAnswer = ref('')
 const authNavItems = computed<NavItem[]>(() => [
   { id: 1, title: '首页', path: '/', sort_order: 1, is_visible: true, target: null, description: null },
   { id: 2, title: '登录', path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
@@ -100,6 +112,18 @@ const applyTheme = (value: ThemeMode) => {
 
 const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
+}
+
+const loadCaptcha = async () => {
+  try {
+    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
+    const data = await res.json() as { question: string; token: string }
+    captchaQuestion.value = data.question
+    captchaToken.value = data.token
+    captchaAnswer.value = ''
+  } catch {
+    captchaQuestion.value = '加载失败，请刷新'
+  }
 }
 
 const loadSiteLogo = async () => {
@@ -122,6 +146,8 @@ const submit = async () => {
     await webApi.loginReader({
       username: username.value.trim(),
       password: password.value,
+      captcha_token: captchaToken.value,
+      captcha_answer: captchaAnswer.value,
     })
     if (rememberMe.value) {
       localStorage.setItem('md-login-username', username.value.trim())
@@ -155,6 +181,6 @@ onMounted(async () => {
     rememberMe.value = true
   }
   document.title = buildPageTitle('用户登录')
-  await loadSiteLogo()
+  await Promise.all([loadSiteLogo(), loadCaptcha()])
 })
 </script>

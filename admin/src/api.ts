@@ -50,10 +50,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const adminApi = {
-  login(username: string, password: string): Promise<LoginResponse> {
+  login(username: string, password: string, captchaToken: string, captchaAnswer: string): Promise<LoginResponse> {
     return request<LoginResponse>('/admin/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, captcha_token: captchaToken, captcha_answer: captchaAnswer }),
     })
   },
   logout() {

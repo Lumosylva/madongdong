@@ -54,7 +54,11 @@ async def login(
 ) -> dict[str, object]:
     """后台管理员或作者登录。"""
 
+    from app.core.captcha import verify_captcha
     from app.core.login_lockout import tracker
+
+    if payload.captcha_token:
+        verify_captcha(payload.captcha_token, payload.captcha_answer)
 
     lock_key = f"admin:{payload.username}"
     tracker.check(lock_key)
