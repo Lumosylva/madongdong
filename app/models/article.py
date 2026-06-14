@@ -68,6 +68,7 @@ class Article(TimestampMixin, Base):
     __tablename__ = "articles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(280), unique=True, index=True)
     title: Mapped[str] = mapped_column(String(255), index=True)
     summary: Mapped[str] = mapped_column(String(500))
     content_markdown: Mapped[str] = mapped_column(Text)

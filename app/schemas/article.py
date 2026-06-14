@@ -91,6 +91,7 @@ class ArticleSummaryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    slug: str
     title: str
     summary: str
     cover_url: str | None

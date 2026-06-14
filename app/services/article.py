@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
@@ -10,6 +11,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.article import Article, ArticleStatus, Category, Tag
 from app.models.auth import User
+
+
+def generate_article_slug(title: str) -> str:
+    """从文章标题生成 slug。中文保留拼音首字母，英文转小写。"""
+
+    title = title.strip().lower()
+    slug = re.sub(r"[^a-z0-9\u4e00-\u9fff\s-]", "", title)
+    slug = re.sub(r"[\s_]+", "-", slug).strip("-")
+    if not slug:
+        slug = "article"
+    return slug
+
+
+async def _ensure_slug_unique(session: AsyncSession, slug: str, exclude_id: int | None = None) -> str:
+    """确保 slug 唯一，重复时追加数字后缀。"""
+
+    base = slug
+    counter = 1
+    while True:
+        query = select(Article.id).where(Article.slug == slug)
+        if exclude_id is not None:
+            query = query.where(Article.id != exclude_id)
+        exists = (await session.execute(query.limit(1))).scalar_one_or_none() is not None
+        if not exists:
+            return slug
+        slug = f"{base}-{counter}"
+        counter += 1
 
 
 async def list_categories(session: AsyncSession) -> list[Category]:
@@ -172,7 +200,9 @@ async def create_article(
 
     category = await get_category_or_404(session, category_id)
     tags = await _load_tags(session, tag_ids)
+    slug = await _ensure_slug_unique(session, generate_article_slug(title))
     article = Article(
+        slug=slug,
         title=title,
         summary=summary,
         content_markdown=content_markdown,
@@ -207,7 +237,10 @@ async def update_article(
     category = await get_category_or_404(session, category_id)
     tags = await _load_tags(session, tag_ids)
 
+    old_title = article.title
     article.title = title
+    if title != old_title or not article.slug:
+        article.slug = await _ensure_slug_unique(session, generate_article_slug(title), exclude_id=article.id)
     article.summary = summary
     article.content_markdown = content_markdown
     article.content_html = ""

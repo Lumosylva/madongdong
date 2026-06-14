@@ -151,7 +151,7 @@
             <RouterLink
               v-for="(item, index) in searchPanelResults"
               :key="item.id"
-              :to="`/article/${item.id}`"
+              :to="`/article/${item.slug}`"
               class="search-overlay-result-item"
               :class="{ active: index === searchPanelActiveIndex }"
               @mouseenter="searchPanelActiveIndex = index"

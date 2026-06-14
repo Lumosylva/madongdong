@@ -73,7 +73,7 @@
                 class="archive-article-row"
               >
                 <span class="archive-article-date">{{ formatDay(article.published_at) }}</span>
-                <RouterLink :to="`/article/${article.id}`" class="archive-article-link" :title="article.title">
+                <RouterLink :to="`/article/${article.slug}`" class="archive-article-link" :title="article.title">
                   {{ article.title }}
                 </RouterLink>
               </div>

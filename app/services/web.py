@@ -101,6 +101,25 @@ async def get_published_article_detail(session: AsyncSession, article_id: int) -
     return article
 
 
+async def get_published_article_detail_by_slug(session: AsyncSession, slug: str) -> Article | None:
+    """通过 slug 获取已发布文章详情。"""
+
+    statement = select(Article).where(
+        Article.slug == slug,
+        Article.status == ArticleStatus.PUBLISHED,
+    )
+    result = await session.execute(statement)
+    article = result.scalar_one_or_none()
+    if article is not None:
+        await session.execute(
+            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
+            {"article_id": article.id},
+        )
+        await session.commit()
+        await session.refresh(article)
+    return article
+
+
 async def list_approved_comments_by_article(session: AsyncSession, article_id: int) -> list[Comment]:
     """查询文章已审核评论。"""
 
@@ -343,7 +362,7 @@ async def get_archive_data(session: AsyncSession) -> dict:
                 "month": month,
                 "count": len(month_articles),
                 "articles": [
-                    {"id": a.id, "title": a.title, "published_at": a.published_at.isoformat()}
+                    {"id": a.id, "slug": a.slug, "title": a.title, "published_at": a.published_at.isoformat()}
                     for a in month_articles
                 ],
             })

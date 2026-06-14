@@ -22,7 +22,7 @@
     <main class="layout">
       <section class="content-panel">
         <article v-for="article in data.latest_articles.items" :key="article.id" class="article-card">
-          <RouterLink :to="`/article/${article.id}`" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
+          <RouterLink :to="`/article/${article.slug}`" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
           <p class="card-summary">{{ truncateText(article.summary, 120) }}</p>
           <div class="card-meta">
             <span>{{ article.category?.name || t('common.untitled') }}</span>
@@ -54,7 +54,7 @@
         <div class="sidebar-card">
           <h3>{{ t('home.hotArticles') }}</h3>
           <div class="hot-list">
-            <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
+            <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.slug}`" class="hot-link">
               <strong>{{ item.title }}</strong>
               <div class="hot-stats">
                 <span class="hot-meta">{{ formatRelativeTime(item.published_at || item.created_at) }}</span>

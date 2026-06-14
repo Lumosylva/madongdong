@@ -85,7 +85,7 @@
               <RouterLink
                 v-for="article in catArticles"
                 :key="article.id"
-                :to="`/article/${article.id}`"
+                :to="`/article/${article.slug}`"
                 class="cat-article-item"
               >
                 <div class="cat-article-main">

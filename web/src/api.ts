@@ -42,8 +42,8 @@ export const webApi = {
   getHome(page = 1, pageSize = 20): Promise<HomeResponse> {
     return request<HomeResponse>(`/web/home?page=${page}&page_size=${pageSize}`)
   },
-  getArticle(articleId: string | number): Promise<ArticlePageResponse> {
-    return request<ArticlePageResponse>(`/web/articles/${articleId}`)
+  getArticle(slug: string): Promise<ArticlePageResponse> {
+    return request<ArticlePageResponse>(`/web/articles/slug/${encodeURIComponent(slug)}`)
   },
   search(keyword: string, page = 1, pageSize = 20): Promise<SearchResponse> {
     return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}&page_size=${pageSize}`)

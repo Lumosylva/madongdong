@@ -34,6 +34,7 @@ from app.services.web import (
     get_homepage_data,
     get_prev_next_published_articles,
     get_published_article_detail,
+    get_published_article_detail_by_slug,
     get_search_page_data,
     get_tag_page_data,
     list_approved_comments_by_article,
@@ -77,6 +78,32 @@ async def article_detail(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     data = await get_homepage_data(session, page=1)
     comments = await list_approved_comments_by_article(session, article_id)
+    previous_article, next_article = await get_prev_next_published_articles(session, article)
+    site_data = data["site"]
+    nav_items_data = data["nav_items"]
+    article_detail = ArticleDetailResponse.model_validate(article)
+    previous_article_summary = ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None
+    next_article_summary = ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None
+    return ArticlePageResponse(
+        site=SiteSettingResponse.model_validate(site_data),
+        nav_items=[NavItemResponse.model_validate(item) for item in nav_items_data],
+        article=article_detail,
+        previous_article=previous_article_summary,
+        next_article=next_article_summary,
+        comments=[CommentResponse.model_validate(item) for item in comments],
+    )
+
+
+@router.get("/articles/slug/{slug}", summary="通过 slug 获取前台文章详情")
+async def article_detail_by_slug(
+    slug: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> ArticlePageResponse:
+    article = await get_published_article_detail_by_slug(session, slug)
+    if article is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
+    data = await get_homepage_data(session, page=1)
+    comments = await list_approved_comments_by_article(session, article.id)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
     site_data = data["site"]
     nav_items_data = data["nav_items"]

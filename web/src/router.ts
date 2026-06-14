@@ -30,7 +30,7 @@ export const router = createRouter({
       meta: { title: 'common.home' },
     },
     {
-      path: '/article/:id',
+      path: '/article/:slug',
       name: 'article',
       component: ArticleView,
       meta: { title: 'article.content' },

@@ -91,7 +91,7 @@
         <div class="article-nav-links">
           <div class="nav-row">
             <span class="meta-label">{{ t('article.prevArticle') }}</span>
-            <RouterLink v-if="data.previous_article" :to="`/article/${data.previous_article.id}`" class="adjacent-link">
+            <RouterLink v-if="data.previous_article" :to="`/article/${data.previous_article.slug}`" class="adjacent-link">
               {{ truncateText(data.previous_article.title, 50) }}
             </RouterLink>
             <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
@@ -99,7 +99,7 @@
 
           <div class="nav-row">
             <span class="meta-label">{{ t('article.nextArticle') }}</span>
-            <RouterLink v-if="data.next_article" :to="`/article/${data.next_article.id}`" class="adjacent-link">
+            <RouterLink v-if="data.next_article" :to="`/article/${data.next_article.slug}`" class="adjacent-link">
               {{ truncateText(data.next_article.title, 50) }}
             </RouterLink>
             <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
@@ -253,7 +253,7 @@ const goSearch = () => {
 
 
 const loadData = async () => {
-  data.value = await webApi.getArticle(String(route.params.id))
+  data.value = await webApi.getArticle(String(route.params.slug))
   applySiteMetaFromSetting(data.value.site)
 }
 
@@ -353,7 +353,7 @@ const avatarLetter = (name: string) => {
 
 const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || '')) % AVATAR_COLORS.length]
 
-watch(() => route.params.id, () => {
+watch(() => route.params.slug, () => {
   loadData()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })

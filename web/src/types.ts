@@ -43,6 +43,7 @@ export type Author = {
 
 export type Article = {
   id: number
+  slug: string
   title: string
   summary: string
   content_markdown?: string
@@ -127,6 +128,7 @@ export type TagArticlesResponse = {
 
 export type ArchiveArticleItem = {
   id: number
+  slug: string
   title: string
   published_at: string
 }

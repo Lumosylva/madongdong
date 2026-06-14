@@ -29,7 +29,7 @@
 
     <section class="search-result-panel unified-list-panel">
       <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
-        <RouterLink :to="`/article/${article.id}`" class="search-title">{{ article.title }}</RouterLink>
+        <RouterLink :to="`/article/${article.slug}`" class="search-title">{{ article.title }}</RouterLink>
         <p>{{ article.summary }}</p>
         <div class="search-meta unified-list-meta">
           <span>{{ article.author?.nickname || 'admin' }}</span>

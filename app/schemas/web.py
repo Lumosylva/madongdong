@@ -77,6 +77,7 @@ class ArchiveArticleItem(BaseModel):
     """归档文章条目。"""
 
     id: int
+    slug: str
     title: str
     published_at: str
 
