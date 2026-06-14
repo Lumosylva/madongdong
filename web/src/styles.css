@@ -928,8 +928,9 @@ a {
 
 .layout {
   display: grid;
-  grid-template-columns: 1.95fr 0.65fr;
+  grid-template-columns: 1fr;
   gap: 10px;
+  padding-right: calc(min(calc(100vw - 200px), 380px) + 36px);
 }
 
 .content-panel,
@@ -1067,8 +1068,21 @@ a {
 .sidebar-card {
   display: flex;
   flex-direction: column;
-  min-height: 760px;
-  max-height: 760px;
+  position: fixed;
+  top: 76px;
+  right: 24px;
+  width: min(calc(100vw - 200px), 380px);
+  max-height: calc(100vh - 92px);
+  overflow-y: auto;
+  z-index: 10;
+}
+
+aside.sidebar {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .hot-list {
@@ -1873,6 +1887,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .layout {
+    padding-right: 0;
+  }
+
   .auth-main {
     min-height: auto;
     gap: 14px;
@@ -2161,8 +2179,25 @@ a {
   }
 
   .sidebar-card {
-    min-height: 360px;
-    max-height: 420px;
+    position: static;
+    width: auto;
+    max-height: none;
+  }
+
+  aside.sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    pointer-events: auto;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  aside.sidebar {
+    position: static;
   }
 }
 
