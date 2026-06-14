@@ -188,7 +188,7 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { applySiteMetaFromSetting } from '../site-meta'
+import { applyArticleMeta, applySiteMetaFromSetting } from '../site-meta'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { ArticlePageResponse, Comment } from '../types'
 
@@ -255,6 +255,7 @@ const goSearch = () => {
 const loadData = async () => {
   data.value = await webApi.getArticle(String(route.params.slug))
   applySiteMetaFromSetting(data.value.site)
+  applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url)
 }
 
 const hydrateCurrentUser = async () => {

@@ -226,7 +226,7 @@ export default {
     adminNickname: 'Admin Nickname',
     adminNicknamePlaceholder: 'e.g. System Admin',
     adminEmail: 'Admin Email',
-    adminEmailPlaceholder: 'e.g. admin@example.com',
+    adminEmailPlaceholder: 'e.g. admin at example.com',
     icpBeian: 'ICP Filing',
     icpBeianPlaceholder: 'Enter filing info (HTML snippets supported)',
     copyright: 'Copyright',

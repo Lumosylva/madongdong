@@ -17,6 +17,11 @@ const applyTheme = (value: ThemeMode) => {
   document.documentElement.dataset.theme = value
   localStorage.setItem('md-theme', value)
   window.dispatchEvent(new CustomEvent('md-theme-change', { detail: value }))
+
+  const themeColor = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
+  if (themeColor) {
+    themeColor.setAttribute('content', value === 'dark' ? '#07111f' : '#f8fbff')
+  }
 }
 
 const toggleTheme = () => {

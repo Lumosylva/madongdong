@@ -6,6 +6,14 @@ import zhCN from './locales/zh-CN'
 
 const savedLocale = localStorage.getItem('md-locale') || 'zh-CN'
 
+const langMap: Record<string, string> = {
+  'zh-CN': 'zh-CN',
+  en: 'en',
+  ja: 'ja',
+}
+
+document.documentElement.lang = langMap[savedLocale] || 'en'
+
 const i18n = createI18n({
   legacy: false,
   locale: savedLocale,
@@ -28,4 +36,5 @@ export const localeOptions = [
 export function setLocale(locale: string) {
   ;(i18n.global.locale as any).value = locale
   localStorage.setItem('md-locale', locale)
+  document.documentElement.lang = langMap[locale] || 'en'
 }

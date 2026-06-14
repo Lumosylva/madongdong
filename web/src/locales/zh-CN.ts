@@ -226,7 +226,7 @@ export default {
     adminNickname: '管理员昵称',
     adminNicknamePlaceholder: '例如：系统管理员',
     adminEmail: '管理员邮箱',
-    adminEmailPlaceholder: '例如：admin@example.com',
+    adminEmailPlaceholder: '例如：admin at example.com',
     icpBeian: 'ICP 备案',
     icpBeianPlaceholder: '请输入备案信息，支持 HTML 片段',
     copyright: '版权信息',

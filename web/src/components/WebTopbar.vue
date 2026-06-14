@@ -175,6 +175,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { setLocale } from '../i18n'
 
 import { webApi } from '../api'
 import type { NavItem, Article } from '../types'
@@ -191,8 +192,7 @@ const localeOptions = [
 ]
 
 const switchLocale = (val: string) => {
-  locale.value = val
-  localStorage.setItem('md-locale', val)
+  setLocale(val)
   langMenuOpen.value = false
 }
 

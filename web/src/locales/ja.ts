@@ -226,7 +226,7 @@ export default {
     adminNickname: '管理者ニックネーム',
     adminNicknamePlaceholder: '例：システム管理者',
     adminEmail: '管理者メール',
-    adminEmailPlaceholder: '例：admin@example.com',
+    adminEmailPlaceholder: '例：admin at example.com',
     icpBeian: 'ICP登録',
     icpBeianPlaceholder: '登録情報を入力（HTMLスニペット対応）',
     copyright: '著作権',

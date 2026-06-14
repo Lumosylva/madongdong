@@ -40,10 +40,29 @@ export const buildPageTitle = (pageTitle?: string | null) => {
   return normalizedPageTitle ? `${normalizedPageTitle} - ${baseTitle}` : baseTitle
 }
 
+function setMetaTag(name: string, content: string, property = false) {
+  const attr = property ? 'property' : 'name'
+  let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement | null
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attr, name)
+    document.head.appendChild(el)
+  }
+  el.setAttribute('content', content)
+}
+
 export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
   const title = String(siteTitle || '').trim()
   const subtitle = String(siteSubtitle || '').trim()
-  document.title = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || getBaseTitle())
+  const fullTitle = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || getBaseTitle())
+  document.title = fullTitle
+
+  setMetaTag('og:title', fullTitle, true)
+  setMetaTag('og:site_name', title || getBaseTitle(), true)
+  setMetaTag('og:description', subtitle || 'MaDongDong Blog', true)
+  setMetaTag('og:url', window.location.href, true)
+  setMetaTag('description', subtitle || 'MaDongDong 博客，提供文章阅读、友链浏览。')
+  setMetaTag('twitter:title', fullTitle)
 
   const iconUrl = siteLogo ? String(siteLogo).trim() : ''
   if (!iconUrl) return
@@ -63,6 +82,38 @@ export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, si
   if (appleTouch) {
     appleTouch.href = normalizedIconUrl
   }
+}
+
+export const applyArticleMeta = (title: string, description: string, coverUrl?: string | null) => {
+  const fullTitle = buildPageTitle(title)
+  document.title = fullTitle
+
+  setMetaTag('og:title', fullTitle, true)
+  setMetaTag('og:description', description || title, true)
+  setMetaTag('og:url', window.location.href, true)
+  setMetaTag('description', description || title)
+  setMetaTag('twitter:title', fullTitle)
+  setMetaTag('twitter:description', description || title)
+
+  if (coverUrl) {
+    const normalizedCover = normalizeFaviconUrl(coverUrl)
+    if (normalizedCover) {
+      setMetaTag('og:image', normalizedCover, true)
+      setMetaTag('twitter:image', normalizedCover)
+      setMetaTag('twitter:card', 'summary_large_image')
+    }
+  } else {
+    setMetaTag('twitter:card', 'summary')
+  }
+}
+
+export const setHtmlLang = (locale: string) => {
+  const langMap: Record<string, string> = {
+    'zh-CN': 'zh-CN',
+    en: 'en',
+    ja: 'ja',
+  }
+  document.documentElement.lang = langMap[locale] || 'en'
 }
 
 export const applySiteMetaFromSetting = (value: SiteSetting | null) => {
