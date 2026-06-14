@@ -33,3 +33,4 @@ admin\.env
 web\.env
 SECURITY_AUDIT.md
 .installed
+error.txt
