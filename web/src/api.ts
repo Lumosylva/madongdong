@@ -18,8 +18,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
 
   if (!response.ok) {
-    const text = await response.text()
-    throw new Error(text || '请求失败')
+    const rawText = await response.text()
+    try {
+      const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
+      if (typeof parsed.detail === 'string') {
+        throw new Error(parsed.detail)
+      }
+      if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
+        const msg = parsed.detail[0]?.msg || '请求失败'
+        throw new Error(msg.replace(/^Value error,?\s*/i, ''))
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message !== '请求失败') throw e
+    }
+    throw new Error(rawText || '请求失败')
   }
 
   return response.json() as Promise<T>

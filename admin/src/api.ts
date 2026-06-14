@@ -37,7 +37,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       }
       if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
         const first = parsed.detail[0]
-        throw new Error(first?.msg || '请求失败')
+        const msg = first?.msg || '请求失败'
+        throw new Error(msg.replace(/^Value error,?\s*/i, ''))
       }
     } catch {
       // ignore JSON parse errors and fall through to raw text

@@ -188,7 +188,7 @@ def _extract_domain(cors_origins: str) -> str:
             for origin in origins:
                 origin = origin.strip()
                 if "localhost" not in origin and "127.0.0.1" not in origin:
-                    return origin.removeprefix("https://").removeprefix("http://")
+                    return origin.split("://", 1)[-1] if "://" in origin else origin
         except Exception:
             pass
     return ""

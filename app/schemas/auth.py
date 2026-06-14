@@ -1,6 +1,6 @@
 """认证相关数据结构。"""
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class TokenPayload(BaseModel):
@@ -41,9 +41,16 @@ class LoginRequest(BaseModel):
     """登录请求。"""
 
     username: str = Field(min_length=3, max_length=50)
-    password: str = Field(min_length=6, max_length=128)
+    password: str = Field(max_length=128)
     captcha_token: str = ""
     captcha_answer: str = ""
+
+    @field_validator("password")
+    @classmethod
+    def _check_password_length(cls, v: str) -> str:
+        if len(v) < 6:
+            raise ValueError("密码长度不能少于 6 个字符")
+        return v
 
 
 class ReaderRegisterRequest(BaseModel):
