@@ -34,11 +34,31 @@
     </nav>
 
     <div class="topbar-right">
-      <select class="lang-select" :value="locale" @change="onLocaleChange">
-        <option value="zh-CN">中文</option>
-        <option value="en">EN</option>
-        <option value="ja">日本語</option>
-      </select>
+      <div class="lang-menu" ref="langMenuRef">
+        <button
+          type="button"
+          class="auth-entry icon-entry"
+          aria-label="语言"
+          title="切换语言"
+          @click="langMenuOpen = !langMenuOpen"
+        >
+          <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.08L5 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor"/></svg>
+        </button>
+        <transition name="menu-pop">
+          <div v-if="langMenuOpen" class="account-dropdown lang-dropdown">
+            <button
+              v-for="opt in localeOptions"
+              :key="opt.value"
+              type="button"
+              class="dropdown-item"
+              :class="{ 'is-active': locale === opt.value }"
+              @click="switchLocale(opt.value)"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </transition>
+      </div>
       <div class="account-menu" ref="accountMenuRef">
         <button
           type="button"
@@ -161,10 +181,19 @@ import type { NavItem, Article } from '../types'
 
 const { t, locale } = useI18n()
 
-const onLocaleChange = (e: Event) => {
-  const val = (e.target as HTMLSelectElement).value
+const langMenuOpen = ref(false)
+const langMenuRef = ref<HTMLElement | null>(null)
+
+const localeOptions = [
+  { value: 'zh-CN', label: '中文' },
+  { value: 'en', label: 'English' },
+  { value: 'ja', label: '日本語' },
+]
+
+const switchLocale = (val: string) => {
   locale.value = val
   localStorage.setItem('md-locale', val)
+  langMenuOpen.value = false
 }
 
 const navTitleMap = computed<Record<string, string>>(() => ({
@@ -405,6 +434,9 @@ const handleDocumentClick = (event: MouseEvent) => {
   const target = event.target as Node | null
   if (accountMenuRef.value && target && !accountMenuRef.value.contains(target)) {
     accountMenuOpen.value = false
+  }
+  if (langMenuRef.value && target && !langMenuRef.value.contains(target)) {
+    langMenuOpen.value = false
   }
 }
 
