@@ -1,8 +1,8 @@
 <template>
   <div class="shell auth-page">
     <WebTopbar
-      title="用户注册"
-      subtitle="创建账号，开启更完整的阅读体验"
+      :title="t('register.title')"
+      :subtitle="t('register.subtitle')"
       :logo-url="siteLogoUrl"
       :nav-items="authNavItems"
       :theme="theme"
@@ -18,32 +18,32 @@
     <main class="auth-main">
       <section class="auth-hero">
         <p class="auth-eyebrow">Join the community</p>
-        <h2>创建您的账号</h2>
-        <p>注册后可参与评论、保存个人昵称，并获得更流畅的站内体验。</p>
+        <h2>{{ t('register.heroTitle') }}</h2>
+        <p>{{ t('register.heroDesc') }}</p>
       </section>
 
       <section class="auth-card">
         <div class="auth-card-header">
-          <h3>注册账号</h3>
+          <h3>{{ t('register.registerTitle') }}</h3>
         </div>
 
         <div class="auth-field-group">
           <label class="auth-input-shell">
             <span class="auth-input-icon" aria-hidden="true">👤</span>
-            <input v-model="username" autocomplete="username" placeholder="用户名（3-50位）" />
+            <input v-model="username" autocomplete="username" :placeholder="t('register.usernamePlaceholder')" />
           </label>
           <label class="auth-input-shell">
             <span class="auth-input-icon" aria-hidden="true">✨</span>
-            <input v-model="nickname" autocomplete="nickname" placeholder="昵称" />
+            <input v-model="nickname" autocomplete="nickname" :placeholder="t('register.nicknamePlaceholder')" />
           </label>
           <label class="auth-input-shell">
             <span class="auth-input-icon" aria-hidden="true">✉️</span>
-            <input v-model="email" autocomplete="email" type="email" placeholder="邮箱" />
+            <input v-model="email" autocomplete="email" type="email" :placeholder="t('register.emailPlaceholder')" />
           </label>
           <label class="auth-input-shell auth-password-shell">
             <span class="auth-input-icon" aria-hidden="true">🔒</span>
-            <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="new-password" placeholder="密码（至少6位）" />
-            <button type="button" class="auth-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" :title="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
+            <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="new-password" :placeholder="t('register.passwordPlaceholder')" />
+            <button type="button" class="auth-password-toggle" :aria-label="showPassword ? t('register.hidePassword') : t('register.showPassword')" :title="showPassword ? t('register.hidePassword') : t('register.showPassword')" @click="showPassword = !showPassword">
               <svg v-if="showPassword" class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/>
               </svg>
@@ -56,20 +56,20 @@
             <span class="auth-input-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </span>
-            <input v-model="captchaAnswer" :placeholder="captchaQuestion || '请输入计算结果'" />
-            <button type="button" class="auth-password-toggle" title="刷新验证码" @click="loadCaptcha">
+            <input v-model="captchaAnswer" :placeholder="captchaQuestion || t('register.captchaPlaceholder')" />
+            <button type="button" class="auth-password-toggle" :title="t('register.refreshCaptcha')" @click="loadCaptcha">
               <svg viewBox="0 0 24 24" class="auth-password-icon" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </label>
-          <p class="auth-field-hint">注册后可自动登录并进入首页。</p>
+          <p class="auth-field-hint">{{ t('register.autoLoginHint') }}</p>
         </div>
 
         <button class="auth-submit-btn" :disabled="submitting" @click="submit">
-          {{ submitting ? '注册中...' : '注册' }}
+          {{ submitting ? t('register.loading') : t('register.submit') }}
         </button>
 
         <p class="auth-switch-link">
-          已有账号？<RouterLink to="/login">返回登录</RouterLink>
+          {{ t('register.hasAccount') }}<RouterLink to="/login">{{ t('register.loginLink') }}</RouterLink>
         </p>
         <p v-if="message" class="auth-message" :class="status === 'error' ? 'error-message' : 'success-message'">{{ message }}</p>
       </section>
@@ -80,6 +80,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
@@ -89,6 +90,7 @@ type ThemeMode = 'light' | 'dark'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const theme = ref<ThemeMode>('light')
 const username = ref('')
 const nickname = ref('')
@@ -103,9 +105,9 @@ const captchaQuestion = ref('')
 const captchaToken = ref('')
 const captchaAnswer = ref('')
 const authNavItems = computed(() => [
-  { id: 1, title: '首页', path: '/', sort_order: 1, is_visible: true, target: null, description: null },
-  { id: 2, title: '登录', path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
-  { id: 3, title: '注册', path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
+  { id: 1, title: t('common.home'), path: '/', sort_order: 1, is_visible: true, target: null, description: null },
+  { id: 2, title: t('common.login'), path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
+  { id: 3, title: t('common.register'), path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
 ])
 
 const applyTheme = (value: ThemeMode) => {
@@ -126,7 +128,7 @@ const loadCaptcha = async () => {
     captchaToken.value = data.token
     captchaAnswer.value = ''
   } catch {
-    captchaQuestion.value = '加载失败，请刷新'
+    captchaQuestion.value = t('register.captchaLoadFailed')
   }
 }
 
@@ -160,9 +162,9 @@ const submit = async () => {
       password: password.value,
     })
     status.value = 'success'
-    message.value = '注册成功，正在自动登录并跳转首页...'
+    message.value = t('register.registerSuccess')
     const displayName = nickname.value.trim() || username.value.trim()
-    localStorage.setItem('md-welcome-once', `欢迎加入，${displayName}`)
+    localStorage.setItem('md-welcome-once', t('register.welcome', { name: displayName }))
     localStorage.setItem('md-reader-nickname', displayName)
     localStorage.setItem('md-reader-email', email.value.trim())
     username.value = ''
@@ -174,7 +176,7 @@ const submit = async () => {
     }, 500)
   } catch (error) {
     status.value = 'error'
-    message.value = error instanceof Error ? error.message : '注册失败'
+    message.value = error instanceof Error ? error.message : t('register.registerFailed')
     await loadCaptcha()
   } finally {
     submitting.value = false
@@ -184,7 +186,7 @@ const submit = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  document.title = buildPageTitle('用户注册')
+  document.title = buildPageTitle(t('register.title'))
   await Promise.all([loadSiteLogo(), loadCaptcha()])
 })
 </script>

@@ -2,7 +2,7 @@
   <div class="search-page unified-list-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
+      :subtitle="data.site.site_subtitle || t('home.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -18,10 +18,10 @@
     <header class="list-page-header">
       <RouterLink to="/" class="back-link list-page-back">
         <svg class="list-page-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        返回首页
+        {{ t('common.backToHome') }}
       </RouterLink>
       <div class="list-page-title-wrap">
-        <p class="list-page-eyebrow">分类文章</p>
+        <p class="list-page-eyebrow">{{ t('category.title') }}</p>
         <h1 class="list-page-title">{{ data.category.name }}</h1>
         <p v-if="data.category.description" class="list-page-subtitle">{{ data.category.description }}</p>
       </div>
@@ -34,25 +34,25 @@
         <div class="search-meta unified-list-meta">
           <span>{{ article.author?.nickname || 'admin' }}</span>
           <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
-          <span>{{ article.view_count }} 浏览</span>
-          <span>{{ article.comment_count }} 评论</span>
+          <span>{{ article.view_count }} {{ t('common.views') }}</span>
+          <span>{{ article.comment_count }} {{ t('common.comments') }}</span>
         </div>
       </article>
 
       <div class="pager-row unified-pager-row">
         <div class="pager-meta">
-          第 {{ data.articles.page }} / {{ data.articles.total_pages }} 页
+          {{ t('common.page', { n: data.articles.page }) }} / {{ data.articles.total_pages }}
           <span class="pager-size">
-            每页
+            {{ t('common.perPage') }}
             <select v-model.number="pageSize" class="pager-size-select" @change="changePageSize">
               <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
             </select>
-            条
+            {{ t('common.items') }}
           </span>
         </div>
         <div class="pager-actions">
-          <button v-if="data.articles.page > 1" class="pager-prev-btn" @click="changePage(data.articles.page - 1)">上一页</button>
-          <button v-if="data.articles.page < data.articles.total_pages" class="pager-next-btn" @click="changePage(data.articles.page + 1)">下一页</button>
+          <button v-if="data.articles.page > 1" class="pager-prev-btn" @click="changePage(data.articles.page - 1)">{{ t('common.previous') }}</button>
+          <button v-if="data.articles.page < data.articles.total_pages" class="pager-next-btn" @click="changePage(data.articles.page + 1)">{{ t('common.next') }}</button>
         </div>
       </div>
     </section>
@@ -64,13 +64,17 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { useFormatRelativeTime } from '../utils/time'
 import type { CategoryArticlesResponse } from '../types'
 
+const { t } = useI18n()
+const { formatRelativeTime } = useFormatRelativeTime()
 const route = useRoute()
 const router = useRouter()
 const data = ref<CategoryArticlesResponse | null>(null)
@@ -109,28 +113,6 @@ const changePageSize = async () => {
 }
 
 
-
-const parseDateTime = (value: string) => {
-  const text = String(value || '').trim()
-  if (!text) return new Date(0)
-  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
-  return new Date(`${text}Z`)
-}
-
-const formatRelativeTime = (value: string) => {
-  const date = parseDateTime(value)
-  const now = Date.now()
-  const diffMs = Math.max(0, now - date.getTime())
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const year = 365 * day
-
-  if (diffMs < hour) return `${Math.max(1, Math.floor(diffMs / minute))} 分钟前`
-  if (diffMs < day) return `${Math.max(1, Math.floor(diffMs / hour))} 小时前`
-  if (diffMs < year) return `${Math.max(1, Math.floor(diffMs / day))} 天前`
-  return `${Math.max(1, Math.floor(diffMs / year))} 年前`
-}
 
 const loadData = async () => {
   const slug = String(route.params.slug || '')

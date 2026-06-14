@@ -19,8 +19,8 @@
       <div class="article-head">
         <div class="article-breadcrumb-row">
           <p class="article-breadcrumb">
-            现在位置：
-            <RouterLink to="/" class="breadcrumb-link">首页</RouterLink>
+            {{ t('article.currentLocation') }}
+            <RouterLink to="/" class="breadcrumb-link">{{ t('common.home') }}</RouterLink>
             <span class="breadcrumb-sep">/</span>
             <RouterLink
               v-if="data.article.category?.slug"
@@ -29,9 +29,9 @@
             >
               {{ data.article.category.name }}
             </RouterLink>
-            <span v-else>未分类</span>
+            <span v-else>{{ t('common.untitled') }}</span>
             <span class="breadcrumb-sep">/</span>
-            <span>正文</span>
+            <span>{{ t('article.content') }}</span>
           </p>
         </div>
         <div class="article-head-divider"></div>
@@ -40,11 +40,11 @@
         </div>
         <div class="article-meta article-meta-top">
           <span>{{ data.article.author?.nickname || 'admin' }}</span>
-          <span>{{ data.article.category?.name || '未分类' }}</span>
-          <span>发布时间：{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
-          <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(data.article)) }}</span>
-          <span>{{ data.article.view_count }} 浏览</span>
-          <span>{{ data.article.comment_count }} 评论</span>
+          <span>{{ data.article.category?.name || t('common.untitled') }}</span>
+          <span>{{ t('time.publishedAt') }}{{ formatRelativeTime(data.article.published_at || data.article.created_at) }}</span>
+          <span>{{ t('time.updatedAt') }}{{ formatRelativeTime(getArticleUpdatedAt(data.article)) }}</span>
+          <span>{{ data.article.view_count }} {{ t('common.views') }}</span>
+          <span>{{ data.article.comment_count }} {{ t('common.comments') }}</span>
         </div>
       </div>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
@@ -67,11 +67,11 @@
           <div class="article-tags-head">
             <button v-if="hasMoreTags" type="button" class="tag-expand-btn" @click="showAllTags = !showAllTags">
               <span class="tag-expand-icon" :class="{ rotated: showAllTags }">▾</span>
-              {{ showAllTags ? '收起标签' : '展开更多标签' }}
+              {{ showAllTags ? t('article.collapseTags') : t('article.expandTags') }}
             </button>
           </div>
           <div class="tag-list" :class="{ collapsed: hasMoreTags && !showAllTags }">
-            <span v-if="!data.article.tags?.length" class="tag-item muted">无标签</span>
+            <span v-if="!data.article.tags?.length" class="tag-item muted">{{ t('article.noTags') }}</span>
             <span v-else class="tag-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" class="tag-icon-svg" focusable="false" aria-hidden="true">
                 <path d="M3 11.5V5.75A2.75 2.75 0 0 1 5.75 3H11.5c.73 0 1.42.29 1.94.81l7.75 7.75a2.75 2.75 0 0 1 0 3.89l-5.5 5.5a2.75 2.75 0 0 1-3.89 0L3.81 13.44A2.75 2.75 0 0 1 3 11.5Zm3.75-5.75a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
@@ -90,19 +90,19 @@
 
         <div class="article-nav-links">
           <div class="nav-row">
-            <span class="meta-label">上一篇</span>
+            <span class="meta-label">{{ t('article.prevArticle') }}</span>
             <RouterLink v-if="data.previous_article" :to="`/article/${data.previous_article.id}`" class="adjacent-link">
               {{ truncateText(data.previous_article.title, 50) }}
             </RouterLink>
-            <span v-else class="adjacent-empty">没有了</span>
+            <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
           </div>
 
           <div class="nav-row">
-            <span class="meta-label">下一篇</span>
+            <span class="meta-label">{{ t('article.nextArticle') }}</span>
             <RouterLink v-if="data.next_article" :to="`/article/${data.next_article.id}`" class="adjacent-link">
               {{ truncateText(data.next_article.title, 50) }}
             </RouterLink>
-            <span v-else class="adjacent-empty">没有了</span>
+            <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
           </div>
         </div>
       </section>
@@ -110,32 +110,32 @@
 
     <section class="comment-panel" id="comment-section">
       <div class="comment-head">
-        <h2>评论</h2>
-        <span class="comment-count">共 {{ data.comments.length }} 条</span>
+        <h2>{{ t('article.comments') }}</h2>
+        <span class="comment-count">{{ t('article.commentCount', { n: data.comments.length }) }}</span>
       </div>
 
       <form class="comment-form" @submit.prevent="submitComment">
         <div class="comment-inputs-row" :class="{ 'auto-filled': isLoggedIn }">
           <label class="comment-field-wrap">
-            <span v-if="isLoggedIn" class="comment-field-badge">已自动填充</span>
-            <input ref="nicknameInputRef" v-model="guestNickname" placeholder="昵称（登录后可自动填充）" :readonly="isLoggedIn" />
+            <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
+            <input ref="nicknameInputRef" v-model="guestNickname" :placeholder="t('article.nicknamePlaceholder')" :readonly="isLoggedIn" />
           </label>
           <label class="comment-field-wrap">
-            <span v-if="isLoggedIn" class="comment-field-badge">已自动填充</span>
-            <input ref="emailInputRef" v-model="guestEmail" placeholder="邮箱（登录后可自动填充）" :readonly="isLoggedIn" />
+            <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
+            <input ref="emailInputRef" v-model="guestEmail" :placeholder="t('article.emailPlaceholder')" :readonly="isLoggedIn" />
           </label>
         </div>
         <textarea
           ref="commentTextareaRef"
           v-model="commentContent"
-          placeholder="写下你的看法（支持友好交流）"
+          :placeholder="t('article.commentPlaceholder')"
           @focus="commentFieldFocused = true"
           @blur="commentFieldFocused = false"
         ></textarea>
         <div class="comment-actions">
-          <span class="comment-tip">提交后将按站点设置进行审核或直接展示</span>
+          <span class="comment-tip">{{ t('article.commentTip') }}</span>
           <button type="submit" :disabled="commentSubmitting || !commentContent.trim()">
-            {{ commentSubmitting ? '提交中...' : (!commentContent.trim() ? '请输入评论内容' : '提交评论') }}
+            {{ commentSubmitting ? t('article.submitting') : (!commentContent.trim() ? t('article.inputContent') : t('article.submitComment')) }}
           </button>
         </div>
       </form>
@@ -158,13 +158,13 @@
         >
           <div class="comment-avatar">
             <img v-if="comment.user?.avatar" :src="comment.user.avatar" :alt="comment.user?.nickname" class="comment-avatar-img" />
-            <div v-else class="comment-avatar-fallback" :style="{ background: avatarColor(comment.user?.nickname || comment.guest_nickname || '匿') }">
-              {{ avatarLetter(comment.user?.nickname || comment.guest_nickname || '匿') }}
+            <div v-else class="comment-avatar-fallback" :style="{ background: avatarColor(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }">
+              {{ avatarLetter(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }}
             </div>
           </div>
           <div class="comment-body">
             <div class="comment-item-head">
-              <strong>{{ comment.user?.nickname || comment.guest_nickname || '匿名访客' }}</strong>
+              <strong>{{ comment.user?.nickname || comment.guest_nickname || t('article.anonymousVisitor') }}</strong>
               <span v-if="getClientMetaText(comment)" class="comment-client-meta-inline">{{ getClientMetaText(comment) }}</span>
               <span class="comment-time">{{ formatRelativeTime(comment.created_at) }}</span>
             </div>
@@ -183,14 +183,17 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import DOMPurify from 'dompurify'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting } from '../site-meta'
-import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
+import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { ArticlePageResponse, Comment } from '../types'
 
+const { t } = useI18n()
+const { formatRelativeTime } = useFormatRelativeTime()
 const route = useRoute()
 const router = useRouter()
 const data = ref<ArticlePageResponse | null>(null)
@@ -282,7 +285,7 @@ const submitComment = async () => {
 
     const createdStatus = String(created?.status || '').toUpperCase()
     commentToastStatus.value = createdStatus === 'APPROVED' ? 'success' : 'warning'
-    commentToastMessage.value = createdStatus === 'APPROVED' ? '评论已发布' : '评论已提交，待审核'
+    commentToastMessage.value = createdStatus === 'APPROVED' ? t('article.commentPublished') : t('article.commentPending')
     const previousMaxCommentId = Math.max(0, ...(data.value.comments.map((item) => item.id) || [0]))
 
     commentContent.value = ''
@@ -304,7 +307,7 @@ const submitComment = async () => {
     }
   } catch (error) {
     commentToastStatus.value = 'error'
-    commentToastMessage.value = error instanceof Error ? error.message : '评论提交失败，请稍后重试'
+    commentToastMessage.value = error instanceof Error ? error.message : t('article.commentFailed')
   } finally {
     setTimeout(() => {
       commentToastMessage.value = ''

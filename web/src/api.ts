@@ -1,5 +1,6 @@
 import type { ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
 import { resolveAssetUrl } from '../../assets'
+import i18n from './i18n'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
@@ -25,13 +26,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         throw new Error(parsed.detail)
       }
       if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
-        const msg = parsed.detail[0]?.msg || '请求失败'
+        const msg = parsed.detail[0]?.msg || i18n.global.t('common.requestFailed')
         throw new Error(msg.replace(/^Value error,?\s*/i, ''))
       }
     } catch (e) {
-      if (e instanceof Error && e.message !== '请求失败') throw e
+      if (e instanceof Error && e.message !== i18n.global.t('common.requestFailed')) throw e
     }
-    throw new Error(rawText || '请求失败')
+    throw new Error(rawText || i18n.global.t('common.requestFailed'))
   }
 
   return response.json() as Promise<T>
@@ -123,7 +124,7 @@ export const webApi = {
 
     if (!response.ok) {
       const text = await response.text()
-      throw new Error(text || '请求失败')
+      throw new Error(text || i18n.global.t('common.requestFailed'))
     }
 
     return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
@@ -138,7 +139,7 @@ export const webApi = {
 
     if (!response.ok) {
       const text = await response.text()
-      throw new Error(text || '请求失败')
+      throw new Error(text || i18n.global.t('common.requestFailed'))
     }
 
     return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>

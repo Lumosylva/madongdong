@@ -15,20 +15,20 @@
       <section class="profile-hero">
         <RouterLink to="/" class="profile-back-link">
           <svg viewBox="0 0 24 24" class="profile-back-icon" aria-hidden="true"><path d="M19 12H5m0 0 7 7m-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          返回首页
+          {{ t('common.backToHome') }}
         </RouterLink>
         <p class="profile-eyebrow">Personal Center</p>
-        <h2>个人中心</h2>
-        <p class="profile-hero-desc">管理您的头像、昵称、联系信息和登录密码，保持账号信息最新。</p>
+        <h2>{{ t('profile.title') }}</h2>
+        <p class="profile-hero-desc">{{ t('profile.subtitle') }}</p>
       </section>
 
       <section v-if="!isLoggedIn" class="profile-auth-card">
         <div class="profile-auth-icon">🔒</div>
-        <h3>请先登录</h3>
-        <p>登录后即可管理您的个人资料和安全设置。</p>
+        <h3>{{ t('profile.notLoggedIn') }}</h3>
+        <p>{{ t('profile.notLoggedInDesc') }}</p>
         <div class="profile-auth-actions">
-          <RouterLink to="/login" class="profile-btn primary">去登录</RouterLink>
-          <RouterLink to="/register" class="profile-btn ghost">注册新账号</RouterLink>
+          <RouterLink to="/login" class="profile-btn primary">{{ t('profile.goToLogin') }}</RouterLink>
+          <RouterLink to="/register" class="profile-btn ghost">{{ t('profile.registerNew') }}</RouterLink>
         </div>
       </section>
 
@@ -58,34 +58,34 @@
             </div>
             <div class="profile-avatar-actions">
               <input ref="avatarInputRef" class="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" @change="onAvatarSelect" />
-              <button type="button" class="profile-btn secondary sm" @click="avatarInputRef?.click()">更换头像</button>
-              <button v-if="avatarPreview" type="button" class="profile-btn ghost sm" @click="clearAvatar">清除</button>
+              <button type="button" class="profile-btn secondary sm" @click="avatarInputRef?.click()">{{ t('profile.changeAvatar') }}</button>
+              <button v-if="avatarPreview" type="button" class="profile-btn ghost sm" @click="clearAvatar">{{ t('profile.clear') }}</button>
             </div>
-            <p class="profile-hint">支持 PNG / JPG / WebP / SVG，上传后自动裁剪为正方形并压缩</p>
+            <p class="profile-hint">{{ t('profile.avatarHint') }}</p>
           </div>
 
           <div class="profile-form-stack">
             <div class="profile-card">
-              <h4>基础资料</h4>
+              <h4>{{ t('profile.basicInfo') }}</h4>
               <label class="profile-field">
-                <span>用户名</span>
+                <span>{{ t('profile.username') }}</span>
                 <input class="profile-input" :value="user?.username" disabled />
               </label>
               <label class="profile-field">
-                <span>昵称 <em>*</em></span>
-                <input class="profile-input" v-model="nickname" placeholder="请输入昵称" />
+                <span>{{ t('profile.nickname') }} <em>*</em></span>
+                <input class="profile-input" v-model="nickname" :placeholder="t('profile.nicknamePlaceholder')" />
               </label>
               <label class="profile-field">
-                <span>联系信息（邮箱） <em>*</em></span>
-                <input class="profile-input" v-model="email" placeholder="请输入邮箱" />
+                <span>{{ t('profile.email') }} <em>*</em></span>
+                <input class="profile-input" v-model="email" :placeholder="t('profile.emailPlaceholder')" />
               </label>
             </div>
 
             <div class="profile-card">
-              <h4>安全设置</h4>
+              <h4>{{ t('profile.security') }}</h4>
               <label class="profile-field">
-                <span>新密码</span>
-                <input class="profile-input" v-model="newPassword" type="password" placeholder="设置新密码（留空则不修改）" />
+                <span>{{ t('profile.newPassword') }}</span>
+                <input class="profile-input" v-model="newPassword" type="password" :placeholder="t('profile.newPwPlaceholder')" />
               </label>
             </div>
 
@@ -93,7 +93,7 @@
               <button type="button" class="profile-btn primary lg" :disabled="saving" @click="saveProfile">
                 <svg v-if="!saving" viewBox="0 0 24 24" class="profile-btn-icon" aria-hidden="true"><path d="M4.5 12.75l6 6 9-13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span v-if="saving" class="profile-spinner"></span>
-                {{ saving ? '保存中...' : '保存修改' }}
+                {{ saving ? t('profile.saving') : t('profile.saveChanges') }}
               </button>
             </div>
           </div>
@@ -106,6 +106,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import WebTopbar from '../components/WebTopbar.vue'
 import { webApi, toAbsoluteAssetUrl } from '../api'
 import type { NavItem } from '../types'
@@ -113,6 +114,7 @@ import type { NavItem } from '../types'
 type ThemeMode = 'light' | 'dark'
 
 const route = useRoute()
+const { t } = useI18n()
 
 const theme = ref<ThemeMode>('light')
 const isLoggedIn = ref(false)
@@ -164,10 +166,10 @@ const showMessage = (msg: string, type: 'success' | 'error') => {
 const loadImage = (file: File) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('读取头像文件失败'))
+      reader.onerror = () => reject(new Error(t('profile.readFailed')))
     reader.onload = () => {
       const image = new Image()
-      image.onerror = () => reject(new Error('加载头像图片失败'))
+      image.onerror = () => reject(new Error(t('profile.imageFailed')))
       image.onload = () => resolve(image)
       image.src = String(reader.result || '')
     }
@@ -178,7 +180,7 @@ const compressAvatar = async (file: File) => {
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onerror = () => reject(new Error('读取头像文件失败'))
+    reader.onerror = () => reject(new Error(t('profile.readFailed')))
       reader.onload = () => resolve(String(reader.result || ''))
       reader.readAsDataURL(file)
     })
@@ -192,7 +194,7 @@ const compressAvatar = async (file: File) => {
   canvas.width = outputSize
   canvas.height = outputSize
   const context = canvas.getContext('2d')
-  if (!context) throw new Error('头像压缩失败')
+  if (!context) throw new Error(t('profile.compressFailed'))
   context.drawImage(image, offsetX, offsetY, size, size, 0, 0, outputSize, outputSize)
   return canvas.toDataURL('image/jpeg', 0.9)
 }
@@ -231,9 +233,9 @@ const saveProfile = async () => {
     localStorage.setItem('md-reader-nickname', updated.nickname)
     localStorage.setItem('md-reader-email', updated.email)
     newPassword.value = ''
-    showMessage('个人资料已更新', 'success')
+    showMessage(t('profile.updated'), 'success')
   } catch (err) {
-    showMessage(err instanceof Error ? err.message : '保存失败', 'error')
+    showMessage(err instanceof Error ? err.message : t('profile.saveFailed'), 'error')
   } finally {
     saving.value = false
   }

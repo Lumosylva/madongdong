@@ -2,7 +2,7 @@
   <div class="shell categories-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
+      :subtitle="data.site.site_subtitle || t('home.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -17,29 +17,29 @@
         <svg class="categories-back-icon" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
-        返回首页
+        {{ t('common.backToHome') }}
       </RouterLink>
       <div class="categories-hero-body">
         <div class="categories-hero-text">
           <p class="categories-hero-eyebrow">Categories</p>
-          <h1 class="categories-hero-title">分类</h1>
-          <p class="categories-hero-sub">共 {{ data.categories.length }} 个分类 &nbsp;·&nbsp; {{ data.total_articles }} 篇文章</p>
+          <h1 class="categories-hero-title">{{ t('categories.title') }}</h1>
+          <p class="categories-hero-sub">{{ t('categories.subtitle', { count: data.categories.length, articles: data.total_articles }) }}</p>
         </div>
         <div class="categories-hero-metrics">
           <div class="categories-metric-card">
             <strong>{{ data.categories.length }}</strong>
-            <span>个分类</span>
+            <span>{{ t('categories.title') }}</span>
           </div>
           <div class="categories-metric-card">
             <strong>{{ data.total_articles }}</strong>
-            <span>篇文章</span>
+            <span>{{ t('common.articles') }}</span>
           </div>
         </div>
       </div>
     </header>
 
     <div v-if="data.categories.length === 0" class="categories-empty">
-      暂无分类，请先在后台创建分类并发布文章。
+      {{ t('categories.empty') }}
     </div>
 
     <template v-else>
@@ -54,10 +54,10 @@
         >
           <div class="category-card-top">
             <div class="category-card-icon">{{ cat.name.slice(0, 1) }}</div>
-            <span class="category-card-count">{{ cat.article_count }} 篇</span>
+            <span class="category-card-count">{{ t('categories.articleCount', { n: cat.article_count }) }}</span>
           </div>
           <h2 class="category-card-name">{{ cat.name }}</h2>
-          <p class="category-card-desc">{{ cat.description || '暂无描述' }}</p>
+          <p class="category-card-desc">{{ cat.description || t('common.noDescription') }}</p>
           <span class="category-card-arrow" aria-hidden="true">▾</span>
         </button>
       </div>
@@ -67,9 +67,9 @@
           <div class="cat-articles-head">
             <div class="cat-articles-head-left">
               <span class="cat-articles-name">{{ selectedCatName }}</span>
-              <span v-if="!catLoading" class="cat-articles-total">{{ catTotal }} 篇</span>
+              <span v-if="!catLoading" class="cat-articles-total">{{ t('categories.articleCount', { n: catTotal }) }}</span>
             </div>
-            <button type="button" class="cat-articles-close-btn" @click="closeArticles">收起</button>
+            <button type="button" class="cat-articles-close-btn" @click="closeArticles">{{ t('categories.collapse') }}</button>
           </div>
 
           <div v-if="catLoading" class="cat-articles-loading">
@@ -79,7 +79,7 @@
           </div>
 
           <template v-else>
-            <div v-if="catArticles.length === 0" class="cat-articles-empty">该分类下暂无文章。</div>
+            <div v-if="catArticles.length === 0" class="cat-articles-empty">{{ t('categories.noArticles') }}</div>
 
             <div v-else class="cat-articles-list">
               <RouterLink
@@ -93,8 +93,8 @@
                   <p class="cat-article-summary">{{ article.summary }}</p>
                   <div class="cat-article-meta">
                     <span>{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
-                    <span>{{ article.view_count }} 浏览</span>
-                    <span>{{ article.comment_count }} 评论</span>
+                    <span>{{ article.view_count }} {{ t('common.views') }}</span>
+                    <span>{{ article.comment_count }} {{ t('common.comments') }}</span>
                   </div>
                 </div>
                 <span class="cat-article-arrow" aria-hidden="true">→</span>
@@ -108,7 +108,7 @@
                 :disabled="catLoadingMore"
                 @click="loadMoreArticles"
               >
-                {{ catLoadingMore ? '加载中…' : `加载更多（还有 ${catTotal - catArticles.length} 篇）` }}
+                {{ catLoadingMore ? t('common.loading') : t('categories.loadMore', { n: catTotal - catArticles.length }) }}
               </button>
             </div>
           </template>
@@ -123,14 +123,17 @@
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import type { Article, CategoriesResponse, CategoryWithCount } from '../types'
-import { formatRelativeTime } from '../utils/time'
+import { useFormatRelativeTime } from '../utils/time'
 
+const { t } = useI18n()
+const { formatRelativeTime } = useFormatRelativeTime()
 const route = useRoute()
 const data = ref<CategoriesResponse | null>(null)
 type ThemeMode = 'light' | 'dark'
@@ -225,7 +228,7 @@ const loadData = async () => {
   data.value = await webApi.getCategories()
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
-  document.title = buildPageTitle('分类')
+  document.title = buildPageTitle(t('categories.title'))
 }
 
 onMounted(() => {

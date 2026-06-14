@@ -2,7 +2,7 @@
   <div class="shell about-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '专注内容、体验与长期价值的个人站点'"
+      :subtitle="data.site.site_subtitle || t('about.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -16,38 +16,36 @@
       <section class="about-hero">
         <RouterLink to="/" class="about-back-link">
           <svg class="about-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-          返回首页
+          {{ t('common.backToHome') }}
         </RouterLink>
         <div class="about-hero-copy">
           <p class="about-eyebrow">About</p>
-          <h1 class="about-title">关于本站</h1>
+          <h1 class="about-title">{{ t('about.title') }}</h1>
           <p class="about-lead">
-            这里是一个围绕技术、产品、创作与日常思考持续更新的内容站点。站点希望用清晰的结构、
-            克制的设计和稳定的内容输出，提供值得长期阅读与回访的体验。
+            {{ t('about.description') }}
           </p>
         </div>
       </section>
 
       <section class="about-grid">
         <article class="about-panel about-panel-wide">
-          <h2>站点定位</h2>
+          <h2>{{ t('about.positioning') }}</h2>
           <p>
-            本站用于记录技术实践、知识整理、项目观察以及一些经过筛选的个人表达。内容会优先强调准确性、
-            可读性与复用价值，而不是短期噪音。
+            {{ t('about.positioningDesc') }}
           </p>
           <a class="about-github-link" href="https://github.com/Lumosylva/madongdong" target="_blank" rel="noopener noreferrer">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub 开源地址
+            {{ t('about.github') }}
           </a>
         </article>
 
         <article class="about-panel about-panel-wide">
-          <h2>联系与合作</h2>
+          <h2>{{ t('about.contact') }}</h2>
           <p>
-            如果你希望就内容交流、友链合作、问题反馈或其他站点相关事项取得联系，可直接发送邮件至下方邮箱。
+            {{ t('about.contactDesc') }}
           </p>
           <a class="about-contact-card" href="mailto:contact@madongdong.com">
-            <span class="about-contact-label">联系邮箱</span>
+            <span class="about-contact-label">{{ t('about.contactEmail') }}</span>
             <strong>contact@madongdong.com</strong>
           </a>
         </article>
@@ -61,6 +59,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
@@ -71,6 +70,7 @@ import type { HomeResponse } from '../types'
 type ThemeMode = 'light' | 'dark'
 
 const route = useRoute()
+const { t } = useI18n()
 const data = ref<HomeResponse | null>(null)
 const theme = ref<ThemeMode>('light')
 
@@ -88,7 +88,7 @@ const loadData = async () => {
   data.value = await webApi.getHome(1, 1)
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
-  document.title = buildPageTitle('关于')
+  document.title = buildPageTitle(t('about.title'))
 }
 
 onMounted(async () => {

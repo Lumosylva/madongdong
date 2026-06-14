@@ -2,8 +2,7 @@
   <div class="shell friend-links-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '友情链接与站点互访申请'
-      "
+      :subtitle="data.site.site_subtitle || t('friendLinks.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -20,46 +19,45 @@
       <section class="friend-links-card friend-links-card-wide friend-links-hero">
         <RouterLink to="/" class="friend-links-back-link">
           <svg class="friend-links-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-          返回首页
+          {{ t('common.backToHome') }}
         </RouterLink>
-        <h2>友情链接</h2>
+        <h2>{{ t('friendLinks.title') }}</h2>
         <p class="friend-links-hero-text">
-          欢迎与本站交换优质链接。我们优先接受内容健康、更新稳定、排版清晰的网站申请，
-          共同构建更高质量的内容生态。
+          {{ t('friendLinks.description') }}
         </p>
         <div class="friend-links-metrics">
           <div class="friend-links-metric friend-links-metric-inline">
-            <span>已收录</span>
+            <span>{{ t('friendLinks.listed') }}</span>
             <strong>{{ links.length }}</strong>
           </div>
         </div>
         <div class="friend-links-hero-actions">
-          <a href="#friend-links-form" class="friend-links-action-btn">申请友链</a>
+          <a href="#friend-links-form" class="friend-links-action-btn">{{ t('friendLinks.apply') }}</a>
         </div>
       </section>
 
       <section id="friend-links-form" class="friend-links-card friend-links-card-wide friend-links-form-card">
         <div class="friend-links-card-head">
           <div>
-            <h3>申请友情链接</h3>
-            <p>提交你的站点信息，我们会尽快审核</p>
+            <h3>{{ t('friendLinks.applyTitle') }}</h3>
+            <p>{{ t('friendLinks.applySubtitle') }}</p>
           </div>
         </div>
 
         <form class="friend-links-form" @submit.prevent="submitApplication">
           <div class="friend-links-form-grid">
             <label>
-              <span>站点名称</span>
+              <span>{{ t('friendLinks.siteName') }}</span>
               <input
                 v-model="form.name"
-                placeholder="例如：我的博客"
+                :placeholder="t('friendLinks.siteNamePlaceholder')"
                 @blur="nameTouched = true; nameError = validateFriendLinkName(form.name)"
                 @input="nameTouched = true; nameError = validateFriendLinkName(form.name)"
               />
               <small v-if="nameTouched && nameError" class="friend-links-field-error">{{ nameError }}</small>
             </label>
             <label>
-              <span>站点地址</span>
+              <span>{{ t('friendLinks.siteUrl') }}</span>
               <input
                 v-model="form.url"
                 placeholder="https://example.com"
@@ -69,27 +67,27 @@
               <small v-if="urlTouched && urlError" class="friend-links-field-error">{{ urlError }}</small>
             </label>
             <label>
-              <span>联系邮箱</span>
+              <span>{{ t('friendLinks.email') }}</span>
               <input
                 v-model="form.email"
                 type="email"
-                placeholder="用于审核联系"
+                :placeholder="t('friendLinks.emailPlaceholder')"
                 @blur="emailTouched = true; emailError = validateFriendLinkEmail(form.email)"
                 @input="emailTouched = true; emailError = validateFriendLinkEmail(form.email)"
               />
               <small v-if="emailTouched && emailError" class="friend-links-field-error">{{ emailError }}</small>
             </label>
             <label class="friend-links-textarea-field">
-              <span>站点描述</span>
-              <textarea v-model="form.description" rows="4" placeholder="简单介绍你的站点" />
+              <span>{{ t('friendLinks.descriptionLabel') }}</span>
+              <textarea v-model="form.description" rows="4" :placeholder="t('friendLinks.descriptionPlaceholder')" />
             </label>
           </div>
 
           <div class="friend-links-form-actions">
             <button class="auth-submit-btn" type="submit" :disabled="submitting">
-              {{ submitting ? '提交中...' : '提交申请' }}
+              {{ submitting ? t('friendLinks.submitting') : t('friendLinks.submitApply') }}
             </button>
-            <p class="friend-links-form-tip">提交后会保存到浏览器，并同步提交到站点后台审核。</p>
+            <p class="friend-links-form-tip">{{ t('friendLinks.submitTip') }}</p>
           </div>
         </form>
 
@@ -99,10 +97,10 @@
       <section class="friend-links-card friend-links-card-wide friend-links-list-card">
         <div class="friend-links-card-head">
           <div>
-            <h3>已收录友情链接</h3>
-            <p>精选站点展示，点击可直接访问</p>
+            <h3>{{ t('friendLinks.existingTitle') }}</h3>
+            <p>{{ t('friendLinks.existingSubtitle') }}</p>
           </div>
-          <span class="friend-links-count">{{ links.length }} 个站点</span>
+          <span class="friend-links-count">{{ t('friendLinks.siteCount', { n: links.length }) }}</span>
         </div>
 
         <div v-if="links.length" class="friend-links-grid">
@@ -122,7 +120,7 @@
             </div>
           </a>
         </div>
-        <p v-else class="friend-links-empty">暂无友情链接，欢迎成为首批合作站点。</p>
+        <p v-else class="friend-links-empty">{{ t('friendLinks.empty') }}</p>
       </section>
     </main>
   </div>
@@ -131,6 +129,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
@@ -141,6 +140,7 @@ type FriendLinkItem = { name: string; url: string; description: string }
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const data = ref<Awaited<ReturnType<typeof webApi.getHome>> | null>(null)
 const keyword = ref('')
 const theme = ref<ThemeMode>('light')
@@ -158,26 +158,26 @@ const form = ref({ name: '', url: '', description: '', email: '' })
 
 const validateFriendLinkName = (value: string) => {
   const input = value.trim()
-  if (!input) return '请填写站点名称'
-  if (input.length < 2) return '站点名称至少 2 个字符'
-  if (input.length > 100) return '站点名称不能超过 100 个字符'
+  if (!input) return t('friendLinks.nameRequired')
+  if (input.length < 2) return t('friendLinks.nameMinLength')
+  if (input.length > 100) return t('friendLinks.nameMaxLength')
   return ''
 }
 
 const validateFriendLinkUrl = (value: string) => {
   const input = value.trim()
-  if (!input) return '请填写站点地址'
-  if (/\s/.test(input)) return '站点地址不能包含空格'
+  if (!input) return t('friendLinks.urlRequired')
+  if (/\s/.test(input)) return t('friendLinks.urlNoSpaces')
   if (/^https?:\/\//i.test(input)) return ''
   if (/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(input)) return ''
-  return '请输入正确的网址，例如 https://example.com'
+  return t('friendLinks.urlInvalid')
 }
 
 const validateFriendLinkEmail = (value: string) => {
   const input = value.trim()
-  if (!input) return '请填写联系邮箱'
-  if (!/^\S+@\S+\.\S+$/.test(input)) return '请输入有效的邮箱地址'
-  if (input.length > 255) return '邮箱长度不能超过 255 个字符'
+  if (!input) return t('friendLinks.emailRequired')
+  if (!/^\S+@\S+\.\S+$/.test(input)) return t('friendLinks.emailInvalid')
+  if (input.length > 255) return t('friendLinks.emailMaxLength')
   return ''
 }
 
@@ -206,7 +206,7 @@ const loadData = async () => {
     url: item.url,
     description: item.description,
   }))
-  document.title = buildPageTitle('友情链接')
+  document.title = buildPageTitle(t('friendLinks.title'))
 }
 
 const submitApplication = async () => {
@@ -228,7 +228,7 @@ const submitApplication = async () => {
 
   if (nameErrorText || urlErrorText || emailErrorText || !description) {
     status.value = 'error'
-    message.value = !description ? '请填写站点描述' : '请先修正表单中的错误'
+    message.value = !description ? t('friendLinks.descRequired') : t('friendLinks.fixErrors')
     return
   }
 
@@ -246,10 +246,10 @@ const submitApplication = async () => {
     urlError.value = ''
     emailError.value = ''
     status.value = 'success'
-    message.value = '申请已提交，等待审核'
+    message.value = t('friendLinks.submitted')
   } catch (error) {
     status.value = 'error'
-    message.value = error instanceof Error ? error.message : '提交失败'
+    message.value = error instanceof Error ? error.message : t('friendLinks.submitFailed')
   } finally {
     submitting.value = false
   }
@@ -258,7 +258,7 @@ const submitApplication = async () => {
 onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  document.title = buildPageTitle('友情链接')
+  document.title = buildPageTitle(t('friendLinks.title'))
   await loadData()
 })
 </script>

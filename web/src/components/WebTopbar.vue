@@ -12,7 +12,7 @@
     <button
       type="button"
       class="hamburger-btn"
-      :aria-label="mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'"
+      :aria-label="mobileMenuOpen ? t('topbar.closeMenu') : t('topbar.openMenu')"
       :aria-expanded="mobileMenuOpen"
       @click="mobileMenuOpen = !mobileMenuOpen"
     >
@@ -26,14 +26,19 @@
         :to="item.path"
         :class="{ active: isActive(item.path) }"
       >
-        {{ item.title }}
+        {{ navTitleMap[item.path] || item.title }}
       </RouterLink>
-      <RouterLink to="/categories" :class="{ active: isActive('/categories') }">分类</RouterLink>
-      <RouterLink to="/archive" :class="{ active: isActive('/archive') }">归档</RouterLink>
-      <RouterLink to="/about" :class="{ active: isActive('/about') }">关于</RouterLink>
+      <RouterLink to="/categories" :class="{ active: isActive('/categories') }">{{ t('common.categories') }}</RouterLink>
+      <RouterLink to="/archive" :class="{ active: isActive('/archive') }">{{ t('common.archive') }}</RouterLink>
+      <RouterLink to="/about" :class="{ active: isActive('/about') }">{{ t('common.about') }}</RouterLink>
     </nav>
 
     <div class="topbar-right">
+      <select class="lang-select" :value="locale" @change="onLocaleChange">
+        <option value="zh-CN">中文</option>
+        <option value="en">EN</option>
+        <option value="ja">日本語</option>
+      </select>
       <div class="account-menu" ref="accountMenuRef">
         <button
           type="button"
@@ -48,17 +53,17 @@
         </button>
         <transition name="menu-pop">
           <div v-if="accountMenuOpen" class="account-dropdown">
-            <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">登录</RouterLink>
-            <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">注册</RouterLink>
+            <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.login') }}</RouterLink>
+            <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.register') }}</RouterLink>
             <template v-else>
-              <RouterLink to="/profile" class="dropdown-item" @click="accountMenuOpen = false">个人中心</RouterLink>
-              <button type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+              <RouterLink to="/profile" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.profile') }}</RouterLink>
+              <button type="button" class="dropdown-item danger" @click="logout">{{ t('common.logout') }}</button>
             </template>
           </div>
         </transition>
       </div>
 
-      <button v-if="!isMobile && collapsibleSearch" type="button" class="search-launch-btn" aria-label="打开搜索" title="搜索" @click="openSearchPanel">
+      <button v-if="!isMobile && collapsibleSearch" type="button" class="search-launch-btn" :aria-label="t('common.search')" :title="t('common.search')" @click="openSearchPanel">
         <span aria-hidden="true">⌕</span>
       </button>
     </div>
@@ -75,18 +80,18 @@
         <span v-else class="brand-mark">MD</span>
         <div>
           <p class="drawer-title">{{ title }}</p>
-          <p class="drawer-subtitle">快速导航</p>
+          <p class="drawer-subtitle">{{ t('topbar.quickNav') }}</p>
         </div>
         <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
       </div>
       <nav class="drawer-nav">
         <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
-          {{ item.title }}
+          {{ navTitleMap[item.path] || item.title }}
         </RouterLink>
-        <RouterLink to="/categories" :class="{ active: isActive('/categories') }" @click="mobileMenuOpen = false">分类</RouterLink>
-        <RouterLink to="/archive" :class="{ active: isActive('/archive') }" @click="mobileMenuOpen = false">归档</RouterLink>
-        <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">搜索</button>
-        <RouterLink to="/about" :class="{ active: isActive('/about') }" @click="mobileMenuOpen = false">关于</RouterLink>
+        <RouterLink to="/categories" :class="{ active: isActive('/categories') }" @click="mobileMenuOpen = false">{{ t('common.categories') }}</RouterLink>
+        <RouterLink to="/archive" :class="{ active: isActive('/archive') }" @click="mobileMenuOpen = false">{{ t('common.archive') }}</RouterLink>
+        <button v-if="collapsibleSearch" type="button" class="drawer-search-entry" @click="openSearchPanel">{{ t('common.search') }}</button>
+        <RouterLink to="/about" :class="{ active: isActive('/about') }" @click="mobileMenuOpen = false">{{ t('common.about') }}</RouterLink>
       </nav>
     </aside>
   </transition>
@@ -96,14 +101,14 @@
   </transition>
 
   <transition name="search-overlay-slide">
-    <section v-if="searchPanelOpen" class="search-overlay-panel" role="dialog" aria-modal="true" aria-label="搜索">
+    <section v-if="searchPanelOpen" class="search-overlay-panel" role="dialog" aria-modal="true" :aria-label="t('common.search')">
       <div class="search-overlay-shell">
         <div class="search-overlay-header">
           <div class="search-overlay-title-wrap">
             <span class="brand-mark search-overlay-mark">⌕</span>
             <div>
-              <p class="drawer-title">搜索站点内容</p>
-              <p class="drawer-subtitle">输入关键词后下方即时显示结果</p>
+              <p class="drawer-title">{{ t('topbar.searchTitle') }}</p>
+              <p class="drawer-subtitle">{{ t('topbar.searchSubtitle') }}</p>
             </div>
           </div>
           <button type="button" class="drawer-close" @click="closeSearchPanel">✕</button>
@@ -115,13 +120,13 @@
             v-model="searchPanelKeyword"
             class="search-overlay-input"
             type="search"
-            placeholder="请输入文章、分类或标签关键词"
+            :placeholder="t('topbar.searchPlaceholder')"
           />
         </form>
 
         <div class="search-overlay-result" ref="searchPanelResultRef">
           <p class="search-overlay-hint">{{ searchPanelHint }}</p>
-          <p v-if="searchPanelLoading" class="search-overlay-empty">正在搜索...</p>
+          <p v-if="searchPanelLoading" class="search-overlay-empty">{{ t('topbar.searching') }}</p>
           <div v-else-if="searchPanelResults.length" class="search-overlay-result-list">
             <RouterLink
               v-for="(item, index) in searchPanelResults"
@@ -134,13 +139,13 @@
             >
               <strong>{{ item.title }}</strong>
               <span>{{ item.summary }}</span>
-              <em>{{ item.category?.name || '未分类' }} · {{ item.author?.nickname || 'admin' }}</em>
+              <em>{{ item.category?.name || t('common.untitled') }} · {{ item.author?.nickname || 'admin' }}</em>
             </RouterLink>
             <div ref="searchPanelLoadMoreSentinel" class="search-overlay-load-more-sentinel" aria-hidden="true"></div>
           </div>
-          <p v-else class="search-overlay-empty">未找到匹配结果，请尝试其他关键词。</p>
-          <p v-if="searchPanelLoadingMore" class="search-overlay-empty">加载更多中...</p>
-          <p v-else-if="searchPanelResults.length && !searchPanelCanLoadMore" class="search-overlay-empty">没有更多结果了。</p>
+          <p v-else class="search-overlay-empty">{{ t('topbar.noResults') }}</p>
+          <p v-if="searchPanelLoadingMore" class="search-overlay-empty">{{ t('topbar.loadMore') }}</p>
+          <p v-else-if="searchPanelResults.length && !searchPanelCanLoadMore" class="search-overlay-empty">{{ t('topbar.noMoreResults') }}</p>
         </div>
       </div>
     </section>
@@ -149,9 +154,30 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { webApi } from '../api'
 import type { NavItem, Article } from '../types'
+
+const { t, locale } = useI18n()
+
+const onLocaleChange = (e: Event) => {
+  const val = (e.target as HTMLSelectElement).value
+  locale.value = val
+  localStorage.setItem('md-locale', val)
+}
+
+const navTitleMap = computed<Record<string, string>>(() => ({
+  '/': t('common.home'),
+  '/search': t('common.search'),
+  '/categories': t('common.categories'),
+  '/archive': t('common.archive'),
+  '/about': t('common.about'),
+  '/friend-links': t('common.login'),
+  '/register': t('common.register'),
+  '/login': t('common.login'),
+  '/profile': t('common.profile'),
+}))
 
 type ThemeMode = 'light' | 'dark'
 
@@ -193,15 +219,15 @@ const isMobile = ref(false)
 const isLoggedIn = computed(() => {
   return document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
 })
-const accountName = computed(() => localStorage.getItem('md-reader-nickname') || '已登录用户')
-const accountEntryLabel = computed(() => (isLoggedIn.value ? `账户：${accountName.value}` : '登录 / 注册'))
-const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : '登录 / 注册'))
+const accountName = computed(() => localStorage.getItem('md-reader-nickname') || t('topbar.loggedInUser'))
+const accountEntryLabel = computed(() => (isLoggedIn.value ? t('topbar.accountLabel', { name: accountName.value }) : t('topbar.loginRegister')))
+const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : t('topbar.loginRegister')))
 
 const searchPanelResults = computed(() => searchPanelArticles.value)
 const searchPanelCanLoadMore = computed(() => searchPanelPage.value < searchPanelTotalPages.value)
 
 const searchPanelHint = computed(() =>
-  searchPanelKeyword.value.trim() ? '下方显示当前关键词匹配的结果。' : '可输入文章、分类或标签关键词进行搜索。',
+  searchPanelKeyword.value.trim() ? t('topbar.searchHint') : t('topbar.searchHintEmpty'),
 )
 
 watch(() => props.currentFullPath, () => {

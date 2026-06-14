@@ -1,7 +1,7 @@
 <template>
   <footer class="footer">
     <div class="footer-inner">
-      <RouterLink to="/friend-links" class="footer-friend-links-link">友情链接</RouterLink>
+      <RouterLink to="/friend-links" class="footer-friend-links-link">{{ t('footer.friendLinks') }}</RouterLink>
 
       <div class="footer-copy-section">
         <span v-html="sanitizedIcp"></span>
@@ -13,13 +13,16 @@
 <script setup lang="ts">
 import DOMPurify from 'dompurify'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   icpBeian?: string | null
 }>()
 
 const sanitizedIcp = computed(() => {
-  return DOMPurify.sanitize(props.icpBeian || '页脚信息待配置', { USE_PROFILES: { html: true } })
+  return DOMPurify.sanitize(props.icpBeian || t('footer.footerPending'), { USE_PROFILES: { html: true } })
 })
 </script>
 

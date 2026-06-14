@@ -2,7 +2,7 @@
   <div class="search-page" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
+      :subtitle="data.site.site_subtitle || t('home.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -15,31 +15,31 @@
     <header class="archive-hero">
       <RouterLink to="/" class="archive-back-link">
         <svg class="archive-back-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3 5 8l5.5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-        返回首页
+        {{ t('common.backToHome') }}
       </RouterLink>
       <div class="archive-hero-body">
         <div class="archive-hero-text">
           <p class="archive-hero-eyebrow">Archive</p>
-          <h1 class="archive-hero-title">归档</h1>
+          <h1 class="archive-hero-title">{{ t('archive.title') }}</h1>
           <p class="archive-hero-sub">
-            <template v-if="yearRangeText">{{ yearRangeText }} &nbsp;·&nbsp; </template>按时间轴浏览全部文章
+            <template v-if="yearRangeText">{{ yearRangeText }} &nbsp;·&nbsp; </template>{{ t('archive.subtitle') }}
           </p>
         </div>
         <div class="archive-hero-metrics">
           <div class="archive-metric-card">
             <strong>{{ data.total }}</strong>
-            <span>篇文章</span>
+            <span>{{ t('archive.articleCount') }}</span>
           </div>
           <div class="archive-metric-card">
             <strong>{{ data.archive.length }}</strong>
-            <span>个年份</span>
+            <span>{{ t('archive.yearCount') }}</span>
           </div>
         </div>
       </div>
     </header>
 
     <section class="search-result-panel archive-panel">
-      <div v-if="data.archive.length === 0" class="archive-summary">暂无已发布文章。</div>
+      <div v-if="data.archive.length === 0" class="archive-summary">{{ t('archive.empty') }}</div>
 
       <div
         v-for="yearGroup in data.archive"
@@ -53,7 +53,7 @@
         >
           <span class="archive-toggle-icon" :class="{ open: isYearOpen(yearGroup.year) }">▶</span>
           <span class="archive-year-title">{{ yearGroup.year }}</span>
-          <span class="archive-year-count">{{ yearGroup.count }} 篇</span>
+          <span class="archive-year-count">{{ t('archive.count', { n: yearGroup.count }) }}</span>
         </button>
 
         <transition name="archive-collapse">
@@ -65,7 +65,7 @@
             >
               <div class="archive-month-header">
                 <span>{{ monthNames[monthGroup.month - 1] }}</span>
-                <span class="archive-month-count">{{ monthGroup.count }} 篇</span>
+                <span class="archive-month-count">{{ t('archive.count', { n: monthGroup.count }) }}</span>
               </div>
               <div
                 v-for="article in monthGroup.articles"
@@ -90,6 +90,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
@@ -98,6 +99,7 @@ import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../sit
 import type { ArchiveResponse } from '../types'
 
 const route = useRoute()
+const { t } = useI18n()
 const data = ref<ArchiveResponse | null>(null)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
@@ -111,7 +113,7 @@ const yearRangeText = computed(() => {
   return max === min ? String(max) : `${min} — ${max}`
 })
 
-const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+const monthNames = computed(() => t('archive.months') as unknown as string[])
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -151,7 +153,7 @@ const loadData = async () => {
   data.value = await webApi.getArchive()
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
-  document.title = buildPageTitle('归档')
+  document.title = buildPageTitle(t('archive.title'))
   // Expand the most recent year by default
   if (data.value.archive.length > 0) {
     openYears.value.add(data.value.archive[0].year)

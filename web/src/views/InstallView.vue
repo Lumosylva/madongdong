@@ -6,34 +6,34 @@
           <span class="install-brand-mark">MD</span>
           <div>
             <p class="install-eyebrow">Welcome</p>
-            <h1>开始安装 MaDongDong Blog</h1>
+            <h1>{{ t('install.welcome') }}</h1>
           </div>
         </div>
 
         <p class="install-lead">
-          这是一个简洁的安装向导。接下来只需填写站点信息和管理员账号，系统会自动完成初始化，准备好后即可开始使用。
+          {{ t('install.description') }}
         </p>
 
         <div class="install-steps">
           <div class="install-step" :class="{ active: currentStep >= 1, done: currentStep > 1 }">
             <div class="install-step-num">1</div>
             <div>
-              <p class="install-step-title">站点信息</p>
-              <p class="install-step-desc">配置站点名称与基础设置</p>
+              <p class="install-step-title">{{ t('install.step1Title') }}</p>
+              <p class="install-step-desc">{{ t('install.step1Desc') }}</p>
             </div>
           </div>
           <div class="install-step" :class="{ active: currentStep >= 2, done: currentStep > 2 }">
             <div class="install-step-num">2</div>
             <div>
-              <p class="install-step-title">管理员账号</p>
-              <p class="install-step-desc">创建后台管理账号</p>
+              <p class="install-step-title">{{ t('install.step2Title') }}</p>
+              <p class="install-step-desc">{{ t('install.step2Desc') }}</p>
             </div>
           </div>
           <div class="install-step" :class="{ active: currentStep >= 3 }">
             <div class="install-step-num">3</div>
             <div>
-              <p class="install-step-title">高级选项</p>
-              <p class="install-step-desc">备案、版权与评论设置</p>
+              <p class="install-step-title">{{ t('install.step3Title') }}</p>
+              <p class="install-step-desc">{{ t('install.step3Desc') }}</p>
             </div>
           </div>
         </div>
@@ -47,8 +47,8 @@
             </svg>
           </div>
           <div>
-            <strong>开始之前</strong>
-            <p>请先确认数据库、上传目录和后端服务已经可用，然后继续下一步。</p>
+            <strong>{{ t('install.beforeStart') }}</strong>
+            <p>{{ t('install.beforeStartDesc') }}</p>
           </div>
         </div>
       </aside>
@@ -67,44 +67,44 @@
           <div v-show="currentStep === 1" class="install-step-content">
             <div class="install-grid">
               <label class="install-field">
-                <span class="install-field-label">站点标题 <em>*</em></span>
-                <input v-model="form.site_title" required placeholder="例如：MaDongDong Blog" />
+                <span class="install-field-label">{{ t('install.siteTitle') }} <em>*</em></span>
+                <input v-model="form.site_title" required :placeholder="t('install.siteTitlePlaceholder')" />
               </label>
               <label class="install-field">
-                <span class="install-field-label">副标题</span>
-                <input v-model="form.site_subtitle" placeholder="例如：记录技术、生活与长期主义" />
+                <span class="install-field-label">{{ t('install.siteSubtitle') }}</span>
+                <input v-model="form.site_subtitle" :placeholder="t('install.siteSubtitlePlaceholder')" />
               </label>
               <label class="install-field install-field-wide">
-                <span class="install-field-label">站点域名</span>
+                <span class="install-field-label">{{ t('install.siteDomain') }}</span>
                 <div class="install-field-row">
-                  <input v-model="form.site_domain" placeholder="例如：example.com（用于 CORS 和部署配置）" />
-                  <button type="button" class="install-field-btn" title="自动获取当前域名" @click="autoDetectDomain">
+                  <input v-model="form.site_domain" :placeholder="t('install.siteDomainPlaceholder')" />
+                  <button type="button" class="install-field-btn" :title="t('install.autoDetect')" @click="autoDetectDomain">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                   </button>
                 </div>
-                <p class="install-field-hint">留空则使用默认 localhost 配置。生产环境请填写实际域名。</p>
+                <p class="install-field-hint">{{ t('install.siteDomainHint') }}</p>
               </label>
               <label class="install-field install-field-wide">
-                <span class="install-field-label">JWT 签名密钥</span>
+                <span class="install-field-label">{{ t('install.jwtSecret') }}</span>
                 <div class="install-field-row">
-                  <input v-model="form.secret_key" :type="showSecretKey ? 'text' : 'password'" placeholder="留空将自动生成随机密钥" />
-                  <button type="button" class="install-field-btn" :title="showSecretKey ? '隐藏' : '显示'" @click="showSecretKey = !showSecretKey">
+                  <input v-model="form.secret_key" :type="showSecretKey ? 'text' : 'password'" :placeholder="t('install.jwtSecretPlaceholder')" />
+                  <button type="button" class="install-field-btn" :title="showSecretKey ? t('install.hide') : t('install.show')" @click="showSecretKey = !showSecretKey">
                     <svg v-if="showSecretKey" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/></svg>
                     <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-5.25 0-9.14 4.38-11 7 1.86 2.62 5.75 7 11 7s9.14-4.38 11-7c-1.86-2.62-5.75-7-11-7Zm0 12c-4.09 0-7.38-3.1-9.08-5 1.7-1.9 5-5 9.08-5s7.38 3.1 9.08 5c-1.7 1.9-5 5-9.08 5Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/></svg>
                   </button>
-                  <button type="button" class="install-field-btn" title="生成随机密钥" @click="generateSecretKey">
+                  <button type="button" class="install-field-btn" :title="t('install.generateKey')" @click="generateSecretKey">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
                   </button>
                 </div>
-                <p class="install-field-hint">用于 JWT 令牌签名。留空将自动生成，生产环境建议显式设置。</p>
+                <p class="install-field-hint">{{ t('install.jwtSecretHint') }}</p>
               </label>
               <label class="install-field install-field-wide">
-                <span class="install-field-label">数据库连接</span>
+                <span class="install-field-label">{{ t('install.databaseUrl') }}</span>
                 <input v-model="form.database_url" placeholder="sqlite+aiosqlite:///./madongdong.db" />
-                <p class="install-field-hint">默认使用 SQLite。如需使用 MySQL/PostgreSQL，请修改连接字符串。</p>
+                <p class="install-field-hint">{{ t('install.databaseUrlHint') }}</p>
               </label>
               <label class="install-field">
-                <span class="install-field-label">首页每页文章数</span>
+                <span class="install-field-label">{{ t('install.pageSize') }}</span>
                 <input v-model.number="form.homepage_page_size" type="number" min="1" max="100" />
               </label>
             </div>
@@ -114,14 +114,14 @@
           <div v-show="currentStep === 2" class="install-step-content">
             <div class="install-grid">
               <label class="install-field">
-                <span class="install-field-label">管理员用户名 <em>*</em></span>
-                <input v-model="form.admin_username" required placeholder="例如：admin" autocomplete="username" />
+                <span class="install-field-label">{{ t('install.adminUsername') }} <em>*</em></span>
+                <input v-model="form.admin_username" required :placeholder="t('install.adminUsernamePlaceholder')" autocomplete="username" />
               </label>
               <label class="install-field">
-                <span class="install-field-label">管理员密码 <em>*</em></span>
+                <span class="install-field-label">{{ t('install.adminPassword') }} <em>*</em></span>
                 <div class="install-password-shell">
-                  <input :type="showPassword ? 'text' : 'password'" v-model="form.admin_password" required placeholder="请设置强密码" autocomplete="new-password" />
-                  <button type="button" class="install-password-toggle" :aria-label="showPassword ? '隐藏密码' : '显示密码'" @click="showPassword = !showPassword">
+                  <input :type="showPassword ? 'text' : 'password'" v-model="form.admin_password" required :placeholder="t('install.adminPasswordPlaceholder')" autocomplete="new-password" />
+                  <button type="button" class="install-password-toggle" :aria-label="showPassword ? t('install.hidePassword') : t('install.showPassword')" @click="showPassword = !showPassword">
                     <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/>
                     </svg>
@@ -132,12 +132,12 @@
                 </div>
               </label>
               <label class="install-field">
-                <span class="install-field-label">管理员昵称 <em>*</em></span>
-                <input v-model="form.admin_nickname" required placeholder="例如：系统管理员" />
+                <span class="install-field-label">{{ t('install.adminNickname') }} <em>*</em></span>
+                <input v-model="form.admin_nickname" required :placeholder="t('install.adminNicknamePlaceholder')" />
               </label>
               <label class="install-field">
-                <span class="install-field-label">管理员邮箱 <em>*</em></span>
-                <input v-model="form.admin_email" type="email" required placeholder="例如：admin@example.com" autocomplete="email" />
+                <span class="install-field-label">{{ t('install.adminEmail') }} <em>*</em></span>
+                <input v-model="form.admin_email" type="email" required :placeholder="t('install.adminEmailPlaceholder')" autocomplete="email" />
               </label>
             </div>
           </div>
@@ -146,12 +146,12 @@
           <div v-show="currentStep === 3" class="install-step-content">
             <div class="install-grid">
               <label class="install-field install-field-wide">
-                <span class="install-field-label">ICP 备案</span>
-                <textarea v-model="form.icp_beian" rows="3" placeholder="请输入备案信息，支持 HTML 片段"></textarea>
+                <span class="install-field-label">{{ t('install.icpBeian') }}</span>
+                <textarea v-model="form.icp_beian" rows="3" :placeholder="t('install.icpBeianPlaceholder')"></textarea>
               </label>
               <label class="install-field">
-                <span class="install-field-label">版权信息</span>
-                <input v-model="form.copyright_text" placeholder="例如：© MaDongDong Blog" />
+                <span class="install-field-label">{{ t('install.copyright') }}</span>
+                <input v-model="form.copyright_text" :placeholder="t('install.copyrightPlaceholder')" />
               </label>
               <label class="install-checkbox-card">
                 <input v-model="form.comment_requires_review" type="checkbox" class="install-checkbox-input" />
@@ -161,8 +161,8 @@
                   </svg>
                 </div>
                 <div>
-                  <span>评论需要审核</span>
-                  <p>开启后，前台提交的评论会先进入审核流程。</p>
+                  <span>{{ t('install.commentReview') }}</span>
+                  <p>{{ t('install.commentReviewDesc') }}</p>
                 </div>
               </label>
             </div>
@@ -178,8 +178,8 @@
                 </svg>
               </div>
               <div>
-                <strong>页脚信息说明</strong>
-                <p>备案与版权信息将用于站点底部展示，支持 HTML 片段输入，建议按实际需要填写。</p>
+                <strong>{{ t('install.footerNote') }}</strong>
+                <p>{{ t('install.footerNoteDesc') }}</p>
               </div>
             </div>
           </div>
@@ -191,17 +191,17 @@
 
           <div class="install-actions">
             <button v-if="currentStep > 1" type="button" class="install-btn-secondary" @click="currentStep--">
-              上一步
+              {{ t('install.prevStep') }}
             </button>
             <div class="install-actions-right">
               <button v-if="currentStep < 3" type="button" class="install-btn-primary" @click="currentStep++">
-                下一步
+                {{ t('install.nextStep') }}
               </button>
               <button v-else type="submit" class="install-btn-primary install-btn-submit" :disabled="submitting">
                 <svg v-if="submitting" class="install-spinner" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
                 </svg>
-                <span>{{ submitting ? '正在初始化...' : '确认并安装' }}</span>
+                <span>{{ submitting ? t('install.initializing') : t('install.confirmInstall') }}</span>
               </button>
             </div>
           </div>
@@ -212,7 +212,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { webApi } from '../api'
 import { buildPageTitle } from '../site-meta'
@@ -223,9 +224,10 @@ const showSecretKey = ref(false)
 const submitting = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const { t } = useI18n()
 
-const stepTitles = ['站点信息', '管理员账号', '高级选项']
-const stepSubtitles = ['配置站点名称与基础设置', '创建后台管理账号', '备案、版权与评论设置']
+const stepTitles = computed(() => [t('install.step1Title'), t('install.step2Title'), t('install.step3Title')])
+const stepSubtitles = computed(() => [t('install.step1Desc'), t('install.step2Desc'), t('install.step3Desc')])
 
 const form = reactive({
   site_title: 'MaDongDong Blog',
@@ -274,7 +276,7 @@ const checkInstalled = async () => {
       window.location.assign(getAdminLoginUrl())
     }
   } catch {
-    errorMessage.value = '无法检查安装状态，请稍后重试。'
+    errorMessage.value = t('install.statusCheckFailed')
   }
 }
 
@@ -284,19 +286,19 @@ const submitInstall = async () => {
   successMessage.value = ''
   try {
     await webApi.installSite({ ...form })
-    successMessage.value = '初始化完成，正在跳转到管理员登录页...'
+    successMessage.value = t('install.installSuccess')
     window.setTimeout(() => {
       window.location.assign(getAdminLoginUrl())
     }, 900)
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '安装失败'
+    errorMessage.value = error instanceof Error ? error.message : t('install.installFailed')
   } finally {
     submitting.value = false
   }
 }
 
 onMounted(() => {
-  document.title = buildPageTitle('安装')
+  document.title = buildPageTitle(t('install.title'))
   void checkInstalled()
 })
 </script>

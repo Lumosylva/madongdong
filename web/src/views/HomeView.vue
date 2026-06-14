@@ -2,7 +2,7 @@
   <div class="shell home-shell" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
-      :subtitle="data.site.site_subtitle || '记录技术、生活与长期主义'"
+      :subtitle="data.site.site_subtitle || t('home.subtitle')"
       :logo-url="toAbsoluteAssetUrl(data.site.site_logo)"
       :nav-items="data.nav_items"
       :theme="theme"
@@ -25,41 +25,41 @@
           <RouterLink :to="`/article/${article.id}`" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
           <p class="card-summary">{{ truncateText(article.summary, 120) }}</p>
           <div class="card-meta">
-            <span>{{ article.category?.name || '未分类' }}</span>
+            <span>{{ article.category?.name || t('common.untitled') }}</span>
             <span>{{ article.author?.nickname || 'admin' }}</span>
-            <span>发布时间：{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
-            <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(article)) }}</span>
-            <span>{{ article.view_count }} 浏览</span>
-            <span>{{ article.comment_count }} 评论</span>
+            <span>{{ t('time.publishedAt') }}{{ formatRelativeTime(article.published_at || article.created_at) }}</span>
+            <span>{{ t('time.updatedAt') }}{{ formatRelativeTime(getArticleUpdatedAt(article)) }}</span>
+            <span>{{ article.view_count }} {{ t('common.views') }}</span>
+            <span>{{ article.comment_count }} {{ t('common.comments') }}</span>
           </div>
         </article>
         <div class="pager-row">
           <div class="pager-meta">
-            第 {{ data.latest_articles.page }} / {{ data.latest_articles.total_pages }} 页
-            <span class="pager-size">每页
+            {{ t('common.page', { n: data.latest_articles.page }) }} / {{ data.latest_articles.total_pages }}
+            <span class="pager-size">{{ t('common.perPage') }}
               <select v-model.number="homePageSize" class="pager-size-select" @change="changeHomePageSize">
                 <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
               </select>
-              条
+              {{ t('common.items') }}
             </span>
           </div>
           <div class="pager-actions">
-            <button v-if="page > 1" class="pager-prev-btn" @click="changePage(page - 1)">上一页</button>
-            <button v-if="page < data.latest_articles.total_pages" class="pager-next-btn" @click="changePage(page + 1)">下一页</button>
+            <button v-if="page > 1" class="pager-prev-btn" @click="changePage(page - 1)">{{ t('common.previous') }}</button>
+            <button v-if="page < data.latest_articles.total_pages" class="pager-next-btn" @click="changePage(page + 1)">{{ t('common.next') }}</button>
           </div>
         </div>
       </section>
 
       <aside class="sidebar">
         <div class="sidebar-card">
-          <h3>热门文章</h3>
+          <h3>{{ t('home.hotArticles') }}</h3>
           <div class="hot-list">
             <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/${item.id}`" class="hot-link">
               <strong>{{ item.title }}</strong>
               <div class="hot-stats">
                 <span class="hot-meta">{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
-                <span class="hot-meta">{{ item.view_count }} 浏览</span>
-                <span class="hot-meta">{{ item.comment_count }} 评论</span>
+                <span class="hot-meta">{{ item.view_count }} {{ t('common.views') }}</span>
+                <span class="hot-meta">{{ item.comment_count }} {{ t('common.comments') }}</span>
               </div>
             </RouterLink>
           </div>
@@ -74,14 +74,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMeta, setSiteSetting } from '../site-meta'
-import { formatRelativeTime, getArticleUpdatedAt } from '../utils/time'
+import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import type { HomeResponse } from '../types'
 
+const { t } = useI18n()
+const { formatRelativeTime } = useFormatRelativeTime()
 const router = useRouter()
 const route = useRoute()
 const data = ref<HomeResponse | null>(null)
@@ -140,7 +143,7 @@ const hydrateWelcomeName = async () => {
     const name = currentUser?.nickname || currentUser?.username || localStorage.getItem('md-reader-nickname') || ''
     if (name) {
       localStorage.setItem('md-reader-nickname', name)
-      welcomeMessage.value = `欢迎回来，${name}`
+      welcomeMessage.value = t('home.welcomeBack', { name })
       localStorage.setItem(welcomeShownKey, '1')
       setTimeout(() => {
         welcomeMessage.value = ''
@@ -149,7 +152,7 @@ const hydrateWelcomeName = async () => {
   } catch {
     const fallbackName = localStorage.getItem('md-reader-nickname')
     if (fallbackName) {
-      welcomeMessage.value = `欢迎回来，${fallbackName}`
+      welcomeMessage.value = t('home.welcomeBack', { name: fallbackName })
       localStorage.setItem(welcomeShownKey, '1')
       setTimeout(() => {
         welcomeMessage.value = ''

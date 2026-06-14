@@ -379,6 +379,29 @@ a {
   gap: 8px;
 }
 
+.lang-select {
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  padding: 0 8px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+
+.lang-select:hover {
+  border-color: var(--accent);
+}
+
+:root[data-theme='dark'] .lang-select {
+  background: rgba(9, 20, 38, 0.88);
+  border-color: rgba(120, 170, 255, 0.18);
+  color: var(--text);
+}
+
 .account-menu {
   position: relative;
 }
