@@ -1,6 +1,6 @@
 # MaDongDong Blog
 
-基于 `FastAPI + Vue 3 + SQLite` 的前后端分离博客系统，支持前台展示与后台管理。
+基于 `FastAPI + Vue 3 + SQLite` 的前后端分离博客系统，支持前台展示与后台管理。支持中文、English、日本語 三种语言。
 
 ## 主要功能
 
@@ -8,50 +8,59 @@
 
 - 健康检查、应用生命周期初始化、首次安装向导
 - 安装向导支持配置：站点域名（自动检测）、JWT 签名密钥（自动生成）、数据库连接（默认 SQLite）
-- 安装完成后自动写入 `.env` 配置文件
+- 安装完成后自动写入 `.env` 配置文件，域名配置自动生成 4 个 CORS 变体（http/https × 域名/www.域名）
 - JWT 登录认证与角色鉴权（admin / author / reader）
 - 文章能力：创建 / 更新 / 审核通过 / 审核驳回 / 摘要自动生成
+- 文章 slug URL：`/article/{slug}`，自动生成，标题变更时重新生成
 - 文章垃圾箱：删除 → 软删除 → 恢复 / 彻底删除
 - 分类与标签管理（CRUD）
 - 媒体库管理（文件上传、目录管理、批量移动/删除）
 - 评论管理与审核（通过 / 拒绝 / 彻底删除）
 - 友情链接管理（前台申请、后台审核/编辑/删除）
 - 站点配置与导航项管理
+- 服务器级配置管理（域名、JWT 密钥、数据库连接、上传目录）
 - 用户管理（创建/编辑/删除/批量角色变更）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
+- 浏览量去重（同一 IP 24 小时内同一文章只计 1 次）
 - 速率限制（按端点配置，防止暴力破解）
 - 登录失败锁定（6 次失败锁定 15 分钟）
 - 数学验证码（HMAC 签名，防止批量注册和暴力破解）
 - Cookie 隔离（admin / web 前端使用独立 Cookie 命名空间）
+- 数据库迁移自动处理（启动时自动添加新字段）
 
 ### 前台（web）
 
-- 首页、文章详情页、搜索页、归档页、分类页、标签页、友链页、关于页
+- **多语言支持**：中文 / English / 日本語，语言切换器持久化
+- 首页、文章详情页（slug URL）、搜索页、归档页、分类页、标签页、友链页、关于页
 - **用户系统**：注册 / 登录 / 个人中心（头像上传、昵称、邮箱、密码修改）
 - 全站白天/黑夜主题切换（持久化）
 - 页面辅助工具（右下角浮动按钮）：主题切换、返回顶部、到达底部
 - 顶部导航与底部页脚组件化复用
+- 热门文章卡片固定悬浮（桌面端）
 - 移动端 hamburger 抽屉菜单
 - 非首页折叠搜索（展开/收起动画）
 - 评论区用户头像：已注册用户显示真实头像，匿名用户显示首字符头像
 - 友链申请表单（实时校验）
 - 静态资源地址统一解析（`assets/index.ts`）
+- SEO 优化：动态 og:title / og:description / og:image / twitter:card meta 标签
+- 页面标题无闪烁（HTML 默认标题 + Vue 异步更新）
 
 ### 后台（admin）
 
-- 登录页 + 控制台概览
+- 登录页 + 控制台概览 + 数学验证码
 - 页面辅助工具（主题切换、返回顶部、到达底部）
 - 顶部栏：用户昵称、角色标记、下拉菜单（个人中心 / 退出登录）
 - 左侧菜单：主菜单 + 文章二级菜单
 - 角色差异化发布策略（admin 直接发布 / author 提交审核）
 - **文章管理**：列表 / 搜索 / 筛选 / 编辑 / 垃圾箱完整流程
 - **创建/编辑文章**：Markdown 编辑器、封面图选择、分类/标签/状态、临时草稿保存
-- **评论管理**：审核通过/拒绝/删除、批量操作、搜索筛选
+- **评论管理**：审核通过/拒绝/删除、批量操作、搜索筛选、刷新按钮
 - **友链管理**：列表/搜索/筛选/编辑/审核/删除，首字符头像
 - **用户管理**：列表/搜索/角色筛选/创建/编辑/删除/批量操作
 - **媒体库**：文件上传、目录管理、拖拽排序
 - **站点设置**：品牌信息、Logo 上传（拖拽）、页脚 HTML
+- **服务器配置**：域名、JWT 密钥（可编辑）、数据库连接/上传目录（只读显示）
 - **个人中心**：头像上传、昵称、邮箱、密码修改
 - **分类管理**：CRUD
 
@@ -64,7 +73,7 @@
 - JWT + httpOnly Cookie 认证（admin / web 独立 Cookie 命名空间）
 - Access Token 有效期 1 小时，Refresh Token 有效期 7 天
 - Refresh Token 存储于数据库，支持单个/全部撤销
-- JWT 中包含 `roles` claim，通过 `require_token_role()` 校验角色
+- JWT 中包含 `roles` claim，通过 `require_token_role()` 从 Token 校验角色
 - JWT `sub` 使用用户 ID（非 username），改名不影响 Token
 - 登录失败锁定：6 次失败锁定 15 分钟
 
@@ -123,6 +132,7 @@
 - Vue 3 + TypeScript
 - Vue Router
 - Vite
+- vue-i18n（多语言）
 - md-editor-v3（admin Markdown 编辑器）
 - DOMPurify（web Markdown 渲染消毒）
 
@@ -132,7 +142,7 @@
 
 ```text
 app/          FastAPI 后端（api / models / schemas / services / core）
-web/          前台 Vue 应用（端口 5173）
+web/          前台 Vue 应用（端口 5173，多语言：zh-CN / en / ja）
 admin/        后台 Vue 应用（端口 5174，基础路径 /admin/）
 assets/       前后端共享工具（resolveAssetUrl）
 scripts/      构建辅助脚本（URL 风险扫描）
@@ -203,7 +213,6 @@ CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_APP_NAME=MadongDong
 VITE_ADMIN_BASE_PATH=/admin
 ```
 
@@ -211,18 +220,21 @@ VITE_ADMIN_BASE_PATH=/admin
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_APP_NAME=MadongDong Admin
-VITE_WEB_BASE_URL=
+VITE_WEB_BASE_URL=http://localhost:5173
 ```
 
 ---
 
 ## 默认管理员账号
 
-首次启动自动初始化：
+首次启动后访问 `http://127.0.0.1:5173/install` 进入安装向导，可配置：
 
-- 用户名：`admin`
-- 密码：`admin123456`
+- 站点标题、副标题、域名（自动检测）
+- JWT 签名密钥（自动生成或手动设置）
+- 数据库连接（默认 SQLite）
+- 管理员账号信息
+
+安装完成后配置自动写入 `.env` 文件，重启后端生效。
 
 ---
 
@@ -232,15 +244,15 @@ VITE_WEB_BASE_URL=
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/v1/install/status` | 安装状态 |
+| GET | `/api/v1/install/status` | 获取安装状态 |
 | GET | `/api/v1/install/secret-key` | 生成随机密钥 |
-| POST | `/api/v1/install` | 执行首次安装 |
+| POST | `/api/v1/install` | 执行首次安装（含域名、密钥、数据库配置） |
 
 ### 后台认证
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/api/v1/admin/auth/login` | 后台登录 |
+| POST | `/api/v1/admin/auth/login` | 后台登录（含验证码） |
 | POST | `/api/v1/admin/auth/refresh` | 刷新令牌 |
 | POST | `/api/v1/admin/auth/revoke` | 登出（撤销令牌） |
 | GET | `/api/v1/admin/auth/me` | 获取当前用户 |
@@ -264,7 +276,7 @@ VITE_WEB_BASE_URL=
 | GET | `/api/v1/admin/articles` | 文章列表 |
 | GET | `/api/v1/admin/articles/deleted` | 垃圾箱列表 |
 | GET | `/api/v1/admin/articles/{id}` | 文章详情 |
-| POST | `/api/v1/admin/articles` | 创建文章 |
+| POST | `/api/v1/admin/articles` | 创建文章（自动生成 slug） |
 | PUT | `/api/v1/admin/articles/{id}` | 更新文章 |
 | DELETE | `/api/v1/admin/articles/{id}` | 删除（软删除） |
 | POST | `/api/v1/admin/articles/{id}/restore` | 恢复 |
@@ -317,13 +329,15 @@ VITE_WEB_BASE_URL=
 | GET/PUT | `/api/v1/admin/site/settings` | 站点设置 |
 | GET/POST | `/api/v1/admin/site/nav-items` | 导航项 |
 | PUT | `/api/v1/admin/site/nav-items/{id}` | 更新导航项 |
+| GET/PUT | `/api/v1/admin/site/server-config` | 服务器配置（域名、密钥、数据库、上传目录） |
 
 ### 前台公开接口
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/v1/web/home` | 首页数据 |
-| GET | `/api/v1/web/articles/{id}` | 文章详情 |
+| GET | `/api/v1/web/articles/slug/{slug}` | 通过 slug 获取文章详情 |
+| GET | `/api/v1/web/articles/{id}` | 通过 ID 获取文章详情（兼容） |
 | GET | `/api/v1/web/search` | 搜索 |
 | GET | `/api/v1/web/archive` | 归档 |
 | GET | `/api/v1/web/categories` | 分类索引 |
@@ -333,8 +347,8 @@ VITE_WEB_BASE_URL=
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
 | GET | `/api/v1/web/captcha` | 获取验证码 |
-| POST | `/api/v1/web/auth/register` | 读者注册 |
-| POST | `/api/v1/web/auth/login` | 读者登录 |
+| POST | `/api/v1/web/auth/register` | 读者注册（含验证码） |
+| POST | `/api/v1/web/auth/login` | 读者登录（含验证码） |
 | POST | `/api/v1/web/auth/refresh` | 刷新令牌 |
 | POST | `/api/v1/web/auth/revoke` | 登出 |
 | GET | `/api/v1/web/auth/me` | 获取当前用户 |
