@@ -1,5 +1,9 @@
 """前台公开查询业务逻辑。"""
 
+from __future__ import annotations
+
+import time
+from collections import defaultdict
 from math import ceil
 
 from sqlalchemy import Select, func, or_, select, text
@@ -9,6 +13,10 @@ from app.models.article import Article, ArticleStatus, Category, Tag
 from app.models.comment import Comment, CommentStatus
 from app.schemas.web import PaginatedResponse
 from app.services.site import get_or_create_site_setting, list_nav_items
+
+# 浏览量去重：{article_id: {ip: timestamp}}
+_view_log: dict[int, dict[str, float]] = defaultdict(dict)
+_VIEW_DEDUP_SECONDS = 86400  # 24 小时内同一 IP 不重复计数
 
 
 async def get_homepage_data(session: AsyncSession, page: int) -> dict:
@@ -77,7 +85,40 @@ async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Artic
     return list(result.scalars().unique().all())
 
 
-async def get_published_article_detail(session: AsyncSession, article_id: int) -> Article | None:
+def _get_client_ip(request: Request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip.strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
+def _should_count_view(article_id: int, client_ip: str) -> bool:
+    """检查是否应该计入浏览量（24 小时内同一 IP 不重复计数）。"""
+
+    now = time.monotonic()
+    cutoff = now - _VIEW_DEDUP_SECONDS
+    timestamps = _view_log[article_id]
+
+    # 先清理过期条目
+    expired = [k for k, v in timestamps.items() if v <= cutoff]
+    for k in expired:
+        del timestamps[k]
+
+    # 如果该 IP 在窗口内已有记录，不计数
+    if client_ip in timestamps:
+        return False
+
+    # 新的 IP，记录并计数
+    timestamps[client_ip] = now
+    return True
+
+
+async def get_published_article_detail(session: AsyncSession, article_id: int, client_ip: str = "unknown") -> Article | None:
     """获取已发布文章详情。"""
 
     statement = select(Article).where(
@@ -91,7 +132,7 @@ async def get_published_article_detail(session: AsyncSession, article_id: int) -
     # 避免 ORM 把整条文章对象判定成“改过”
     # 只更新 view_count
     # 尽量不要触发 updated_at
-    if article is not None:
+    if article is not None and _should_count_view(article_id, client_ip):
         await session.execute(
             text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
             {"article_id": article_id},
@@ -101,7 +142,7 @@ async def get_published_article_detail(session: AsyncSession, article_id: int) -
     return article
 
 
-async def get_published_article_detail_by_slug(session: AsyncSession, slug: str) -> Article | None:
+async def get_published_article_detail_by_slug(session: AsyncSession, slug: str, client_ip: str = "unknown") -> Article | None:
     """通过 slug 获取已发布文章详情。"""
 
     statement = select(Article).where(
@@ -110,7 +151,7 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str)
     )
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
-    if article is not None:
+    if article is not None and _should_count_view(article.id, client_ip):
         await session.execute(
             text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
             {"article_id": article.id},

@@ -28,6 +28,7 @@ from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResp
 from app.services.auth import get_user_by_id, get_user_by_username, register_reader_user, update_current_user_profile
 from app.services.comment import create_comment
 from app.services.web import (
+    _get_client_ip,
     get_archive_data,
     get_categories_page_data,
     get_category_page_data,
@@ -71,9 +72,11 @@ async def categories_index(
 @router.get("/articles/{article_id}", summary="获取前台文章详情")
 async def article_detail(
     article_id: int,
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> ArticlePageResponse:
-    article = await get_published_article_detail(session, article_id)
+    client_ip = _get_client_ip(request)
+    article = await get_published_article_detail(session, article_id, client_ip)
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     data = await get_homepage_data(session, page=1)
@@ -97,9 +100,11 @@ async def article_detail(
 @router.get("/articles/slug/{slug}", summary="通过 slug 获取前台文章详情")
 async def article_detail_by_slug(
     slug: str,
+    request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> ArticlePageResponse:
-    article = await get_published_article_detail_by_slug(session, slug)
+    client_ip = _get_client_ip(request)
+    article = await get_published_article_detail_by_slug(session, slug, client_ip)
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     data = await get_homepage_data(session, page=1)
