@@ -17,6 +17,7 @@ export type SiteSetting = {
   copyright_text: string | null
   homepage_page_size: number
   comment_requires_review: boolean
+  homepage_bgm_url: string | null
 }
 
 export type Category = {

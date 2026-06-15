@@ -50,6 +50,7 @@ async def update_site_setting(
     copyright_text: str | None,
     homepage_page_size: int,
     comment_requires_review: bool,
+    homepage_bgm_url: str | None = None,
 ) -> SiteSetting:
     """更新站点配置。"""
 
@@ -61,6 +62,7 @@ async def update_site_setting(
     setting.copyright_text = copyright_text
     setting.homepage_page_size = homepage_page_size
     setting.comment_requires_review = comment_requires_review
+    setting.homepage_bgm_url = homepage_bgm_url
     await session.commit()
     await session.refresh(setting)
     return setting

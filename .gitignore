@@ -34,3 +34,5 @@ web\.env
 SECURITY_AUDIT.md
 .installed
 app/static/uploads/
+files.txt
+compress.bat

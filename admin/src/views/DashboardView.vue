@@ -258,6 +258,7 @@ const siteSubtitle = ref('')
 const siteLogo = ref('')
 const icpBeian = ref('')
 const copyrightText = ref('')
+const homepageBgmUrl = ref('')
 const serverDomain = ref('')
 const serverSecretKey = ref('')
 const serverDatabaseUrl = ref('')
@@ -622,6 +623,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         logoCropApplied: logoCropApplied.value,
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
+        homepageBgmUrl: homepageBgmUrl.value,
         serverDomain: serverDomain.value,
         serverSecretKey: serverSecretKey.value,
         serverDatabaseUrl: serverDatabaseUrl.value,
@@ -718,6 +720,9 @@ const activePanelListeners = computed(() => {
         },
         'update:icpBeian': (value: string) => {
           icpBeian.value = value
+        },
+        'update:homepageBgmUrl': (value: string) => {
+          homepageBgmUrl.value = value
         },
         'update:serverDomain': (value: string) => {
           serverDomain.value = value
@@ -918,6 +923,7 @@ const loadAll = async () => {
     applyAdminMeta()
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
+    homepageBgmUrl.value = siteRes.data.homepage_bgm_url || ''
     if (serverCfgRes.data) {
       serverDomain.value = serverCfgRes.data.site_domain || ''
       serverDatabaseUrl.value = serverCfgRes.data.database_url || ''
@@ -1261,6 +1267,7 @@ const saveSite = async () => {
       copyright_text: copyrightText.value,
       homepage_page_size: 10,
       comment_requires_review: true,
+      homepage_bgm_url: homepageBgmUrl.value || null,
     })
     await loadAll()
     showSiteToast(t('toast.settingsSaved'), 'success')

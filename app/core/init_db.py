@@ -25,6 +25,7 @@ async def init_db() -> None:
 
     async with AsyncSessionLocal() as session:
         await _migrate_slug_column(session)
+        await _migrate_bgm_column(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -58,4 +59,21 @@ async def _migrate_slug_column(session: AsyncSession) -> None:
     await session.execute(
         text("CREATE UNIQUE INDEX IF NOT EXISTS ix_articles_slug ON articles (slug)")
     )
+    await session.commit()
+
+
+async def _migrate_bgm_column(session: AsyncSession) -> None:
+    """为 site_settings 表添加 homepage_bgm_url 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(site_settings)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "homepage_bgm_url" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(text("ALTER TABLE site_settings ADD COLUMN homepage_bgm_url VARCHAR(500)"))
     await session.commit()

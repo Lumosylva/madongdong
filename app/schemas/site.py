@@ -15,6 +15,7 @@ class SiteSettingUpdate(BaseModel):
     copyright_text: str | None = Field(default=None, max_length=1000)
     homepage_page_size: int = Field(default=10, ge=1, le=50)
     comment_requires_review: bool = True
+    homepage_bgm_url: str | None = Field(default=None, max_length=500)
 
 
 class SiteSettingResponse(BaseModel):
@@ -30,6 +31,7 @@ class SiteSettingResponse(BaseModel):
     copyright_text: str | None
     homepage_page_size: int
     comment_requires_review: bool
+    homepage_bgm_url: str | None
     created_at: datetime
     updated_at: datetime
 

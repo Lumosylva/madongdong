@@ -53,6 +53,11 @@
           <span>{{ t('siteSettings.subtitleLabel') }}</span>
           <input class="settings-input" :value="siteSubtitle" :placeholder="t('siteSettings.subtitlePlaceholder')" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
         </label>
+        <label class="settings-field">
+          <span>{{ t('siteSettings.bgmLabel') }}</span>
+          <textarea class="settings-input settings-textarea" :value="homepageBgmUrl" :placeholder="t('siteSettings.bgmPlaceholder')" rows="3" @input="$emit('update:homepageBgmUrl', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.bgmTip') }}</p>
+        </label>
       </section>
 
       <section class="settings-card">
@@ -134,6 +139,7 @@ defineProps<{
   siteSubtitle: string
   icpBeian: string
   copyrightText: string
+  homepageBgmUrl: string
   previewLogo: string
   logoUploading?: boolean
   logoUploadMessage?: string
@@ -149,6 +155,7 @@ const emit = defineEmits<{
   'update:siteTitle': [value: string]
   'update:siteSubtitle': [value: string]
   'update:icpBeian': [value: string]
+  'update:homepageBgmUrl': [value: string]
   'update:serverDomain': [value: string]
   'update:serverSecretKey': [value: string]
   'select-logo': [file: File]
