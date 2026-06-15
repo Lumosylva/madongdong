@@ -110,6 +110,21 @@
   background: transparent;
 }
 
+.article-body video,
+.article-body-md video {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 16px 0;
+}
+
+.article-body iframe,
+.article-body-md iframe {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 16px 0;
+  border: none;
+}
+
 
 :root:not([data-theme='dark']) .article-extra {
   margin-top: 22px;

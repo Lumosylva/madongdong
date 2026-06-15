@@ -1438,6 +1438,16 @@ aside.sidebar {
   max-width: 100%;
 }
 
+.article-body video,
+.article-body iframe {
+  border-radius: 10px;
+  margin: 16px 0;
+}
+
+.article-body iframe {
+  border: none;
+}
+
 .article-extra {
   margin-top: 22px;
   padding: 16px;

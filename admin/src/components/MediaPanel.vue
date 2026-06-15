@@ -180,7 +180,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl } from '../api'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const props = defineProps<{
   media: any[]
@@ -316,7 +316,7 @@ const formatDate = (value?: string) => {
   if (!text) return t('common.unknown')
   const date = new Date(text)
   if (Number.isNaN(date.getTime())) return text
-  return date.toLocaleString('zh-CN')
+  return date.toLocaleString(locale.value)
 }
 
 const formatFileSize = (value?: number) => {

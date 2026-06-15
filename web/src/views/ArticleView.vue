@@ -58,6 +58,7 @@
             code-theme="github"
             :show-code-row-number="true"
             :sanitize="sanitizeMarkdownHtml"
+            :markdown-it-config="previewMarkdownItConfig"
           />
         </div>
       </div>
@@ -213,7 +214,15 @@ const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
 
-const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
+const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, {
+  USE_PROFILES: { html: true },
+  ADD_TAGS: ['video', 'iframe', 'source'],
+  ADD_ATTR: ['controls', 'preload', 'allow', 'allowfullscreen', 'frameborder', 'scrolling', 'type', 'width', 'height'],
+})
+
+const previewMarkdownItConfig = (md: any) => {
+  md.options.html = true
+}
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
