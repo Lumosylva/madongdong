@@ -69,7 +69,7 @@ export default {
   },
   home: {
     subtitle: '记录技术、生活与长期主义',
-    hotArticles: '热门文章',
+    hotArticles: '热谈',
     welcomeBack: '欢迎回来，{name}',
   },
   article: {
