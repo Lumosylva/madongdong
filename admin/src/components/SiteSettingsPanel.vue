@@ -73,8 +73,26 @@
 
         <label class="settings-field">
           <span>{{ t('siteSettings.heroLabel') }}</span>
-          <input class="settings-input" :value="homepageHeroImage" :placeholder="t('siteSettings.heroPlaceholder')" @input="$emit('update:homepageHeroImage', ($event.target as HTMLInputElement).value)" />
+          <div class="hero-input-row">
+            <input class="settings-input" :value="homepageHeroImage" :placeholder="t('siteSettings.heroPlaceholder')" @input="$emit('update:homepageHeroImage', ($event.target as HTMLInputElement).value)" />
+            <button type="button" class="settings-field-btn" :title="t('siteSettings.heroPickFromMedia')" @click="showHeroPicker = !showHeroPicker">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </button>
+          </div>
           <p class="tips">{{ t('siteSettings.heroTip') }}</p>
+          <div v-if="showHeroPicker" class="hero-picker">
+            <button
+              v-for="item in heroImageMedia"
+              :key="item.id"
+              type="button"
+              class="hero-picker-item"
+              :class="{ selected: item.url === homepageHeroImage }"
+              @click="selectHeroImage(item.url)"
+            >
+              <img :src="fullUrl(item.url)" :alt="item.original_name" />
+            </button>
+            <p v-if="!heroImageMedia.length" class="tips">{{ t('siteSettings.heroNoImages') }}</p>
+          </div>
         </label>
 
         <label class="settings-field">
@@ -151,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -160,8 +178,9 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const sourceSizeText = ref('')
 const showSecretKey = ref(false)
+const showHeroPicker = ref(false)
 
-defineProps<{
+const props = defineProps<{
   siteTitle: string
   siteSubtitle: string
   icpBeian: string
@@ -177,6 +196,7 @@ defineProps<{
   serverSecretKey: string
   serverDatabaseUrl: string
   serverUploadDir: string
+  media?: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
 }>()
 
 const emit = defineEmits<{
@@ -212,6 +232,28 @@ const inspectImageSize = (file: File) => {
 const emitFile = (file: File) => {
   inspectImageSize(file)
   emit('select-logo', file)
+}
+
+const API_ORIGIN = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/api\/v1\/?$/, '') || ''
+
+const fullUrl = (url: string) => {
+  const value = String(url || '').trim()
+  if (!value) return ''
+  if (/^https?:\/\//i.test(value)) return value
+  const origin = API_ORIGIN || window.location.origin
+  return `${origin}${value.startsWith('/') ? '' : '/'}${value}`
+}
+
+const heroImageMedia = computed(() => {
+  if (!props.media) return []
+  return props.media.filter(
+    (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
+  )
+})
+
+const selectHeroImage = (url: string) => {
+  emit('update:homepageHeroImage', fullUrl(url))
+  showHeroPicker.value = false
 }
 
 const onSelectLogo = (event: Event) => {

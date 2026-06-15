@@ -326,6 +326,8 @@ export default {
     heroLabel: '首页背景大图',
     heroPlaceholder: '粘贴图片 URL 或从媒体库选择',
     heroTip: '首页顶部展示的背景大图，建议宽度 1920px 以上',
+    heroPickFromMedia: '从媒体库选择',
+    heroNoImages: '暂无可用图片，请先到媒体库上传。',
     serverSection: '服务器配置',
     serverTip: '以下配置存储在 .env 文件中，部分修改需重启后端后生效。',
     domainLabel: '站点域名',

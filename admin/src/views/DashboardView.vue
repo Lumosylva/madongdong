@@ -626,6 +626,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         copyrightText: copyrightText.value,
         homepageBgmUrl: homepageBgmUrl.value,
         homepageHeroImage: homepageHeroImage.value,
+        media: media.value,
         serverDomain: serverDomain.value,
         serverSecretKey: serverSecretKey.value,
         serverDatabaseUrl: serverDatabaseUrl.value,

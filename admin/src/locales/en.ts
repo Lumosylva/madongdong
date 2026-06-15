@@ -325,6 +325,8 @@ export default {
     heroLabel: 'Homepage Hero Image',
     heroPlaceholder: 'Paste image URL or pick from media library',
     heroTip: 'Large background image displayed at the top of the homepage. Recommended width 1920px+.',
+    heroPickFromMedia: 'Pick from Media',
+    heroNoImages: 'No images available. Upload images in Media first.',
     serverSection: 'Server Config',
     serverTip: 'Stored in .env file. Some changes require backend restart.',
     domainLabel: 'Site Domain',

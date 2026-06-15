@@ -325,6 +325,8 @@ export default {
     heroLabel: 'ホームページヒーロー画像',
     heroPlaceholder: '画像URLを貼り付けまたはメディアライブラリから選択',
     heroTip: 'ホームページ上部に表示される大きな背景画像。推奨幅1920px以上。',
+    heroPickFromMedia: 'メディアライブラリから選択',
+    heroNoImages: '利用可能な画像がありません。先にメディアをアップロードしてください。',
     serverSection: 'サーバー設定',
     serverTip: '.envファイルに保存されます。一部の変更はバックエンドの再起動が必要です。',
     domainLabel: 'サイトドメイン',
