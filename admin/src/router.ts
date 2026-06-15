@@ -13,6 +13,7 @@ export const router = createRouter({
     { path: '/login', name: 'login', component: LoginView, meta: { title: '登录' } },
     { path: '/md-editor-probe', name: 'md-editor-probe', component: MdEditorV3ProbeView, meta: { requiresAuth: true, title: '编辑器探针' } },
     { path: '/', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
+    { path: '/:pathMatch(.*)*', name: 'dashboard-catchall', component: DashboardView, meta: { requiresAuth: true, title: '仪表盘' } },
   ],
 })
 

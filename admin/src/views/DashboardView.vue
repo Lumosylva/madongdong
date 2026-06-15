@@ -130,7 +130,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 import { adminApi, API_ORIGIN } from '../api'
 import { buildPageTitle, setSiteSetting } from '../site-meta'
@@ -175,8 +175,50 @@ type ArticleSubMenuItem = {
 }
 
 const router = useRouter()
+const route = useRoute()
 const currentView = ref<ViewType>('overview')
 const articleSubView = ref<ArticleSubView>('manage')
+
+const viewToPath: Record<ViewType, string> = {
+  overview: '/',
+  articles: '/articles',
+  media: '/media',
+  comments: '/comments',
+  'friend-links': '/friend-links',
+  users: '/users',
+  profile: '/profile',
+  site: '/site',
+}
+
+const subViewToPath: Record<ArticleSubView, string> = {
+  manage: '',
+  create: '/create',
+  edit: '/edit',
+  category: '/category',
+  trash: '/trash',
+}
+
+const pathToView = (path: string): { view: ViewType; sub: ArticleSubView } => {
+  const seg = path.replace(/^\/+/, '').split('/')[0] || ''
+  const viewMap: Record<string, ViewType> = {
+    '': 'overview', overview: 'overview', articles: 'articles', media: 'media',
+    comments: 'comments', 'friend-links': 'friend-links', users: 'users',
+    profile: 'profile', site: 'site',
+  }
+  const view = viewMap[seg] || 'overview'
+  if (view !== 'articles') return { view, sub: 'manage' }
+  const subSeg = path.replace(/^\/+/, '').split('/')[1] || ''
+  const subMap: Record<string, ArticleSubView> = {
+    '': 'manage', create: 'create', edit: 'edit', category: 'category', trash: 'trash',
+  }
+  return { view, sub: subMap[subSeg] || 'manage' }
+}
+
+const pushViewUrl = (view: ViewType, sub?: ArticleSubView) => {
+  const base = viewToPath[view]
+  const subPath = view === 'articles' && sub ? subViewToPath[sub] : ''
+  router.replace(base + subPath)
+}
 const isSidebarCollapsed = ref(false)
 const articleFlyoutOpen = ref(false)
 const articleFlyoutCloseTimer = ref<number | null>(null)
@@ -325,6 +367,7 @@ const setView = (view: ViewType) => {
   if (view === 'articles') {
     articleSubView.value = articleSubView.value || 'manage'
   }
+  pushViewUrl(view, view === 'articles' ? articleSubView.value : undefined)
 }
 
 const setArticleSubView = (subView: ArticleSubView) => {
@@ -339,6 +382,7 @@ const setArticleSubView = (subView: ArticleSubView) => {
     action.value = 'draft'
     clearArticleDraft()
     resetArticleEditorState()
+    pushViewUrl('articles', 'create')
     return
   }
   if (subView === 'create') {
@@ -384,6 +428,7 @@ const setArticleSubView = (subView: ArticleSubView) => {
   articleSubView.value = subView
   currentView.value = 'articles'
   articleFlyoutOpen.value = false
+  pushViewUrl('articles', subView)
 }
 
 const isAdmin = computed(() =>
@@ -748,6 +793,7 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
 const openProfile = async () => {
   isUserMenuOpen.value = false
   currentView.value = 'profile'
+  pushViewUrl('profile')
 }
 
 const logout = async () => {
@@ -1342,6 +1388,7 @@ const editArticle = async (articleId: number) => {
     currentView.value = 'articles'
     articleSubView.value = 'edit'
     articleFlyoutOpen.value = false
+    pushViewUrl('articles', 'edit')
     await nextTick()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (error) {
@@ -1350,6 +1397,7 @@ const editArticle = async (articleId: number) => {
     articleSubView.value = 'manage'
     editingArticleId.value = null
     editingArticleTitle.value = ''
+    pushViewUrl('articles', 'manage')
   } finally {
     articleSubmitting.value = false
   }
@@ -1406,6 +1454,8 @@ const createArticle = async () => {
     articleSubmitError.value = ''
     articleSubmitFocusField.value = null
     currentView.value = 'articles'
+    articleSubView.value = 'manage'
+    pushViewUrl('articles', 'manage')
     await nextTick()
     await loadAll()
   } catch (error) {
@@ -1420,6 +1470,13 @@ onMounted(async () => {
   isSidebarCollapsed.value = storedSidebarState === '1'
   await loadAll()
   action.value = isAdmin.value ? 'publish' : 'submit'
+
+  const { view, sub } = pathToView(route.path)
+  currentView.value = view
+  if (view === 'articles') {
+    articleSubView.value = sub
+  }
+
   document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleGlobalKeyDown)
   window.addEventListener('resize', updateFlyoutSide)
