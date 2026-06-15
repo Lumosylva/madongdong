@@ -26,6 +26,7 @@ async def init_db() -> None:
     async with AsyncSessionLocal() as session:
         await _migrate_slug_column(session)
         await _migrate_bgm_column(session)
+        await _migrate_hero_image_column(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -76,4 +77,21 @@ async def _migrate_bgm_column(session: AsyncSession) -> None:
         return
 
     await session.execute(text("ALTER TABLE site_settings ADD COLUMN homepage_bgm_url VARCHAR(500)"))
+    await session.commit()
+
+
+async def _migrate_hero_image_column(session: AsyncSession) -> None:
+    """为 site_settings 表添加 homepage_hero_image 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(site_settings)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "homepage_hero_image" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(text("ALTER TABLE site_settings ADD COLUMN homepage_hero_image VARCHAR(500)"))
     await session.commit()

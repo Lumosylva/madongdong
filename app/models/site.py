@@ -21,6 +21,7 @@ class SiteSetting(TimestampMixin, Base):
     homepage_page_size: Mapped[int] = mapped_column(default=10, nullable=False)
     comment_requires_review: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     homepage_bgm_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    homepage_hero_image: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class NavItem(TimestampMixin, Base):

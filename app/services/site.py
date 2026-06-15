@@ -51,6 +51,7 @@ async def update_site_setting(
     homepage_page_size: int,
     comment_requires_review: bool,
     homepage_bgm_url: str | None = None,
+    homepage_hero_image: str | None = None,
 ) -> SiteSetting:
     """更新站点配置。"""
 
@@ -63,6 +64,7 @@ async def update_site_setting(
     setting.homepage_page_size = homepage_page_size
     setting.comment_requires_review = comment_requires_review
     setting.homepage_bgm_url = homepage_bgm_url
+    setting.homepage_hero_image = homepage_hero_image
     await session.commit()
     await session.refresh(setting)
     return setting

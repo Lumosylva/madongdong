@@ -10,10 +10,16 @@
       :current-full-path="route.fullPath"
       :search-keyword="keyword"
       :collapsible-search="true"
+      :class="{ 'topbar-transparent': data.site.homepage_hero_image }"
       @update:search-keyword="keyword = $event"
       @toggle-theme="toggleTheme"
       @search="goSearch"
     />
+
+    <div v-if="data.site.homepage_hero_image" class="home-hero">
+      <div class="home-hero-bg" :style="{ backgroundImage: `url(${toAbsoluteAssetUrl(data.site.homepage_hero_image)})` }"></div>
+      <div class="home-hero-overlay"></div>
+    </div>
 
     <transition name="welcome-toast-fade">
       <div v-if="welcomeMessage" class="welcome-toast">{{ welcomeMessage }}</div>
@@ -203,3 +209,101 @@ onMounted(async () => {
   await loadData()
 })
 </script>
+
+<style scoped>
+.topbar-transparent {
+  background: rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.topbar-transparent :deep(.brand-block h1),
+.topbar-transparent :deep(.brand-subtitle),
+.topbar-transparent :deep(.nav a),
+.topbar-transparent :deep(.search-launch-btn),
+.topbar-transparent :deep(.auth-entry),
+.topbar-transparent :deep(.lang-trigger),
+.topbar-transparent :deep(.lang-label) {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.topbar-transparent :deep(.nav a:hover),
+.topbar-transparent :deep(.auth-entry:hover),
+.topbar-transparent :deep(.lang-trigger:hover) {
+  color: var(--accent);
+}
+
+.topbar-transparent :deep(.brand-mark) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.home-hero {
+  position: relative;
+  width: 100%;
+  height: 55vh;
+  min-height: 360px;
+  max-height: 520px;
+  margin-top: calc(-1 * var(--web-topbar-offset));
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.home-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+@media (max-width: 960px) {
+  .home-hero {
+    height: 40vh;
+    min-height: 260px;
+  }
+}
+
+:root[data-theme='dark'] .topbar-transparent {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.home-shell :deep(.layout) {
+  grid-template-columns: 1fr minmax(280px, 340px);
+  padding-right: 0;
+}
+
+.home-shell :deep(aside.sidebar) {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+}
+
+.home-shell :deep(.sidebar-card) {
+  position: static;
+  width: auto;
+  max-height: none;
+  top: auto;
+  right: auto;
+}
+
+@media (max-width: 960px) {
+  .home-hero {
+    height: 40vh;
+    min-height: 260px;
+  }
+}
+</style>

@@ -18,6 +18,7 @@ export type SiteSetting = {
   homepage_page_size: number
   comment_requires_review: boolean
   homepage_bgm_url: string | null
+  homepage_hero_image: string | null
 }
 
 export type Category = {

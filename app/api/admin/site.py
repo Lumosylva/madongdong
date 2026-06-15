@@ -50,6 +50,7 @@ async def update_site_setting_endpoint(
         homepage_page_size=payload.homepage_page_size,
         comment_requires_review=payload.comment_requires_review,
         homepage_bgm_url=payload.homepage_bgm_url,
+        homepage_hero_image=payload.homepage_hero_image,
     )
     return success_response(SiteSettingResponse.model_validate(setting).model_dump())
 

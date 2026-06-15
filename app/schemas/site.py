@@ -16,6 +16,7 @@ class SiteSettingUpdate(BaseModel):
     homepage_page_size: int = Field(default=10, ge=1, le=50)
     comment_requires_review: bool = True
     homepage_bgm_url: str | None = Field(default=None, max_length=500)
+    homepage_hero_image: str | None = Field(default=None, max_length=500)
 
 
 class SiteSettingResponse(BaseModel):
@@ -32,6 +33,7 @@ class SiteSettingResponse(BaseModel):
     homepage_page_size: int
     comment_requires_review: bool
     homepage_bgm_url: str | None
+    homepage_hero_image: str | None
     created_at: datetime
     updated_at: datetime
 

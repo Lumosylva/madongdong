@@ -259,6 +259,7 @@ const siteLogo = ref('')
 const icpBeian = ref('')
 const copyrightText = ref('')
 const homepageBgmUrl = ref('')
+const homepageHeroImage = ref('')
 const serverDomain = ref('')
 const serverSecretKey = ref('')
 const serverDatabaseUrl = ref('')
@@ -624,6 +625,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         icpBeian: icpBeian.value,
         copyrightText: copyrightText.value,
         homepageBgmUrl: homepageBgmUrl.value,
+        homepageHeroImage: homepageHeroImage.value,
         serverDomain: serverDomain.value,
         serverSecretKey: serverSecretKey.value,
         serverDatabaseUrl: serverDatabaseUrl.value,
@@ -723,6 +725,9 @@ const activePanelListeners = computed(() => {
         },
         'update:homepageBgmUrl': (value: string) => {
           homepageBgmUrl.value = value
+        },
+        'update:homepageHeroImage': (value: string) => {
+          homepageHeroImage.value = value
         },
         'update:serverDomain': (value: string) => {
           serverDomain.value = value
@@ -924,6 +929,7 @@ const loadAll = async () => {
     icpBeian.value = siteRes.data.icp_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
     homepageBgmUrl.value = siteRes.data.homepage_bgm_url || ''
+    homepageHeroImage.value = siteRes.data.homepage_hero_image || ''
     if (serverCfgRes.data) {
       serverDomain.value = serverCfgRes.data.site_domain || ''
       serverDatabaseUrl.value = serverCfgRes.data.database_url || ''
@@ -1268,6 +1274,7 @@ const saveSite = async () => {
       homepage_page_size: 10,
       comment_requires_review: true,
       homepage_bgm_url: homepageBgmUrl.value || null,
+      homepage_hero_image: homepageHeroImage.value || null,
     })
     await loadAll()
     showSiteToast(t('toast.settingsSaved'), 'success')
