@@ -1,5 +1,5 @@
 <template>
-  <div class="shell home-shell" :data-hero="data.site.homepage_hero_image ? '1' : '0'" v-if="data">
+  <div class="shell home-shell" :data-hero="data.site.homepage_hero_image ? '1' : '0'" :data-nav="data.site.homepage_hero_image ? navState : ''" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || t('home.subtitle')"
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -104,6 +104,27 @@ const welcomeShownKey = 'md-home-welcome-shown'
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
 const friendLinks = ref<Array<{ id: number; name: string }>>([])
+
+let lastScrollY = 0
+let ticking = false
+const navState = ref<'top' | 'hide' | 'show'>('top')
+
+const handleScroll = () => {
+  if (ticking) return
+  ticking = true
+  requestAnimationFrame(() => {
+    const scrollY = window.scrollY
+    if (scrollY < 80) {
+      navState.value = 'top'
+    } else if (scrollY > lastScrollY + 5) {
+      navState.value = 'hide'
+    } else if (scrollY < lastScrollY - 5) {
+      navState.value = 'show'
+    }
+    lastScrollY = scrollY
+    ticking = false
+  })
+}
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -206,6 +227,14 @@ onMounted(async () => {
 
   await hydrateWelcomeName()
   await loadData()
+
+  if (data.value?.site.homepage_hero_image) {
+    window.addEventListener('scroll', handleScroll, { passive: true })
+  }
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -296,6 +325,34 @@ onMounted(async () => {
 .home-shell[data-hero="1"] .topbar .brand-mark {
   color: #fff;
   background: rgba(255, 255, 255, 0.15);
+}
+
+.home-shell[data-hero="1"] .topbar {
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.home-shell[data-nav="top"] .topbar {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.home-shell[data-nav="hide"] .topbar {
+  transform: translateY(-100%);
+}
+
+.home-shell[data-nav="show"] .topbar {
+  background: rgba(0, 0, 0, 0.35) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme='dark'] .home-shell[data-nav="show"] .topbar {
+  background: rgba(10, 20, 40, 0.7) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
 }
 
 .home-shell[data-hero="1"] .topbar .lang-trigger,
