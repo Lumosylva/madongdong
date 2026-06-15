@@ -2,27 +2,27 @@
   <section class="panel fl-panel">
     <div class="fl-head">
       <div>
-        <h3>友链管理</h3>
-        <p class="fl-subtitle">审核友情链接申请，并管理已收录站点</p>
+        <h3>{{ t('friendLink.title') }}</h3>
+        <p class="fl-subtitle">{{ t('friendLink.subtitle') }}</p>
       </div>
-      <span class="fl-count">共 {{ filteredLinks.length }} 条</span>
+      <span class="fl-count">{{ t('common.count', { n: filteredLinks.length }) }}</span>
     </div>
 
     <div class="fl-toolbar">
       <input
         class="fl-search"
         v-model="keyword"
-        placeholder="搜索站点名称、URL 或描述"
-        aria-label="搜索友链"
+        :placeholder="t('friendLink.searchPlaceholder')"
+        :aria-label="t('friendLink.searchLabel')"
       />
-      <select class="fl-select" v-model="statusFilter" aria-label="筛选友链状态">
-        <option value="all">全部状态</option>
-        <option value="approved">已通过</option>
-        <option value="pending">待审核</option>
-        <option value="rejected">已拒绝</option>
+      <select class="fl-select" v-model="statusFilter" :aria-label="t('friendLink.filterLabel')">
+        <option value="all">{{ t('friendLink.allStatus') }}</option>
+        <option value="approved">{{ t('status.approved') }}</option>
+        <option value="pending">{{ t('status.pending') }}</option>
+        <option value="rejected">{{ t('status.rejected') }}</option>
       </select>
       <button class="fl-refresh-btn" type="button" :disabled="props.refreshing" @click="emit('refresh')">
-        {{ props.refreshing ? '刷新中...' : '刷新' }}
+        {{ props.refreshing ? t('common.refreshing') : t('common.refresh') }}
       </button>
     </div>
 
@@ -35,20 +35,20 @@
       >
         <div v-if="editingId === item.id" class="fl-edit-fields">
           <div class="fl-field">
-            <label class="fl-field-label">站点名称</label>
-            <input class="fl-input" v-model="editForm.name" placeholder="站点名称" />
+            <label class="fl-field-label">{{ t('friendLink.siteNameLabel') }}</label>
+            <input class="fl-input" v-model="editForm.name" :placeholder="t('friendLink.siteNamePlaceholder')" />
           </div>
           <div class="fl-field">
-            <label class="fl-field-label">联系邮箱</label>
-            <input class="fl-input" v-model="editForm.email" placeholder="联系邮箱" />
+            <label class="fl-field-label">{{ t('friendLink.emailLabel') }}</label>
+            <input class="fl-input" v-model="editForm.email" :placeholder="t('friendLink.emailPlaceholder')" />
           </div>
           <div class="fl-field">
-            <label class="fl-field-label">站点介绍</label>
-            <textarea class="fl-textarea" v-model="editForm.description" placeholder="站点介绍" rows="3"></textarea>
+            <label class="fl-field-label">{{ t('friendLink.descLabel') }}</label>
+            <textarea class="fl-textarea" v-model="editForm.description" :placeholder="t('friendLink.descPlaceholder')" rows="3"></textarea>
           </div>
           <div class="fl-edit-actions">
-            <button type="button" class="fl-btn fl-btn-save" :disabled="saving" @click="saveEdit(item.id)">保存</button>
-            <button type="button" class="fl-btn fl-btn-cancel" :disabled="saving" @click="cancelEdit">取消</button>
+            <button type="button" class="fl-btn fl-btn-save" :disabled="saving" @click="saveEdit(item.id)">{{ t('friendLink.save') }}</button>
+            <button type="button" class="fl-btn fl-btn-cancel" :disabled="saving" @click="cancelEdit">{{ t('common.cancel') }}</button>
           </div>
         </div>
 
@@ -66,54 +66,57 @@
             </div>
           </div>
 
-          <p class="fl-desc">{{ item.description || '暂无描述' }}</p>
+          <p class="fl-desc">{{ item.description || t('friendLink.noDescription') }}</p>
 
           <div class="fl-card-bottom">
             <div class="fl-meta">
               <span class="fl-meta-item">
-                <span class="fl-meta-label">邮箱</span>
+                <span class="fl-meta-label">{{ t('friendLink.emailMeta') }}</span>
                 {{ item.email || '-' }}
               </span>
               <span class="fl-meta-item">
-                <span class="fl-meta-label">来源</span>
+                <span class="fl-meta-label">{{ t('friendLink.sourceMeta') }}</span>
                 {{ item.source || '-' }}
               </span>
               <span class="fl-meta-item">
-                <span class="fl-meta-label">申请时间</span>
+                <span class="fl-meta-label">{{ t('friendLink.createdAtMeta') }}</span>
                 {{ formatTime(item.created_at) }}
               </span>
             </div>
             <div class="fl-actions">
-              <button type="button" class="fl-btn fl-btn-edit" @click="startEdit(item)">编辑</button>
+              <button type="button" class="fl-btn fl-btn-edit" @click="startEdit(item)">{{ t('common.edit') }}</button>
               <button
                 v-if="item.status !== 'approved'"
                 type="button"
                 class="fl-btn fl-btn-approve"
                 @click="$emit('approve', item.id)"
-              >通过</button>
+              >{{ t('comment.approve') }}</button>
               <button
                 v-if="item.status !== 'rejected'"
                 type="button"
                 class="fl-btn fl-btn-reject"
                 @click="$emit('reject', item.id)"
-              >拒绝</button>
+              >{{ t('comment.reject') }}</button>
               <button
                 type="button"
                 class="fl-btn fl-btn-delete"
                 @click="$emit('delete', item.id)"
-              >删除</button>
+              >{{ t('common.delete') }}</button>
             </div>
           </div>
         </template>
       </article>
 
-      <p v-if="!filteredLinks.length" class="fl-empty">暂无符合条件的友链</p>
+      <p v-if="!filteredLinks.length" class="fl-empty">{{ t('friendLink.empty') }}</p>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{ links: any[]; refreshing?: boolean }>()
 const emit = defineEmits<{
@@ -143,7 +146,7 @@ const filteredLinks = computed(() => {
 })
 
 const statusText = (value: string) => {
-  const map: Record<string, string> = { approved: '已通过', pending: '待审核', rejected: '已拒绝' }
+  const map: Record<string, string> = { approved: t('status.approved'), pending: t('status.pending'), rejected: t('status.rejected') }
   return map[String(value).toLowerCase()] || value
 }
 

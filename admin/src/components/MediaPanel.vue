@@ -2,10 +2,10 @@
   <section class="panel media-panel">
     <div class="article-manage-head media-head">
       <div>
-        <h3>媒体管理</h3>
-        <p class="media-subtitle">统一管理图片、音频和视频资源</p>
+        <h3>{{ t('media.title') }}</h3>
+        <p class="media-subtitle">{{ t('media.subtitle') }}</p>
       </div>
-      <span class="article-count media-count">共 {{ media.length }} 项</span>
+      <span class="article-count media-count">{{ t('common.count', { n: media.length }) }}</span>
     </div>
 
     <p v-if="toastMessage" class="tips media-toast" :class="toastStatus === 'error' ? 'error-message' : 'success-message'">
@@ -15,22 +15,22 @@
 
     <div class="media-upload-row">
       <input ref="fileInputRef" class="media-file-input" type="file" accept="image/*,audio/*,video/*" @change="onSelectFile" />
-      <button class="media-upload-btn" :disabled="uploading" @click="triggerUpload">{{ uploading ? '上传中...' : '上传媒体' }}</button>
+      <button class="media-upload-btn" :disabled="uploading" @click="triggerUpload">{{ uploading ? t('common.uploading') : t('media.uploadButton') }}</button>
     </div>
 
     <div class="media-bulk-bar" v-if="selectedIds.size">
-      <span>已选择 {{ selectedIds.size }} 项</span>
-      <button type="button" class="media-bulk-clear-btn" @click="clearSelection">清空</button>
-      <button type="button" class="media-bulk-delete-btn" @click="confirmDelete([...selectedIds])">批量删除</button>
+      <span>{{ t('media.selectedCount', { n: selectedIds.size }) }}</span>
+      <button type="button" class="media-bulk-clear-btn" @click="clearSelection">{{ t('media.clearSelection') }}</button>
+      <button type="button" class="media-bulk-delete-btn" @click="confirmDelete([...selectedIds])">{{ t('media.batchDelete') }}</button>
     </div>
 
     <div class="media-section-grid">
       <section class="panel media-group-panel">
         <div class="media-group-head">
-          <h4>图片</h4>
+          <h4>{{ t('media.imagesGroup') }}</h4>
           <div class="media-group-toolbar">
             <span class="media-group-count">{{ grouped.image.length }}</span>
-            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('image')">{{ isGroupFullySelected('image') ? '取消全选' : '全选' }}</button>
+            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('image')">{{ isGroupFullySelected('image') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
         <div v-if="grouped.image.length" class="media-grid">
@@ -52,7 +52,7 @@
                 @error="markImageLoadError(item.id)"
               />
               <div v-else class="media-card-thumb-fallback">
-                <span>预览失败</span>
+                <span>{{ t('media.previewFailed') }}</span>
               </div>
             </div>
             <div class="media-card-body">
@@ -61,15 +61,15 @@
             </div>
           </button>
         </div>
-        <p v-else class="tips media-empty">暂无图片</p>
+        <p v-else class="tips media-empty">{{ t('media.noImages') }}</p>
       </section>
 
       <section class="panel media-group-panel">
         <div class="media-group-head">
-          <h4>音频</h4>
+          <h4>{{ t('media.audioGroup') }}</h4>
           <div class="media-group-toolbar">
             <span class="media-group-count">{{ grouped.audio.length }}</span>
-            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('audio')">{{ isGroupFullySelected('audio') ? '取消全选' : '全选' }}</button>
+            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('audio')">{{ isGroupFullySelected('audio') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
         <div v-if="grouped.audio.length" class="media-grid">
@@ -80,20 +80,20 @@
               <small class="media-card-meta">{{ item.mime_type || 'AUDIO' }}</small>
               <div class="media-card-link-row">
                 <span class="media-card-link-text">{{ fullUrl(item.url) }}</span>
-                <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">复制链接</button>
+                <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">{{ t('common.copyLink') }}</button>
               </div>
             </div>
           </article>
         </div>
-        <p v-else class="tips media-empty">暂无音频</p>
+        <p v-else class="tips media-empty">{{ t('media.noAudio') }}</p>
       </section>
 
       <section class="panel media-group-panel">
         <div class="media-group-head">
-          <h4>视频</h4>
+          <h4>{{ t('media.videoGroup') }}</h4>
           <div class="media-group-toolbar">
             <span class="media-group-count">{{ grouped.video.length }}</span>
-            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('video')">{{ isGroupFullySelected('video') ? '取消全选' : '全选' }}</button>
+            <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('video')">{{ isGroupFullySelected('video') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
         <div v-if="grouped.video.length" class="media-grid">
@@ -104,12 +104,12 @@
               <small class="media-card-meta">{{ item.mime_type || 'VIDEO' }}</small>
               <div class="media-card-link-row">
                 <span class="media-card-link-text">{{ fullUrl(item.url) }}</span>
-                <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">复制链接</button>
+                <button type="button" class="media-copy-btn" @click="copyUrl(item.url, item.original_name)">{{ t('common.copyLink') }}</button>
               </div>
             </div>
           </article>
         </div>
-        <p v-else class="tips media-empty">暂无视频</p>
+        <p v-else class="tips media-empty">{{ t('media.noVideo') }}</p>
       </section>
     </div>
 
@@ -120,19 +120,19 @@
             <div class="media-delete-head">
               <span class="media-delete-icon">!</span>
               <div>
-                <h4 id="media-delete-title">删除媒体</h4>
-                <p class="media-delete-subtitle">删除后无法恢复，请确认操作。</p>
+                <h4 id="media-delete-title">{{ t('media.deleteTitle') }}</h4>
+                <p class="media-delete-subtitle">{{ t('media.deleteSubtitle') }}</p>
               </div>
             </div>
             <div class="media-delete-body">
-              <p class="media-delete-text">将删除 <strong>{{ deleteTargetIds.length }}</strong> 个媒体文件。</p>
+              <p class="media-delete-text">{{ t('media.deleteConfirm', { n: deleteTargetIds.length }) }}</p>
               <div class="media-delete-preview-list">
                 <span v-for="item in deleteTargetNames" :key="item" class="media-delete-preview-item">{{ item }}</span>
               </div>
             </div>
             <div class="media-delete-actions">
-              <button type="button" class="media-delete-cancel" @click="closeDeleteConfirm">取消</button>
-              <button type="button" class="media-delete-confirm" @click="submitDeleteConfirm">删除</button>
+              <button type="button" class="media-delete-cancel" @click="closeDeleteConfirm">{{ t('common.cancel') }}</button>
+              <button type="button" class="media-delete-confirm" @click="submitDeleteConfirm">{{ t('common.delete') }}</button>
             </div>
           </div>
         </div>
@@ -146,26 +146,26 @@
             <div class="media-preview-image-wrap">
               <img v-if="!imagePreviewError" class="media-preview-image" :src="fullUrl(previewItem.url)" :alt="previewItem.original_name" @error="markPreviewLoadError" />
               <div v-else class="media-preview-image-fallback">
-                <span>图片加载失败</span>
+                <span>{{ t('media.imageLoadFailed') }}</span>
               </div>
             </div>
             <div class="media-preview-info">
               <div class="media-preview-head">
-                <h4 id="media-preview-title">媒体详情</h4>
-                <button type="button" class="media-preview-close" @click="closePreview">关闭</button>
+                <h4 id="media-preview-title">{{ t('media.detailTitle') }}</h4>
+                <button type="button" class="media-preview-close" @click="closePreview">{{ t('common.close') }}</button>
               </div>
               <div class="media-preview-meta-list">
-                <div class="media-preview-meta-item"><span>上传时间</span><strong>{{ formatDate(previewItem.uploaded_at || previewItem.created_at) }}</strong></div>
-                <div class="media-preview-meta-item"><span>上传者</span><strong>{{ previewItem.uploader?.nickname || previewItem.user?.nickname || previewItem.author?.nickname || 'admin' }}</strong></div>
-                <div class="media-preview-meta-item"><span>文件名</span><strong>{{ previewItem.original_name }}</strong></div>
-                <div class="media-preview-meta-item"><span>文件类型</span><strong>{{ previewItem.mime_type || '未知' }}</strong></div>
-                <div class="media-preview-meta-item"><span>文件大小</span><strong>{{ formatFileSize(previewItem.file_size || previewItem.size) }}</strong></div>
-                <div class="media-preview-meta-item"><span>分辨率</span><strong>{{ formatResolution(previewItem.width, previewItem.height) }}</strong></div>
-                <div class="media-preview-meta-item media-preview-url"><span>文件 URL</span><strong>{{ fullUrl(previewItem.url) }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('time.uploadTime') }}</span><strong>{{ formatDate(previewItem.uploaded_at || previewItem.created_at) }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('media.uploader') }}</span><strong>{{ previewItem.uploader?.nickname || previewItem.user?.nickname || previewItem.author?.nickname || 'admin' }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('media.fileName') }}</span><strong>{{ previewItem.original_name }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('media.fileType') }}</span><strong>{{ previewItem.mime_type || t('common.unknown') }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('media.fileSize') }}</span><strong>{{ formatFileSize(previewItem.file_size || previewItem.size) }}</strong></div>
+                <div class="media-preview-meta-item"><span>{{ t('media.resolution') }}</span><strong>{{ formatResolution(previewItem.width, previewItem.height) }}</strong></div>
+                <div class="media-preview-meta-item media-preview-url"><span>{{ t('media.fileUrl') }}</span><strong>{{ fullUrl(previewItem.url) }}</strong></div>
               </div>
               <div class="media-preview-actions">
-                <button type="button" class="media-copy-btn" @click="copyUrl(previewItem.url, previewItem.original_name)">复制链接</button>
-                <button type="button" class="danger-btn media-preview-delete" @click="$emit('delete-media', previewItem.id)">删除</button>
+                <button type="button" class="media-copy-btn" @click="copyUrl(previewItem.url, previewItem.original_name)">{{ t('common.copyLink') }}</button>
+                <button type="button" class="danger-btn media-preview-delete" @click="$emit('delete-media', previewItem.id)">{{ t('common.delete') }}</button>
               </div>
             </div>
           </div>
@@ -177,7 +177,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl } from '../api'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   media: any[]
@@ -229,7 +232,7 @@ const fullUrl = (url: string) => toAbsoluteAssetUrl(url)
 
 const copyUrl = async (url: string, fileName: string) => {
   await navigator.clipboard.writeText(fullUrl(url))
-  copyMessage.value = `已复制 URL：${fileName}`
+  copyMessage.value = t('media.copySuccess', { name: fileName })
   setTimeout(() => {
     copyMessage.value = ''
   }, 1800)
@@ -310,7 +313,7 @@ const submitDeleteConfirm = () => {
 
 const formatDate = (value?: string) => {
   const text = String(value || '').trim()
-  if (!text) return '未知'
+  if (!text) return t('common.unknown')
   const date = new Date(text)
   if (Number.isNaN(date.getTime())) return text
   return date.toLocaleString('zh-CN')
@@ -318,7 +321,7 @@ const formatDate = (value?: string) => {
 
 const formatFileSize = (value?: number) => {
   const size = Number(value || 0)
-  if (!size) return '未知'
+  if (!size) return t('common.unknown')
   if (size < 1024) return `${size} B`
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
   if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`
@@ -328,7 +331,7 @@ const formatFileSize = (value?: number) => {
 const formatResolution = (width?: number, height?: number) => {
   const w = Number(width || 0)
   const h = Number(height || 0)
-  if (!w || !h) return '未知'
+  if (!w || !h) return t('common.unknown')
   return `${w} × ${h}`
 }
 </script>

@@ -251,6 +251,61 @@
   color: var(--danger);
 }
 
+.dropdown-item.is-active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.lang-menu {
+  position: relative;
+}
+
+.lang-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.lang-trigger:hover {
+  background: var(--bg-soft);
+  color: var(--accent);
+}
+
+.lang-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.lang-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.lang-dropdown {
+  min-width: 120px;
+}
+
+.menu-pop-enter-active,
+.menu-pop-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.menu-pop-enter-from,
+.menu-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
 .dashboard-shell {
   display: grid;
   grid-template-columns: 240px 1fr;

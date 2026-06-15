@@ -2,40 +2,40 @@
   <section class="panel comments-panel">
     <div class="comments-head">
       <div>
-        <h3>评论管理</h3>
-        <p class="comments-subtitle">集中审核文章评论，维护社区内容质量</p>
+        <h3>{{ t('comment.title') }}</h3>
+        <p class="comments-subtitle">{{ t('comment.subtitle') }}</p>
       </div>
-      <span class="comments-count">共 {{ displayComments.length }} 条</span>
+      <span class="comments-count">{{ t('comment.totalCount', { n: displayComments.length }) }}</span>
     </div>
 
     <div class="comments-filter-row">
-      <input class="comments-search-input" v-model="keyword" placeholder="按评论内容或文章标题搜索" />
+      <input class="comments-search-input" v-model="keyword" :placeholder="t('comment.searchPlaceholder')" />
       <select class="comments-filter-select" v-model="statusFilter">
-        <option value="all">全部状态</option>
-        <option value="APPROVED">已通过</option>
-        <option value="PENDING">待审核</option>
-        <option value="REJECTED">已拒绝</option>
+        <option value="all">{{ t('comment.allStatus') }}</option>
+        <option value="APPROVED">{{ t('status.approved') }}</option>
+        <option value="PENDING">{{ t('status.pending') }}</option>
+        <option value="REJECTED">{{ t('status.rejected') }}</option>
       </select>
       <select class="comments-filter-select" v-model="sortOrder">
-        <option value="newest">评论时间：最新优先</option>
-        <option value="oldest">评论时间：最早优先</option>
+        <option value="newest">{{ t('comment.sortNewest') }}</option>
+        <option value="oldest">{{ t('comment.sortOldest') }}</option>
       </select>
-      <button class="article-reset-btn" type="button" @click="resetFilters">重置筛选</button>
-      <button class="article-reset-btn" type="button" title="刷新评论列表" @click="emit('refresh')">
+      <button class="article-reset-btn" type="button" @click="resetFilters">{{ t('common.reset') }}</button>
+      <button class="article-reset-btn" type="button" :title="t('comment.refreshTitle')" @click="emit('refresh')">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
-        刷新
+        {{ t('common.refresh') }}
       </button>
     </div>
 
     <div class="comments-toolbar">
       <label class="comments-select-all">
         <input type="checkbox" :checked="allVisibleSelected" :indeterminate.prop="indeterminateVisibleSelected" @change="toggleSelectAllVisible" />
-        <span>全选当前页</span>
+        <span>{{ t('common.selectAll') }}</span>
       </label>
       <div class="comments-bulk-actions">
-        <button type="button" class="cm-btn cm-btn-approve" :disabled="!hasSelectedPending" @click="bulkApproveSelected">批量通过</button>
-        <button type="button" class="cm-btn cm-btn-reject" :disabled="!hasSelectedPending" @click="bulkRejectSelected">批量拒绝</button>
-        <button type="button" class="cm-btn cm-btn-delete" :disabled="!hasSelectedRejected" @click="openBulkDeleteConfirm">批量删除</button>
+        <button type="button" class="cm-btn cm-btn-approve" :disabled="!hasSelectedPending" @click="bulkApproveSelected">{{ t('comment.batchApprove') }}</button>
+        <button type="button" class="cm-btn cm-btn-reject" :disabled="!hasSelectedPending" @click="bulkRejectSelected">{{ t('comment.batchReject') }}</button>
+        <button type="button" class="cm-btn cm-btn-delete" :disabled="!hasSelectedRejected" @click="openBulkDeleteConfirm">{{ t('comment.batchDelete') }}</button>
       </div>
     </div>
 
@@ -67,33 +67,33 @@
             {{ truncateText(item.article.title, 80) }}
           </a>
           <div class="comments-meta">
-            <span>昵称：{{ item.user?.nickname || item.guest_nickname || '匿名访客' }}</span>
-            <span>邮箱：{{ item.guest_email || '-' }}</span>
-            <span>时间：<span :title="formatDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</span></span>
+            <span>{{ t('comment.nicknamePrefix') }}{{ item.user?.nickname || item.guest_nickname || t('comment.anonymous') }}</span>
+            <span>{{ t('comment.emailPrefix') }}{{ item.guest_email || '-' }}</span>
+            <span>{{ t('comment.timePrefix') }}<span :title="formatDateTime(item.created_at)">{{ formatRelativeTime(item.created_at) }}</span></span>
           </div>
         </div>
         <div class="comments-actions">
-          <button v-if="!isApproved(item.status) && !isRejected(item.status)" type="button" class="cm-btn cm-btn-approve" @click="$emit('approve', item.id)">通过</button>
-          <button v-if="!isRejected(item.status)" type="button" class="cm-btn cm-btn-reject" @click="openRejectConfirm(item)">拒绝</button>
-          <button type="button" class="cm-btn cm-btn-delete" @click="$emit('delete', item.id)">删除</button>
+          <button v-if="!isApproved(item.status) && !isRejected(item.status)" type="button" class="cm-btn cm-btn-approve" @click="$emit('approve', item.id)">{{ t('comment.approve') }}</button>
+          <button v-if="!isRejected(item.status)" type="button" class="cm-btn cm-btn-reject" @click="openRejectConfirm(item)">{{ t('comment.reject') }}</button>
+          <button type="button" class="cm-btn cm-btn-delete" @click="$emit('delete', item.id)">{{ t('common.delete') }}</button>
         </div>
       </article>
 
-      <p v-if="!pagedComments.length" class="comments-empty">暂无符合条件的评论</p>
+      <p v-if="!pagedComments.length" class="comments-empty">{{ t('comment.empty') }}</p>
     </div>
 
     <div class="article-pagination comments-pagination">
       <div class="article-page-size">
-        <span>每页</span>
+        <span>{{ t('common.perPage') }}</span>
         <select v-model="pageSize" @change="changePageSize">
           <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
         </select>
-        <span>条</span>
+        <span>{{ t('common.items') }}</span>
       </div>
       <span class="article-page-indicator article-page-indicator-center">{{ formatPageLabel }}</span>
       <div class="article-page-controls">
-        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
-        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
+        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">{{ t('common.previous') }}</button>
+        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">{{ t('common.next') }}</button>
       </div>
     </div>
 
@@ -101,30 +101,30 @@
       <div class="comment-modal">
         <div class="comment-modal-head">
           <div>
-            <p class="comment-modal-eyebrow">{{ bulkDeleteConfirmOpen ? '确认删除' : '确认拒绝' }}</p>
-            <h4>{{ bulkDeleteConfirmOpen ? '是否彻底删除所选已拒绝评论？' : '是否拒绝这条评论？' }}</h4>
+            <p class="comment-modal-eyebrow">{{ bulkDeleteConfirmOpen ? t('comment.confirmDeleteTitle') : t('comment.confirmRejectTitle') }}</p>
+            <h4>{{ bulkDeleteConfirmOpen ? t('comment.deleteModalHeading') : t('comment.rejectModalHeading') }}</h4>
           </div>
-          <button type="button" class="comment-modal-close" aria-label="关闭弹窗" @click="closeActiveConfirm">×</button>
+          <button type="button" class="comment-modal-close" :aria-label="t('comment.closeModalLabel')" @click="closeActiveConfirm">×</button>
         </div>
 
         <p class="comment-modal-text">
-          {{ bulkDeleteConfirmOpen ? '删除后将从数据库中彻底清除，无法恢复。' : '拒绝后，这条评论将被标记为拒绝状态，并不会在前台展示。' }}
+          {{ bulkDeleteConfirmOpen ? t('comment.deleteModalText') : t('comment.rejectModalText') }}
         </p>
 
         <div class="comment-modal-preview">
-          <div class="comment-modal-label">{{ bulkDeleteConfirmOpen ? '删除数量' : '评论内容' }}</div>
-          <div v-if="bulkDeleteConfirmOpen" class="comment-modal-content">已选择 {{ selectedRejectedIds.length }} 条已拒绝评论</div>
+          <div class="comment-modal-label">{{ bulkDeleteConfirmOpen ? t('comment.deleteCount') : t('comment.commentContent') }}</div>
+          <div v-if="bulkDeleteConfirmOpen" class="comment-modal-content">{{ t('comment.rejectedSelected', { n: selectedRejectedIds.length }) }}</div>
           <div v-else class="comment-modal-content">{{ rejectTarget?.content }}</div>
           <div v-if="!bulkDeleteConfirmOpen && rejectTarget?.article?.id" class="comment-modal-article">
-            关联文章：
+            {{ t('comment.articlePrefix') }}
             <a :href="webArticleUrl(rejectTarget.article.id)" target="_blank" rel="noreferrer">{{ truncateText(rejectTarget.article.title, 80) }}</a>
           </div>
         </div>
 
         <div class="comment-modal-actions">
-          <button type="button" class="cm-btn" @click="closeActiveConfirm">取消</button>
-          <button v-if="bulkDeleteConfirmOpen" type="button" class="cm-btn cm-btn-delete" @click="confirmBulkDelete">确认删除</button>
-          <button v-else type="button" class="cm-btn cm-btn-reject" @click="confirmReject">确认拒绝</button>
+          <button type="button" class="cm-btn" @click="closeActiveConfirm">{{ t('common.cancel') }}</button>
+          <button v-if="bulkDeleteConfirmOpen" type="button" class="cm-btn cm-btn-delete" @click="confirmBulkDelete">{{ t('comment.confirmDeleteButton') }}</button>
+          <button v-else type="button" class="cm-btn cm-btn-reject" @click="confirmReject">{{ t('comment.confirmRejectButton') }}</button>
         </div>
       </div>
     </div>
@@ -133,6 +133,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 type CommentItem = {
   id: number
@@ -192,7 +195,7 @@ const parseDateTime = (value: string) => {
   return new Date(`${text}Z`)
 }
 
-const formatDateTime = (value: string) => parseDateTime(value).toLocaleString('zh-CN')
+const formatDateTime = (value: string) => parseDateTime(value).toLocaleString(locale.value)
 
 const formatRelativeTime = (value: string) => {
   const date = parseDateTime(value)
@@ -203,10 +206,10 @@ const formatRelativeTime = (value: string) => {
   const day = 24 * hour
   const year = 365 * day
 
-  if (diffMs < hour) return `${Math.max(1, Math.floor(diffMs / minute))} 分钟前`
-  if (diffMs < day) return `${Math.max(1, Math.floor(diffMs / hour))} 小时前`
-  if (diffMs < year) return `${Math.max(1, Math.floor(diffMs / day))} 天前`
-  return `${Math.max(1, Math.floor(diffMs / year))} 年前`
+  if (diffMs < hour) return t('time.minutesAgo', { n: Math.max(1, Math.floor(diffMs / minute)) })
+  if (diffMs < day) return t('time.hoursAgo', { n: Math.max(1, Math.floor(diffMs / hour)) })
+  if (diffMs < year) return t('time.daysAgo', { n: Math.max(1, Math.floor(diffMs / day)) })
+  return t('time.yearsAgo', { n: Math.max(1, Math.floor(diffMs / year)) })
 }
 
 const filteredComments = computed(() => {
@@ -315,7 +318,7 @@ const goNextPage = () => {
   if (canGoNext.value) currentPage.value += 1
 }
 
-const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
+const formatPageLabel = computed(() => t('comment.pageInfo', { current: currentPage.value, total: totalPages.value }))
 
 const openRejectConfirm = (item: CommentItem) => {
   rejectTarget.value = item

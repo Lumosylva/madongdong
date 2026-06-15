@@ -2,23 +2,23 @@
   <section class="editor-panel article-create-panel">
     <div class="article-create-head">
       <div>
-        <h3>{{ editorTitle || (editorMode === 'edit' ? '编辑文章' : '创建文章') }}</h3>
+        <h3>{{ editorTitle || (editorMode === 'edit' ? t('articleCreate.editTitle') : t('articleCreate.createTitle')) }}</h3>
       </div>
-      <span class="article-create-meta">正文将自动提取摘要（120 字）</span>
+      <span class="article-create-meta">{{ t('articleCreate.summaryHint') }}</span>
     </div>
     <p v-if="submitError" class="article-create-error" :class="{ 'is-focus': submitFocusField }">{{ submitError }}</p>
     <div class="article-create-help-row">
-      <span v-if="draftSessionSaved && draftSavedAt" class="article-create-save-time">已临时保存 · {{ formatSavedTime(draftSavedAt) }}</span>
-      <p class="article-create-shortcuts-hint">快捷键：Ctrl/Cmd + S 临时保存，Ctrl/Cmd + Enter 提交</p>
+      <span v-if="draftSessionSaved && draftSavedAt" class="article-create-save-time">{{ t('articleCreate.savedAt') }} {{ formatSavedTime(draftSavedAt) }}</span>
+      <p class="article-create-shortcuts-hint">{{ t('articleCreate.shortcutsHint') }}</p>
     </div>
 
     <div class="article-create-field">
-      <label for="article-title-input">标题</label>
+      <label for="article-title-input">{{ t('articleCreate.titleLabel') }}</label>
       <input
         id="article-title-input"
         ref="titleInputRef"
         :value="title"
-        placeholder="请输入文章标题"
+        :placeholder="t('articleCreate.titlePlaceholder')"
         @input="emit('update:title', ($event.target as HTMLInputElement).value)"
       />
     </div>
@@ -26,7 +26,7 @@
     <div class="article-create-field article-markdown-field">
       <div class="article-markdown-toolbar article-markdown-toolbar-title">
         <div class="article-markdown-toolbar-main">
-          <label for="article-content-input">正文</label>
+          <label for="article-content-input">{{ t('articleCreate.contentLabel') }}</label>
         </div>
       </div>
 
@@ -46,18 +46,18 @@
     </div>
 
     <div class="article-create-field">
-      <label for="article-cover-url-input">封面图</label>
+      <label for="article-cover-url-input">{{ t('articleCreate.coverLabel') }}</label>
       <div class="article-cover-combo">
         <div class="article-cover-row">
           <input
             id="article-cover-url-input"
             :value="coverUrl"
-            placeholder="封面图 URL（可选）"
+            :placeholder="t('articleCreate.coverPlaceholder')"
             @input="emit('update:coverUrl', ($event.target as HTMLInputElement).value)"
           />
-          <button type="button" class="article-cover-pick-btn" @click="showCoverPicker = !showCoverPicker">从媒体库选择</button>
+          <button type="button" class="article-cover-pick-btn" @click="showCoverPicker = !showCoverPicker">{{ t('articleCreate.pickFromMedia') }}</button>
         </div>
-        <p class="article-create-hint">从媒体库选择图片后会自动填入封面地址</p>
+        <p class="article-create-hint">{{ t('articleCreate.coverHint') }}</p>
         <transition name="cover-picker-fade">
           <div v-if="showCoverPicker" class="article-cover-picker">
             <button
@@ -71,7 +71,7 @@
               <img :src="previewUrl(item.url)" :alt="item.original_name" />
               <span>{{ item.original_name }}</span>
             </button>
-            <p v-if="!imageMedia.length" class="article-create-hint">暂无可用图片，请先到媒体库上传图片。</p>
+            <p v-if="!imageMedia.length" class="article-create-hint">{{ t('articleCreate.noImages') }}</p>
           </div>
         </transition>
       </div>
@@ -80,41 +80,44 @@
     <div class="article-create-actions">
       <div class="article-create-actions-grid">
         <div class="article-create-field article-create-select-field">
-          <label for="article-category-select">分类</label>
+          <label for="article-category-select">{{ t('articleCreate.categoryLabel') }}</label>
           <select id="article-category-select" :value="categoryId" @change="emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))">
             <option v-for="item in categories" :key="item.id" :value="item.id">{{ item.name }}</option>
           </select>
         </div>
         <div class="article-create-field article-create-tag-field">
-          <label for="article-tags-input">标签</label>
+          <label for="article-tags-input">{{ t('articleCreate.tagLabel') }}</label>
           <input
             id="article-tags-input"
             :value="tagIdsText"
-            placeholder="标签（英文逗号分隔，例如：Python, FastAPI）"
+            :placeholder="t('articleCreate.tagPlaceholder')"
             @input="emit('update:tagIdsText', ($event.target as HTMLInputElement).value)"
           />
         </div>
         <div class="article-create-field article-create-status-field">
-          <label for="article-action-select">发布状态</label>
+          <label for="article-action-select">{{ t('articleCreate.statusLabel') }}</label>
           <select id="article-action-select" :value="action" @change="emit('update:action', ($event.target as HTMLSelectElement).value as 'draft' | 'submit' | 'publish')">
-            <option value="draft">保存草稿</option>
-            <option v-if="!isAdmin" value="submit">提交审核</option>
-            <option v-if="isAdmin" value="publish">直接发布</option>
+            <option value="draft">{{ t('articleCreate.saveDraft') }}</option>
+            <option v-if="!isAdmin" value="submit">{{ t('articleCreate.submitReview') }}</option>
+            <option v-if="isAdmin" value="publish">{{ t('articleCreate.publishDirect') }}</option>
           </select>
         </div>
       </div>
-      <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? '提交中...' : (editorMode === 'edit' ? '保存修改' : '提交文章') }}</button>
+      <button class="article-create-submit" :disabled="submitLoading" @click="triggerSubmit">{{ submitLoading ? t('articleCreate.submitting') : (editorMode === 'edit' ? t('articleCreate.saveChanges') : t('articleCreate.submitArticle')) }}</button>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MdEditor, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import 'md-editor-v3/lib/preview.css'
 
 import { API_ORIGIN } from '../api'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   isAdmin: boolean

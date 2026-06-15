@@ -1,24 +1,24 @@
 <template>
   <section class="panel article-manage-panel">
     <div class="article-manage-head">
-      <h3>所有文章</h3>
-      <span class="article-count">共 {{ displayArticles.length }} 篇</span>
+      <h3>{{ t('articleManage.title') }}</h3>
+      <span class="article-count">{{ t('common.articles', { n: displayArticles.length }) }}</span>
     </div>
 
     <div class="action-row article-filter-row">
-      <input class="article-search-input" v-model="keyword" placeholder="按标题搜索" />
+      <input class="article-search-input" v-model="keyword" :placeholder="t('articleManage.searchPlaceholder')" />
       <select class="article-filter-select" v-model="statusFilter">
-        <option value="all">全部状态</option>
-        <option value="published">已发布</option>
-        <option value="draft">草稿</option>
-        <option value="pending">待审核</option>
-        <option value="rejected">已驳回</option>
+        <option value="all">{{ t('articleManage.allStatus') }}</option>
+        <option value="published">{{ t('status.published') }}</option>
+        <option value="draft">{{ t('status.draft') }}</option>
+        <option value="pending">{{ t('status.pending') }}</option>
+        <option value="rejected">{{ t('status.rejected') }}</option>
       </select>
       <select class="article-filter-select" v-model="sortOrder">
-        <option value="newest">发布时间：最新优先</option>
-        <option value="oldest">发布时间：最早优先</option>
+        <option value="newest">{{ t('articleManage.sortNewest') }}</option>
+        <option value="oldest">{{ t('articleManage.sortOldest') }}</option>
       </select>
-      <button class="article-reset-btn" @click="resetFilters">重置筛选</button>
+      <button class="article-reset-btn" @click="resetFilters">{{ t('common.reset') }}</button>
     </div>
 
     <ul class="article-manage-list">
@@ -29,43 +29,43 @@
             <span class="article-status-chip" :class="`status-${normalizeStatus(item.status)}`">{{ formatArticleStatus(item.status) }}</span>
           </p>
           <small class="article-row-meta">
-            <span>分类：{{ item.category?.name || '未分类' }}</span>
-            <span>作者：{{ item.author?.nickname || 'admin' }}</span>
-            <span>发布时间：{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
-            <span>更新时间：{{ formatRelativeTime(getArticleUpdatedAt(item)) }}</span>
-            <span>浏览：{{ item.view_count || 0 }}</span>
-            <span>评论：{{ item.comment_count || 0 }}</span>
+            <span>{{ t('articleMeta.category') }}{{ item.category?.name || t('articleMeta.uncategorized') }}</span>
+            <span>{{ t('articleMeta.author') }}{{ item.author?.nickname || 'admin' }}</span>
+            <span>{{ t('articleMeta.published') }}{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
+            <span>{{ t('articleMeta.updated') }}{{ formatRelativeTime(getArticleUpdatedAt(item)) }}</span>
+            <span>{{ t('articleMeta.views') }}{{ item.view_count || 0 }}</span>
+            <span>{{ t('articleMeta.comments') }}{{ item.comment_count || 0 }}</span>
           </small>
         </div>
         <div class="article-row-actions">
-          <button type="button" class="article-edit-btn" @click="emit('edit-article', item.id)">编辑</button>
-          <button type="button" class="danger-btn article-trash-btn" @click="openTrashConfirm(item.id, item.title)">移入垃圾箱</button>
+          <button type="button" class="article-edit-btn" @click="emit('edit-article', item.id)">{{ t('common.edit') }}</button>
+          <button type="button" class="danger-btn article-trash-btn" @click="openTrashConfirm(item.id, item.title)">{{ t('articleManage.trashButton') }}</button>
         </div>
       </li>
 
-      <li v-if="!pagedArticles.length" class="article-empty">暂无符合条件的文章</li>
+      <li v-if="!pagedArticles.length" class="article-empty">{{ t('articleManage.empty') }}</li>
     </ul>
 
     <ArticleTrashConfirmModal
       :open="trashConfirmOpen"
       :title="trashTargetTitle"
-      message="确认后文章将进入垃圾箱，可在垃圾箱中恢复。"
+      :message="t('articleManage.trashConfirm')"
       @cancel="closeTrashConfirm"
       @confirm="submitTrashConfirm"
     />
 
     <div class="article-pagination">
       <div class="article-page-size">
-        <span>每页</span>
+        <span>{{ t('common.perPage') }}</span>
         <select v-model="pageSize" @change="changePageSize">
           <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
         </select>
-        <span>篇</span>
+        <span>{{ t('common.articles') }}</span>
       </div>
       <span class="article-page-indicator article-page-indicator-center">{{ formatPageLabel }}</span>
       <div class="article-page-controls">
-        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">上一页</button>
-        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">下一页</button>
+        <button v-if="canGoPrev" type="button" class="article-page-btn" @click="goPrevPage">{{ t('common.previous') }}</button>
+        <button v-if="canGoNext" type="button" class="article-page-btn" @click="goNextPage">{{ t('common.next') }}</button>
       </div>
     </div>
   </section>
@@ -73,8 +73,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import ArticleTrashConfirmModal from './ArticleTrashConfirmModal.vue'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   articles: any[]
@@ -203,7 +206,7 @@ const highlightTitle = (value: string) => {
   return safe.replace(pattern, '<mark>$1</mark>')
 }
 
-const formatPageLabel = computed(() => `当前 ${currentPage.value} 页 / 共 ${totalPages.value} 页`)
+const formatPageLabel = computed(() => t('articleManage.pageInfo', { current: currentPage.value, total: totalPages.value }))
 
 const parseDateTime = (value: string) => {
   const text = String(value || '').trim()
@@ -223,17 +226,17 @@ const formatRelativeTime = (value: string) => {
 
   if (diffMs < hour) {
     const minutes = Math.max(1, Math.floor(diffMs / minute))
-    return `${minutes} 分钟前`
+    return t('time.minutesAgo', { n: minutes })
   }
   if (diffMs < day) {
     const hours = Math.max(1, Math.floor(diffMs / hour))
-    return `${hours} 小时前`
+    return t('time.hoursAgo', { n: hours })
   }
   if (diffMs < year) {
     const days = Math.max(1, Math.floor(diffMs / day))
-    return `${days} 天前`
+    return t('time.daysAgo', { n: days })
   }
   const years = Math.max(1, Math.floor(diffMs / year))
-  return `${years} 年前`
+  return t('time.yearsAgo', { n: years })
 }
 </script>

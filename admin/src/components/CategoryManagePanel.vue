@@ -2,43 +2,43 @@
   <section class="panel category-panel">
     <div class="article-manage-head category-head">
       <div>
-        <h3>文章分类</h3>
-        <p class="category-subtitle">统一管理文章分类名称、标识与描述</p>
+        <h3>{{ t('category.title') }}</h3>
+        <p class="category-subtitle">{{ t('category.subtitle') }}</p>
       </div>
-      <span class="article-count category-count">共 {{ categories.length }} 项</span>
+      <span class="article-count category-count">{{ t('common.count', { n: categories.length }) }}</span>
     </div>
 
     <div class="category-create-panel">
       <div class="category-form-head">
-        <h4>创建分类</h4>
-        <span class="category-form-tip">自动生成 slug，也可以手动修改</span>
+        <h4>{{ t('category.createHeading') }}</h4>
+        <span class="category-form-tip">{{ t('category.createTip') }}</span>
       </div>
       <div class="category-form-stack">
         <label class="category-field">
-          <span>名称是它在您网站上的显示方式。</span>
-          <input class="category-input" v-model="newName" placeholder="请输入名称" />
+          <span>{{ t('category.nameLabel') }}</span>
+          <input class="category-input" v-model="newName" :placeholder="t('category.namePlaceholder')" />
         </label>
         <label class="category-field">
-          <span>slug是名称的 URL 友好版本。它通常都是小写的，并且只包含字母、数字和连字符-，例如sui-bi。</span>
-          <input class="category-input" v-model="newSlug" placeholder="请输入标识（slug）" @input="slugTouched = true" />
+          <span>{{ t('category.slugLabel') }}</span>
+          <input class="category-input" v-model="newSlug" :placeholder="t('category.slugPlaceholder')" @input="slugTouched = true" />
         </label>
         <label class="category-field">
-          <span>描述默认不显示，它是对分类的说明。</span>
-          <input class="category-input" v-model="newDescription" placeholder="请输入描述（可选）" />
+          <span>{{ t('category.descLabel') }}</span>
+          <input class="category-input" v-model="newDescription" :placeholder="t('category.descPlaceholder')" />
         </label>
-        <button class="category-create-btn" :disabled="duplicatedSlug" @click="create">创建分类</button>
+        <button class="category-create-btn" :disabled="duplicatedSlug" @click="create">{{ t('category.createButton') }}</button>
       </div>
-      <p v-if="duplicatedSlug" class="error-message category-error">slug 已存在，请修改后再创建</p>
+      <p v-if="duplicatedSlug" class="error-message category-error">{{ t('category.slugExists') }}</p>
     </div>
 
     <div class="category-toolbar">
       <div class="category-toolbar-left">
-        <span class="category-toolbar-selected">已选择：{{ selectedCategory ? selectedCategory.name : '未选择' }}</span>
-        <span v-if="selectedCategory && isDefaultCategory(selectedCategory)" class="category-badge category-badge-locked">默认</span>
+        <span class="category-toolbar-selected">{{ t('category.selected') }}{{ selectedCategory ? selectedCategory.name : t('category.noneSelected') }}</span>
+        <span v-if="selectedCategory && isDefaultCategory(selectedCategory)" class="category-badge category-badge-locked">{{ t('category.defaultBadge') }}</span>
       </div>
       <div class="category-toolbar-actions">
-        <button :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="openEditSelected">编辑选中</button>
-        <button class="danger-btn" :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="deleteSelected">删除选中</button>
+        <button :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="openEditSelected">{{ t('category.editSelected') }}</button>
+        <button class="danger-btn" :disabled="!selectedCategory || isDefaultCategory(selectedCategory)" @click="deleteSelected">{{ t('category.deleteSelected') }}</button>
       </div>
     </div>
 
@@ -53,35 +53,35 @@
       >
         <div class="category-card-head">
           <strong>{{ item.name }}</strong>
-          <span v-if="isDefaultCategory(item)" class="category-badge category-badge-locked">锁定</span>
+          <span v-if="isDefaultCategory(item)" class="category-badge category-badge-locked">{{ t('category.locked') }}</span>
         </div>
-        <small class="category-card-meta">slug：{{ item.slug }}</small>
-        <p class="category-card-desc">{{ item.description || '无描述' }}</p>
+        <small class="category-card-meta">{{ t('category.slugPrefix') }}{{ item.slug }}</small>
+        <p class="category-card-desc">{{ item.description || t('category.noDescription') }}</p>
       </button>
     </div>
 
     <div v-if="editing" class="category-edit-panel">
       <div class="category-edit-head">
         <div>
-          <h4>编辑分类</h4>
-          <p class="category-form-tip">修改分类名称、标识和描述</p>
+          <h4>{{ t('category.editHeading') }}</h4>
+          <p class="category-form-tip">{{ t('category.editTip') }}</p>
         </div>
-        <button class="category-edit-close" type="button" @click="editing = false">关闭</button>
+        <button class="category-edit-close" type="button" @click="editing = false">{{ t('common.close') }}</button>
       </div>
       <div class="category-form-stack">
         <label class="category-field">
-          <span>分类名称</span>
-          <input class="category-input" v-model="editName" placeholder="请输入分类名称" />
+          <span>{{ t('category.editNameLabel') }}</span>
+          <input class="category-input" v-model="editName" :placeholder="t('category.editNamePlaceholder')" />
         </label>
         <label class="category-field">
-          <span>分类标识</span>
-          <input class="category-input" v-model="editSlug" placeholder="请输入分类标识（slug）" />
+          <span>{{ t('category.editSlugLabel') }}</span>
+          <input class="category-input" v-model="editSlug" :placeholder="t('category.editSlugPlaceholder')" />
         </label>
         <label class="category-field">
-          <span>分类描述</span>
-          <input class="category-input" v-model="editDescription" placeholder="请输入分类描述（可选）" />
+          <span>{{ t('category.editDescLabel') }}</span>
+          <input class="category-input" v-model="editDescription" :placeholder="t('category.editDescPlaceholder')" />
         </label>
-        <button class="category-save-btn" @click="saveEdit">保存修改</button>
+        <button class="category-save-btn" @click="saveEdit">{{ t('category.saveChanges') }}</button>
       </div>
     </div>
   </section>
@@ -89,6 +89,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 type CategoryItem = {
   id: number
@@ -162,7 +165,7 @@ const create = () => {
 const isDefaultCategory = (item: CategoryItem) => {
   const name = String(item.name || '').trim()
   const slug = String(item.slug || '').trim().toLowerCase()
-  return name === '未分类' || slug === 'uncategorized'
+  return name === t('category.uncategorized') || slug === 'uncategorized'
 }
 
 const selectCategory = (item: CategoryItem) => {

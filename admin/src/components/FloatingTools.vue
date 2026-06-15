@@ -1,5 +1,5 @@
 <template>
-  <div class="floating-tools" aria-label="页面辅助工具">
+  <div class="floating-tools" :aria-label="t('floating.label')">
     <button
       type="button"
       class="floating-tool-btn theme-switch-btn"
@@ -20,8 +20,8 @@
         v-if="showScrollTop"
         class="floating-tool-btn scroll-top-btn"
         type="button"
-        aria-label="回到顶部"
-        title="回到顶部"
+        :aria-label="t('floating.backToTop')"
+        :title="t('floating.backToTop')"
         @click="scrollToTop"
       >
         <svg viewBox="0 0 24 24" class="floating-tool-icon" aria-hidden="true" focusable="false">
@@ -35,8 +35,8 @@
         v-if="showScrollBottom"
         class="floating-tool-btn scroll-bottom-btn"
         type="button"
-        aria-label="回到底部"
-        title="回到底部"
+        :aria-label="t('floating.backToBottom')"
+        :title="t('floating.backToBottom')"
         @click="scrollToBottom"
       >
         <svg viewBox="0 0 24 24" class="floating-tool-icon" aria-hidden="true" focusable="false">
@@ -49,8 +49,11 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type ThemeMode = 'light' | 'dark'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   theme: ThemeMode
@@ -65,7 +68,7 @@ const showScrollTop = ref(false)
 const showScrollBottom = ref(false)
 let hideTimer: number | null = null
 
-const themeLabel = computed(() => (props.theme === 'light' ? '切换为暗色主题' : '切换为白天主题'))
+const themeLabel = computed(() => (props.theme === 'light' ? t('floating.toggleDark') : t('floating.toggleLight')))
 
 const isAtBottom = () => {
   const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight

@@ -2,15 +2,15 @@
   <section class="panel profile-panel">
     <div class="profile-head">
       <div>
-        <h3>个人中心</h3>
-        <p class="profile-subtitle">管理头像、昵称、联系信息和登录密码</p>
+        <h3>{{ t('profile.title') }}</h3>
+        <p class="profile-subtitle">{{ t('profile.subtitle') }}</p>
       </div>
       <span class="profile-count">{{ user?.username || '-' }}</span>
     </div>
 
     <div class="profile-stack">
       <section class="profile-card profile-avatar-card">
-        <h4>头像</h4>
+        <h4>{{ t('profile.avatarSection') }}</h4>
         <div class="profile-avatar-wrap">
           <img v-if="avatarPreview" :src="avatarPreview" alt="avatar" class="profile-avatar" />
           <div v-else class="profile-avatar-placeholder">{{ avatarInitial }}</div>
@@ -18,35 +18,35 @@
 
         <div class="profile-avatar-actions">
           <input ref="avatarInputRef" class="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" @change="onAvatarSelect" />
-          <button type="button" class="profile-button secondary" @click="avatarInputRef?.click()">更换头像</button>
+          <button type="button" class="profile-button secondary" @click="avatarInputRef?.click()">{{ t('profile.changeAvatar') }}</button>
         </div>
-        <p class="profile-hint">上传后会自动裁剪为正方形并压缩</p>
+        <p class="profile-hint">{{ t('profile.avatarTip') }}</p>
       </section>
 
       <section class="profile-card profile-form-card">
-        <h4>基础资料</h4>
+        <h4>{{ t('profile.basicSection') }}</h4>
         <label class="profile-field">
-          <span>用户名</span>
+          <span>{{ t('profile.usernameLabel') }}</span>
           <input class="profile-input" :value="username" disabled />
         </label>
         <label class="profile-field">
-          <span>昵称 <em>*</em></span>
-          <input class="profile-input" v-model="nickname" placeholder="请输入昵称" />
+          <span>{{ t('profile.nicknameLabel') }} <em>*</em></span>
+          <input class="profile-input" v-model="nickname" :placeholder="t('profile.nicknamePlaceholder')" />
         </label>
         <label class="profile-field">
-          <span>联系信息（邮箱） <em>*</em></span>
-          <input class="profile-input" v-model="email" placeholder="请输入邮箱" />
+          <span>{{ t('profile.emailLabel') }} <em>*</em></span>
+          <input class="profile-input" v-model="email" :placeholder="t('profile.emailPlaceholder')" />
         </label>
       </section>
 
       <section class="profile-card profile-form-card profile-password-card">
-        <h4>安全设置</h4>
+        <h4>{{ t('profile.securitySection') }}</h4>
         <label class="profile-field">
-          <span>新密码</span>
-          <input class="profile-input" v-model="newPassword" type="password" placeholder="设置新密码（留空则不修改）" />
+          <span>{{ t('profile.newPassword') }}</span>
+          <input class="profile-input" v-model="newPassword" type="password" :placeholder="t('profile.newPwPlaceholder')" />
         </label>
         <div class="profile-actions">
-          <button type="button" class="profile-button primary" :disabled="saving" @click="saveProfile">更新个人资料</button>
+          <button type="button" class="profile-button primary" :disabled="saving" @click="saveProfile">{{ t('profile.saveProfile') }}</button>
         </div>
       </section>
     </div>
@@ -55,6 +55,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 type UserInfo = {
   id: number
@@ -90,10 +93,10 @@ const avatarInitial = computed(() => (nickname.value || username.value).slice(0,
 const loadImage = (file: File) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('读取头像文件失败'))
+    reader.onerror = () => reject(new Error(t('profile.readFailed')))
     reader.onload = () => {
       const image = new Image()
-      image.onerror = () => reject(new Error('加载头像图片失败'))
+      image.onerror = () => reject(new Error(t('profile.loadFailed')))
       image.onload = () => resolve(image)
       image.src = String(reader.result || '')
     }
@@ -104,7 +107,7 @@ const compressAvatar = async (file: File) => {
   if (!file.type.startsWith('image/')) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onerror = () => reject(new Error('读取头像文件失败'))
+      reader.onerror = () => reject(new Error(t('profile.readFailed')))
       reader.onload = () => resolve(String(reader.result || ''))
       reader.readAsDataURL(file)
     })
@@ -113,7 +116,7 @@ const compressAvatar = async (file: File) => {
   if (file.type === 'image/svg+xml') {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onerror = () => reject(new Error('读取头像文件失败'))
+      reader.onerror = () => reject(new Error(t('profile.readFailed')))
       reader.onload = () => resolve(String(reader.result || ''))
       reader.readAsDataURL(file)
     })
@@ -128,7 +131,7 @@ const compressAvatar = async (file: File) => {
   canvas.width = outputSize
   canvas.height = outputSize
   const context = canvas.getContext('2d')
-  if (!context) throw new Error('头像压缩失败')
+  if (!context) throw new Error(t('profile.compressFailed'))
   context.drawImage(image, offsetX, offsetY, size, size, 0, 0, outputSize, outputSize)
   return canvas.toDataURL('image/jpeg', 0.9)
 }

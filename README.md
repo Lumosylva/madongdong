@@ -50,7 +50,8 @@
 ### 后台（admin）
 
 - 登录页 + 控制台概览 + 数学验证码
-- 页面辅助工具（主题切换、返回顶部、到达底部）
+- **多语言支持**：中文 / English / 日本語，语言切换器（右下角浮动按钮）
+- 页面辅助工具（主题切换、语言切换、返回顶部、到达底部）
 - **URL 路由**：每个页面独立 URL（如 `/admin/articles`、`/admin/media`），刷新不丢失当前页面
 - 顶部栏：用户昵称、角色标记、下拉菜单（个人中心 / 退出登录）
 - 左侧菜单：主菜单 + 文章二级菜单（编辑文章未选中时禁用，仅从列表进入）
@@ -553,6 +554,7 @@ CORS_ORIGINS=["https://your-domain.com"]
 - 新增搜索页 i18n：`search.resultCount` / `search.noResults` / `search.noResultsHint` / `search.searching` / `search.tryOther`
 
 **后台（admin）**
+- **多语言支持**：中文 / English / 日本語 三语言，~470 个翻译 key，覆盖全部 16 个 Vue 组件
 - URL 路由优化：每个页面独立 URL（如 `/admin/articles`、`/admin/media`），刷新不丢失当前页面
 - Markdown 编辑器深色模式适配：通过 `MutationObserver` 监听 `data-theme` 自动切换编辑器主题
 - 友链管理：刷新按钮改为 API 数据刷新（不再整页 reload）

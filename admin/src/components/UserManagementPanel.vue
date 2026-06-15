@@ -2,33 +2,33 @@
   <section class="user-panelRoot">
     <div class="user-hero">
       <div>
-        <h3>用户管理</h3>
-        <p>搜索、筛选、编辑与批量管理系统用户</p>
+        <h3>{{ t('userManage.title') }}</h3>
+        <p>{{ t('userManage.subtitle') }}</p>
       </div>
-      <span class="user-heroCount">共 {{ filteredUsers.length }} 人</span>
+      <span class="user-heroCount">{{ t('common.count', { n: filteredUsers.length }) }}</span>
     </div>
 
     <div class="toolbarRow">
-      <input v-model="keyword" class="fieldInput" placeholder="搜索用户名、昵称或邮箱" />
+      <input v-model="keyword" class="fieldInput" :placeholder="t('userManage.searchPlaceholder')" />
       <select v-model="roleFilter" class="fieldInput">
-        <option value="all">全部角色</option>
-        <option value="admin">系统管理员</option>
-        <option value="author">内容作者</option>
-        <option value="reader">普通读者</option>
+        <option value="all">{{ t('userManage.allRoles') }}</option>
+        <option value="admin">{{ t('role.admin') }}</option>
+        <option value="author">{{ t('role.author') }}</option>
+        <option value="reader">{{ t('role.reader') }}</option>
       </select>
-      <button type="button" class="button buttonSecondary" @click="openAddUser">添加用户</button>
-      <button type="button" class="button buttonSecondary" :disabled="props.refreshing" @click="emit('refresh')">{{ props.refreshing ? '刷新中...' : '刷新' }}</button>
+      <button type="button" class="button buttonSecondary" @click="openAddUser">{{ t('userManage.addUser') }}</button>
+      <button type="button" class="button buttonSecondary" :disabled="props.refreshing" @click="emit('refresh')">{{ props.refreshing ? t('common.refreshing') : t('common.refresh') }}</button>
     </div>
 
     <div class="bulkBar">
       <label class="selectAll">
         <input type="checkbox" :checked="allSelected" :indeterminate.prop="indeterminateSelected" @change="toggleSelectAll" />
-        <span>全选当前页</span>
+        <span>{{ t('common.selectAll') }}</span>
       </label>
       <div class="bulkActions">
-        <button type="button" class="button buttonSecondary" :disabled="!selectedIds.length" @click="bulkChangeRole('author')">批量改为作者</button>
-        <button type="button" class="button buttonSecondary" :disabled="!selectedIds.length" @click="bulkChangeRole('reader')">批量改为读者</button>
-        <button type="button" class="button buttonDanger" :disabled="!selectedIds.length" @click="bulkDelete">批量删除</button>
+        <button type="button" class="button buttonSecondary" :disabled="!selectedIds.length" @click="bulkChangeRole('author')">{{ t('userManage.batchToAuthor') }}</button>
+        <button type="button" class="button buttonSecondary" :disabled="!selectedIds.length" @click="bulkChangeRole('reader')">{{ t('userManage.batchToReader') }}</button>
+        <button type="button" class="button buttonDanger" :disabled="!selectedIds.length" @click="bulkDelete">{{ t('userManage.batchDelete') }}</button>
       </div>
     </div>
 
@@ -51,32 +51,32 @@
             </span>
           </div>
           <div class="metaRow">
-            <span>用户名：{{ item.username }}</span>
-            <span>邮箱：{{ item.email }}</span>
+            <span>{{ t('userManage.usernamePrefix') }}{{ item.username }}</span>
+            <span>{{ t('userManage.emailPrefix') }}{{ item.email }}</span>
           </div>
         </div>
 
         <div class="actionRow">
-          <button type="button" class="button buttonSecondary" @click="editUser(item)">编辑</button>
-          <button type="button" class="button buttonDanger" @click="deleteOne(item.id)">删除</button>
+          <button type="button" class="button buttonSecondary" @click="editUser(item)">{{ t('common.edit') }}</button>
+          <button type="button" class="button buttonDanger" @click="deleteOne(item.id)">{{ t('common.delete') }}</button>
         </div>
       </article>
 
-      <p v-if="!pagedUsers.length" class="emptyState">暂无符合条件的用户</p>
+      <p v-if="!pagedUsers.length" class="emptyState">{{ t('userManage.empty') }}</p>
     </div>
 
     <div class="paginationBar">
       <div class="pageSizeControl">
-        <span>每页</span>
+        <span>{{ t('common.perPage') }}</span>
         <select v-model="pageSize" class="fieldInput pageSizeSelect" @change="changePageSize">
           <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
         </select>
-        <span>条</span>
+        <span>{{ t('common.items') }}</span>
       </div>
-      <span class="pageIndicator">当前 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+      <span class="pageIndicator">{{ t('userManage.pageInfo', { current: currentPage, total: totalPages }) }}</span>
       <div class="pageControls">
-        <button type="button" class="button buttonSecondary" :disabled="!canGoPrev" @click="goPrevPage">上一页</button>
-        <button type="button" class="button buttonSecondary" :disabled="!canGoNext" @click="goNextPage">下一页</button>
+        <button type="button" class="button buttonSecondary" :disabled="!canGoPrev" @click="goPrevPage">{{ t('common.previous') }}</button>
+        <button type="button" class="button buttonSecondary" :disabled="!canGoNext" @click="goNextPage">{{ t('common.next') }}</button>
       </div>
     </div>
 
@@ -84,9 +84,9 @@
       <div class="editorPage">
         <div class="editorHero">
           <div>
-            <p class="eyebrow">{{ editingUser?.id ? '编辑用户' : '新建用户' }}</p>
-            <h4>{{ editingUser?.id ? '修改用户信息' : '新建用户' }}</h4>
-            <p>头像支持上传预览，布局与个人中心保持一致。</p>
+            <p class="eyebrow">{{ editingUser?.id ? t('userManage.editUser') : t('userManage.newUser') }}</p>
+            <h4>{{ editingUser?.id ? t('userManage.editHeading') : t('userManage.newHeading') }}</h4>
+            <p>{{ t('userManage.avatarHint') }}</p>
           </div>
           <button type="button" class="modalClose" @click="closeEditor">×</button>
         </div>
@@ -94,48 +94,48 @@
         <div class="editorGrid">
           <section class="avatarPanel">
             <div class="avatarFrame">
-              <img v-if="avatarPreview" :src="avatarPreview" alt="头像预览" class="avatarPreviewImg" />
+              <img v-if="avatarPreview" :src="avatarPreview" :alt="t('userManage.avatarPreview')" class="avatarPreviewImg" />
               <div v-else class="avatarPreviewFallback">{{ avatarLetter(form.nickname || form.username) }}</div>
             </div>
             <div class="avatarPanelActions">
               <input ref="avatarFileInputRef" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="avatarFileInput" @change="onAvatarSelect" />
-              <button type="button" class="button buttonSecondary" @click="avatarFileInputRef?.click()">更换图片</button>
-              <button type="button" class="button buttonSecondary" @click="clearAvatar">清除</button>
+              <button type="button" class="button buttonSecondary" @click="avatarFileInputRef?.click()">{{ t('userManage.changeAvatar') }}</button>
+              <button type="button" class="button buttonSecondary" @click="clearAvatar">{{ t('userManage.clearAvatar') }}</button>
             </div>
-            <p class="avatarHint">建议上传正方形图片，系统会自动裁剪居中区域并用于预览。</p>
+            <p class="avatarHint">{{ t('userManage.avatarTip') }}</p>
           </section>
 
           <section class="formPanel">
             <label class="fieldBlock">
-              <span>用户名</span>
+              <span>{{ t('userManage.usernameLabel') }}</span>
               <input v-model="form.username" :disabled="!!editingUser?.id" class="fieldInput" />
             </label>
             <label class="fieldBlock">
-              <span>昵称</span>
+              <span>{{ t('userManage.nicknameLabel') }}</span>
               <input v-model="form.nickname" class="fieldInput" />
             </label>
             <label class="fieldBlock">
-              <span>邮箱</span>
+              <span>{{ t('userManage.emailLabel') }}</span>
               <input v-model="form.email" class="fieldInput" />
             </label>
             <label class="fieldBlock">
-              <span>角色</span>
+              <span>{{ t('userManage.roleLabel') }}</span>
               <select v-model="form.role_name" class="fieldInput">
-                <option value="reader">普通读者</option>
-                <option value="author">内容作者</option>
-                <option value="admin">系统管理员</option>
+                <option value="reader">{{ t('role.reader') }}</option>
+                <option value="author">{{ t('role.author') }}</option>
+                <option value="admin">{{ t('role.admin') }}</option>
               </select>
             </label>
             <label class="fieldBlock">
-              <span>密码 {{ editingUser?.id ? '(留空则不修改)' : '' }}</span>
+              <span>{{ t('userManage.passwordLabel') }} {{ editingUser?.id ? t('userManage.passwordHint') : '' }}</span>
               <input v-model="form.password" type="password" class="fieldInput" />
             </label>
           </section>
         </div>
 
         <div class="editorActions">
-          <button type="button" class="button buttonSecondary" @click="closeEditor">取消</button>
-          <button type="button" class="button buttonPrimary" @click="submitEditor">保存</button>
+          <button type="button" class="button buttonSecondary" @click="closeEditor">{{ t('common.cancel') }}</button>
+          <button type="button" class="button buttonPrimary" @click="submitEditor">{{ t('common.save') }}</button>
         </div>
       </div>
     </div>
@@ -144,6 +144,9 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 type UserRow = {
   id: number
@@ -202,12 +205,12 @@ const allSelected = computed(() => pagedUsers.value.length > 0 && pagedUsers.val
 const indeterminateSelected = computed(() => selectedIds.value.length > 0 && !allSelected.value)
 
 const avatarLetter = (value: string) => (value || 'U').slice(0, 1).toUpperCase()
-const roleLabel = (value: string) => ({ admin: '系统管理员', author: '内容作者', reader: '普通读者' }[value] || value)
+const roleLabel = (value: string) => ({ admin: t('role.admin'), author: t('role.author'), reader: t('role.reader') }[value] || value)
 
 const readFileAsDataUrl = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('读取头像失败'))
+    reader.onerror = () => reject(new Error(t('profile.readFailed')))
     reader.onload = () => resolve(String(reader.result || ''))
     reader.readAsDataURL(file)
   })
@@ -225,14 +228,14 @@ const cropToSquare = async (dataUrl: string) => {
         canvas.width = outputSize
         canvas.height = outputSize
         const context = canvas.getContext('2d')
-        if (!context) throw new Error('头像裁剪失败')
+        if (!context) throw new Error(t('profile.compressFailed'))
         context.drawImage(image, offsetX, offsetY, size, size, 0, 0, outputSize, outputSize)
         resolve(canvas.toDataURL('image/jpeg', 0.92))
       } catch (error) {
         reject(error)
       }
     }
-    image.onerror = () => reject(new Error('头像加载失败'))
+    image.onerror = () => reject(new Error(t('profile.loadFailed')))
     image.src = dataUrl
   })
 }

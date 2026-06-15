@@ -4,24 +4,44 @@
       <a
         class="brand-block brand-link"
         :href="webEntryUrl"
-        :title="siteTitle ? `查看站点：${siteTitle}` : '查看站点'"
+        :title="siteTitle ? `${t('nav.viewSite')}：${siteTitle}` : t('nav.viewSite')"
       >
         <img v-if="siteLogo" :src="siteLogo" class="brand-logo" alt="site logo" />
         <span v-else class="brand-mark">MD</span>
         <div class="brand-text">
-          <h1>{{ siteTitle || '仪表盘' }}</h1>
-          <p>查看站点</p>
+          <h1>{{ siteTitle || t('nav.dashboard') }}</h1>
+          <p>{{ t('nav.viewSite') }}</p>
         </div>
       </a>
       <div class="topbar-actions">
+        <div class="lang-menu" ref="langMenuRef">
+          <button type="button" class="lang-trigger" @click="toggleLangMenu">
+            <svg class="lang-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.08L5 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor"/></svg>
+            <span class="lang-label">{{ localeLabel }}</span>
+          </button>
+          <transition name="menu-pop">
+            <div v-if="isLangMenuOpen" class="user-dropdown lang-dropdown">
+              <button
+                v-for="opt in localeOptions"
+                :key="opt.value"
+                type="button"
+                class="dropdown-item"
+                :class="{ 'is-active': locale === opt.value }"
+                @click="switchLocale(opt.value)"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
+          </transition>
+        </div>
         <div class="user-menu" ref="userMenuRef">
           <button type="button" class="user-trigger" @click="toggleUserMenu">
             <span class="user-name">{{ displayName }}</span>
             <span class="role-badge" :class="isAdmin ? 'admin' : 'author'">{{ roleLabel }}</span>
           </button>
           <div v-if="isUserMenuOpen" class="user-dropdown">
-            <button type="button" class="dropdown-item" @click="openProfile">个人中心</button>
-            <button type="button" class="dropdown-item danger" @click="logout">退出登录</button>
+            <button type="button" class="dropdown-item" @click="openProfile">{{ t('nav.profile') }}</button>
+            <button type="button" class="dropdown-item danger" @click="logout">{{ t('nav.logout') }}</button>
           </div>
         </div>
       </div>
@@ -131,9 +151,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 import { adminApi, API_ORIGIN } from '../api'
 import { buildPageTitle, setSiteSetting } from '../site-meta'
+import { localeOptions, setLocale } from '../i18n'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
@@ -174,6 +196,7 @@ type ArticleSubMenuItem = {
   contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create' | 'articles-edit' | 'articles-category'>
 }
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const currentView = ref<ViewType>('overview')
@@ -261,6 +284,8 @@ const editingArticleTitle = ref('')
 
 const isUserMenuOpen = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+const isLangMenuOpen = ref(false)
+const langMenuRef = ref<HTMLElement | null>(null)
 const logoUploading = ref(false)
 const logoUploadMessage = ref('')
 const logoUploadStatus = ref<'success' | 'error' | ''>('')
@@ -272,24 +297,24 @@ const mediaUploading = ref(false)
 const mediaToastMessage = ref('')
 const mediaToastStatus = ref<'success' | 'error' | ''>('')
 
-const mainMenus: MainMenuItem[] = [
-  { key: 'overview', label: '概览' },
-  { key: 'articles', label: '文章' },
-  { key: 'media', label: '媒体', adminOnly: true },
-  { key: 'comments', label: '评论' },
-  { key: 'friend-links', label: '友链' },
-  { key: 'users', label: '用户管理', adminOnly: true },
-  { key: 'profile', label: '个人中心' },
-  { key: 'site', label: '设置', adminOnly: true },
-]
+const mainMenus = computed<MainMenuItem[]>(() => [
+  { key: 'overview', label: t('menu.overview') },
+  { key: 'articles', label: t('menu.articles') },
+  { key: 'media', label: t('menu.media'), adminOnly: true },
+  { key: 'comments', label: t('menu.comments') },
+  { key: 'friend-links', label: t('menu.friendLinks') },
+  { key: 'users', label: t('menu.users'), adminOnly: true },
+  { key: 'profile', label: t('menu.profile') },
+  { key: 'site', label: t('menu.site'), adminOnly: true },
+])
 
-const articleSubMenus: ArticleSubMenuItem[] = [
-  { key: 'manage', label: '所有文章', contentKey: 'articles-manage' },
-  { key: 'create', label: '创建文章', contentKey: 'articles-create' },
-  { key: 'edit', label: '编辑文章', contentKey: 'articles-edit' },
-  { key: 'category', label: '文章分类', contentKey: 'articles-category' },
-  { key: 'trash', label: '垃圾箱', contentKey: 'articles-trash' },
-]
+const articleSubMenus = computed<ArticleSubMenuItem[]>(() => [
+  { key: 'manage', label: t('articleSub.manage'), contentKey: 'articles-manage' },
+  { key: 'create', label: t('articleSub.create'), contentKey: 'articles-create' },
+  { key: 'edit', label: t('articleSub.edit'), contentKey: 'articles-edit' },
+  { key: 'category', label: t('articleSub.category'), contentKey: 'articles-category' },
+  { key: 'trash', label: t('articleSub.trash'), contentKey: 'articles-trash' },
+])
 
 const menuIconMap: Record<ViewType, string> = {
   overview: '⌂',
@@ -302,15 +327,15 @@ const menuIconMap: Record<ViewType, string> = {
   profile: '◉',
 }
 
-const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? '展开侧边菜单' : '收起侧边菜单'))
+const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? t('nav.expandSidebar') : t('nav.collapseSidebar')))
 const sidebarFlyoutSide = ref<'right' | 'left'>('right')
 const articleMenuGroupRef = ref<HTMLElement | null>(null)
 const articleMenuGroupEl = ref<HTMLElement | null>(null)
 const articleFlyoutTitle = computed(() => {
-  if (currentView.value !== 'articles') return '文章'
-  if (articleSubView.value === 'edit' && !editingArticleId.value) return '文章'
-  const currentSub = articleSubMenus.find((item) => item.key === articleSubView.value)
-  return currentSub ? `文章 / ${currentSub.label}` : '文章'
+  if (currentView.value !== 'articles') return t('menu.articles')
+  if (articleSubView.value === 'edit' && !editingArticleId.value) return t('menu.articles')
+  const currentSub = articleSubMenus.value.find((item) => item.key === articleSubView.value)
+  return currentSub ? `${t('menu.articles')} / ${currentSub.label}` : t('menu.articles')
 })
 
 const clearArticleFlyoutTimer = () => {
@@ -356,7 +381,7 @@ const toggleSidebar = () => {
 }
 
 const setView = (view: ViewType) => {
-  const targetMenu = mainMenus.find((item) => item.key === view)
+  const targetMenu = mainMenus.value.find((item) => item.key === view)
   if (targetMenu?.adminOnly && !isAdmin.value) {
     return
   }
@@ -439,7 +464,7 @@ const isAuthor = computed(() =>
   currentUser.value?.roles.some((role) => role.name === 'author' || role.name === '内容作者') ?? false,
 )
 
-const displayName = computed(() => currentUser.value?.nickname || currentUser.value?.username || '未登录用户')
+const displayName = computed(() => currentUser.value?.nickname || currentUser.value?.username || t('nav.dashboard'))
 const webEntryUrl = computed(() => {
   const baseUrl = (import.meta.env.VITE_WEB_BASE_URL as string | undefined)?.trim()
   if (baseUrl) {
@@ -449,16 +474,17 @@ const webEntryUrl = computed(() => {
 })
 
 const roleLabel = computed(() => {
-  if (isAdmin.value) return '系统管理员'
-  if (isAuthor.value) return '内容作者'
-  return '普通用户'
+  if (isAdmin.value) return t('role.admin')
+  if (isAuthor.value) return t('role.author')
+  return t('role.reader')
 })
 
 const visibleMainMenus = computed(() =>
-  mainMenus.filter((item) => !item.adminOnly || isAdmin.value),
+  mainMenus.value.filter((item) => !item.adminOnly || isAdmin.value),
 )
 
-const articleSubViewToContentKey = articleSubMenus.reduce<Record<ArticleSubView, ContentViewKey>>(
+const articleSubViewToContentKey = computed(() =>
+  articleSubMenus.value.reduce<Record<ArticleSubView, ContentViewKey>>(
   (acc, item) => {
     acc[item.key] = item.contentKey
     return acc
@@ -470,6 +496,7 @@ const articleSubViewToContentKey = articleSubMenus.reduce<Record<ArticleSubView,
     edit: 'articles-edit',
     category: 'articles-category',
   },
+  ),
 )
 
 const currentContentView = computed<ContentViewKey>(() => {
@@ -479,7 +506,7 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'friend-links') return 'friend-links'
   if (currentView.value === 'users') return 'users'
   if (currentView.value === 'site') return 'site'
-  return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
+  return articleSubViewToContentKey.value[articleSubView.value] || 'articles-manage'
 })
 
 const panelComponentMap: Record<ContentViewKey, unknown> = {
@@ -536,7 +563,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
         editorMode: 'create',
-        editorTitle: '创建文章',
+        editorTitle: t('articleSub.create'),
       }
     case 'articles-edit':
       return {
@@ -556,7 +583,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         submitError: articleSubmitError.value,
         submitFocusField: articleSubmitFocusField.value,
         editorMode: 'edit',
-        editorTitle: '编辑文章',
+        editorTitle: t('articleSub.edit'),
       }
     case 'articles-category':
       return {
@@ -711,10 +738,10 @@ const activePanelListeners = computed(() => {
 })
 
 const formatArticleStatus = (status: string) => {
-  if (status === 'PUBLISHED' || status === 'published') return '已发布'
-  if (status === 'DRAFT' || status === 'draft') return '草稿'
-  if (status === 'PENDING_REVIEW' || status === 'pending_review' || status === 'pending') return '待审核'
-  if (status === 'REJECTED' || status === 'rejected') return '已驳回'
+  if (status === 'PUBLISHED' || status === 'published') return t('status.published')
+  if (status === 'DRAFT' || status === 'draft') return t('status.draft')
+  if (status === 'PENDING_REVIEW' || status === 'pending_review' || status === 'pending') return t('status.pending')
+  if (status === 'REJECTED' || status === 'rejected') return t('status.rejected')
   return status
 }
 
@@ -726,9 +753,9 @@ const normalizeArticleAction = (status: string): 'draft' | 'submit' | 'publish' 
 }
 
 const formatCommentStatus = (status: string) => {
-  if (status === 'PENDING' || status === 'pending') return '待审核'
-  if (status === 'APPROVED' || status === 'approved') return '已通过'
-  if (status === 'REJECTED' || status === 'rejected') return '已拒绝'
+  if (status === 'PENDING' || status === 'pending') return t('status.pending')
+  if (status === 'APPROVED' || status === 'approved') return t('status.approved')
+  if (status === 'REJECTED' || status === 'rejected') return t('status.rejectedComment')
   return status
 }
 
@@ -740,7 +767,7 @@ const normalizeAssetUrl = (url: string | null | undefined) => {
 }
 
 const applyAdminMeta = () => {
-  document.title = buildPageTitle('仪表盘')
+  document.title = buildPageTitle(t('nav.dashboard'))
 
   if (!siteLogo.value) return
   let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
@@ -754,13 +781,31 @@ const applyAdminMeta = () => {
 
 const toggleUserMenu = () => {
   isUserMenuOpen.value = !isUserMenuOpen.value
+  isLangMenuOpen.value = false
 }
 
+const toggleLangMenu = () => {
+  isLangMenuOpen.value = !isLangMenuOpen.value
+  isUserMenuOpen.value = false
+}
+
+const switchLocale = (val: string) => {
+  setLocale(val)
+  isLangMenuOpen.value = false
+}
+
+const localeLabel = computed(() => {
+  const map: Record<string, string> = { 'zh-CN': '中文', en: 'EN', ja: '日本語' }
+  return map[locale.value] || locale.value
+})
+
 const handleDocumentClick = (event: MouseEvent) => {
-  if (!isUserMenuOpen.value) return
   const target = event.target as Node | null
-  if (userMenuRef.value && target && !userMenuRef.value.contains(target)) {
+  if (isUserMenuOpen.value && userMenuRef.value && !userMenuRef.value.contains(target)) {
     isUserMenuOpen.value = false
+  }
+  if (isLangMenuOpen.value && langMenuRef.value && !langMenuRef.value.contains(target)) {
+    isLangMenuOpen.value = false
   }
 }
 
@@ -879,7 +924,7 @@ const loadAll = async () => {
       serverUploadDir.value = serverCfgRes.data.upload_dir || ''
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : '加载后台数据失败'
+    const message = error instanceof Error ? error.message : t('toast.loadFailed')
     if (message.includes('401') || message.includes('未提供认证令牌') || message.includes('无效的认证令牌')) {
       document.cookie = 'logged_in=; path=/; max-age=0'
       await router.push('/login')
@@ -902,7 +947,7 @@ const restoreFromTrash = async (articleId: number) => {
 }
 
 const removePermanently = async (articleId: number) => {
-  if (!confirm('确认彻底删除？该操作不可恢复。')) return
+  if (!confirm(t('confirm.deleteArticle'))) return
   await adminApi.permanentlyDeleteArticle(articleId)
   await loadAll()
 }
@@ -944,7 +989,7 @@ const rejectFriendLink = async (linkId: number) => {
 }
 
 const deleteFriendLink = async (linkId: number) => {
-  if (!confirm('确认删除该友链记录？')) return
+  if (!confirm(t('confirm.deleteFriendLink'))) return
   await adminApi.deleteFriendLink(linkId)
   await loadAll()
 }
@@ -972,7 +1017,7 @@ const rejectComment = async (commentId: number) => {
 }
 
 const deleteComment = async (commentId: number) => {
-  if (!confirm('确认删除该条评论？删除后无法恢复。')) return
+  if (!confirm(t('confirm.deleteComment'))) return
   await adminApi.deleteComments([commentId])
   await loadAll()
 }
@@ -1025,7 +1070,7 @@ const updateCategory = async (payload: { id: number; name: string; slug: string;
 }
 
 const deleteCategory = async (categoryIdValue: number) => {
-  if (!confirm('确认删除该分类吗？')) return
+  if (!confirm(t('confirm.deleteCategory'))) return
   await adminApi.deleteCategory(categoryIdValue)
   await loadAll()
 }
@@ -1058,7 +1103,7 @@ const updateUser = async (payload: Record<string, unknown>) => {
 
 const deleteUsers = async (ids: number[]) => {
   if (!ids.length) return
-  if (!confirm('确认删除选中的用户？')) return
+  if (!confirm(t('confirm.deleteUsers'))) return
   await adminApi.batchDeleteUsers(ids)
   await loadAll()
 }
@@ -1078,11 +1123,11 @@ const uploadMedia = async (file: File) => {
   try {
     await adminApi.uploadMediaFile(file)
     mediaToastStatus.value = 'success'
-    mediaToastMessage.value = '媒体上传成功'
+    mediaToastMessage.value = t('toast.mediaUploaded')
     await loadAll()
   } catch (error) {
     mediaToastStatus.value = 'error'
-    mediaToastMessage.value = error instanceof Error ? error.message : '媒体上传失败'
+    mediaToastMessage.value = error instanceof Error ? error.message : t('toast.mediaUploadFailed')
   } finally {
     mediaUploading.value = false
     setTimeout(() => {
@@ -1101,11 +1146,11 @@ const deleteMediaBatch = async (mediaIds: number[]) => {
   try {
     await adminApi.deleteMediaFiles(mediaIds)
     mediaToastStatus.value = 'success'
-    mediaToastMessage.value = mediaIds.length > 1 ? `已删除 ${mediaIds.length} 项媒体` : '媒体已删除'
+    mediaToastMessage.value = mediaIds.length > 1 ? t('toast.mediaDeletedCount', { n: mediaIds.length }) : t('toast.mediaDeleted')
     await loadAll()
   } catch (error) {
     mediaToastStatus.value = 'error'
-    mediaToastMessage.value = error instanceof Error ? error.message : '删除媒体失败'
+    mediaToastMessage.value = error instanceof Error ? error.message : t('toast.mediaDeleteFailed')
   }
 }
 
@@ -1113,14 +1158,14 @@ const cropImageTo64 = async (file: File): Promise<File> => {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(String(reader.result || ''))
-    reader.onerror = () => reject(new Error('读取图片失败'))
+    reader.onerror = () => reject(new Error(t('toast.readImageFailed')))
     reader.readAsDataURL(file)
   })
 
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image()
     img.onload = () => resolve(img)
-    img.onerror = () => reject(new Error('加载图片失败'))
+    img.onerror = () => reject(new Error(t('toast.loadImageFailed')))
     img.src = dataUrl
   })
 
@@ -1132,13 +1177,13 @@ const cropImageTo64 = async (file: File): Promise<File> => {
   canvas.width = 64
   canvas.height = 64
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('无法处理图片')
+  if (!ctx) throw new Error(t('toast.processImageFailed'))
   ctx.drawImage(image, sx, sy, size, size, 0, 0, 64, 64)
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((value) => {
       if (value) resolve(value)
-      else reject(new Error('导出图片失败'))
+      else reject(new Error(t('toast.exportImageFailed')))
     }, 'image/png')
   })
 
@@ -1149,7 +1194,7 @@ const handleSiteLogoSelect = async (file: File) => {
   const supported = ['image/png', 'image/jpeg', 'image/svg+xml']
   if (!supported.includes(file.type)) {
     logoUploadStatus.value = 'error'
-    logoUploadMessage.value = '仅支持 PNG、JPG、SVG 格式'
+    logoUploadMessage.value = t('toast.imageFormatError')
     return
   }
 
@@ -1169,10 +1214,10 @@ const handleSiteLogoSelect = async (file: File) => {
     const uploaded = await adminApi.uploadMediaFile(uploadFile)
     siteLogo.value = normalizeAssetUrl(String(uploaded.data?.url || ''))
     logoUploadStatus.value = 'success'
-    logoUploadMessage.value = logoCropApplied.value ? 'Logo 上传成功（已裁剪 64×64）' : 'Logo 上传成功'
+    logoUploadMessage.value = logoCropApplied.value ? t('toast.logoUploadCropped') : t('toast.logoUploaded')
   } catch (error) {
     logoUploadStatus.value = 'error'
-    logoUploadMessage.value = error instanceof Error ? error.message : 'Logo 上传失败'
+    logoUploadMessage.value = error instanceof Error ? error.message : t('toast.logoUploadFailed')
   } finally {
     logoUploading.value = false
     setTimeout(() => {
@@ -1199,9 +1244,9 @@ const updateProfile = async (payload: { nickname: string; email: string; avatar:
   try {
     const res = await adminApi.updateMe(payload)
     currentUser.value = res.data as AdminUser
-    showSiteToast('个人资料已更新', 'success')
+    showSiteToast(t('toast.profileUpdated'), 'success')
   } catch (error) {
-    showSiteToast(error instanceof Error ? error.message : '个人资料更新失败', 'error')
+    showSiteToast(error instanceof Error ? error.message : t('toast.profileUpdateFailed'), 'error')
     throw error
   }
 }
@@ -1218,9 +1263,9 @@ const saveSite = async () => {
       comment_requires_review: true,
     })
     await loadAll()
-    showSiteToast('设置保存成功', 'success')
+    showSiteToast(t('toast.settingsSaved'), 'success')
   } catch (error) {
-    showSiteToast(error instanceof Error ? error.message : '设置保存失败', 'error')
+    showSiteToast(error instanceof Error ? error.message : t('toast.settingsSaveFailed'), 'error')
   }
 }
 
@@ -1231,9 +1276,9 @@ const saveServerConfig = async () => {
       site_domain: serverDomain.value,
     })
     serverSecretKey.value = ''
-    showSiteToast(res.data?.message || '服务器配置保存成功', 'success')
+    showSiteToast(res.data?.message || t('toast.serverConfigSaved'), 'success')
   } catch (error) {
-    showSiteToast(error instanceof Error ? error.message : '服务器配置保存失败', 'error')
+    showSiteToast(error instanceof Error ? error.message : t('toast.serverConfigSaveFailed'), 'error')
   }
 }
 
@@ -1260,7 +1305,7 @@ const extractSummary = (markdown: string, maxLength = 120) => {
     .replace(/\s+/g, ' ')
     .trim()
 
-  if (!text) return '暂无摘要'
+  if (!text) return t('toast.noSummary')
   if (text.length <= maxLength) return text
 
   const sliced = text.slice(0, maxLength)
@@ -1326,17 +1371,17 @@ const getArticleCreateErrorMessage = (error: unknown) => {
   const message = rawMessage.replace(/^Error:\s*/i, '')
 
   if (message.includes('422')) {
-    if (message.includes('title') || message.includes('标题')) return '请先填写文章标题'
-    if (message.includes('content_markdown') || message.includes('正文')) return '请先填写文章正文'
-    if (message.includes('category_id') || message.includes('分类')) return '请选择文章分类'
-    return '提交内容不完整，请检查标题、正文和分类后再试'
+    if (message.includes('title') || message.includes('标题')) return t('toast.titleRequired')
+    if (message.includes('content_markdown') || message.includes('正文')) return t('toast.contentRequired')
+    if (message.includes('category_id') || message.includes('分类')) return t('toast.categoryRequired')
+    return t('toast.contentIncomplete')
   }
 
-  if (message.includes('401')) return '登录已失效，请重新登录'
-  if (message.includes('403')) return '当前账号没有提交权限'
-  if (message.includes('500')) return '提交失败，服务器暂时出了点问题，请稍后重试'
+  if (message.includes('401')) return t('toast.authExpired')
+  if (message.includes('403')) return t('toast.noPermission')
+  if (message.includes('500')) return t('toast.submitFailed')
 
-  return message || '提交失败，请稍后重试'
+  return message || t('toast.submitGenericFailed')
 }
 
 const getArticleCreateFocusField = (error: unknown) => {
@@ -1381,7 +1426,7 @@ const editArticle = async (articleId: number) => {
   try {
     const res = await adminApi.getArticle(articleId)
     const article = res.data
-    if (!article || !article.id) throw new Error('获取文章失败')
+    if (!article || !article.id) throw new Error(t('toast.getArticleFailed'))
     editingArticleId.value = articleId
     editingArticleTitle.value = String(article.title || '')
     fillArticleEditor(article)
@@ -1392,7 +1437,7 @@ const editArticle = async (articleId: number) => {
     await nextTick()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (error) {
-    articleSubmitError.value = error instanceof Error ? error.message : '获取文章失败'
+    articleSubmitError.value = error instanceof Error ? error.message : t('toast.getArticleFailed')
     currentView.value = 'articles'
     articleSubView.value = 'manage'
     editingArticleId.value = null
@@ -1415,11 +1460,11 @@ const createArticle = async () => {
     const trimmedTitle = title.value.trim()
     const trimmedContent = contentMarkdown.value.trim()
     if (!trimmedTitle) {
-      showArticleSubmitError('请先填写文章标题', 'title')
+      showArticleSubmitError(t('toast.titleRequired'), 'title')
       return
     }
     if (!trimmedContent) {
-      showArticleSubmitError('请先填写文章正文', 'content')
+      showArticleSubmitError(t('toast.contentRequired'), 'content')
       return
     }
 
@@ -1428,7 +1473,7 @@ const createArticle = async () => {
 
     const payload = {
       title: trimmedTitle,
-      summary: autoSummary || '暂无摘要',
+      summary: autoSummary || t('toast.noSummary'),
       content_markdown: contentMarkdown.value,
       cover_url: coverUrl.value || null,
       category_id: categoryId.value,

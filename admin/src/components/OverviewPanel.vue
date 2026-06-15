@@ -2,49 +2,49 @@
   <section class="grid-panels overview-panels">
     <div class="panel overview-panel overview-articles-panel">
       <div class="overview-head">
-        <h3>文章统计</h3>
-        <p v-if="loading" class="tips">正在同步后台数据...</p>
+        <h3>{{ t('overview.articleStats') }}</h3>
+        <p v-if="loading" class="tips">{{ t('overview.loadingTip') }}</p>
         <p v-else-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       </div>
 
       <div class="overview-metrics">
         <div class="overview-metric">
           <span class="overview-metric-value">{{ publishedCount }}</span>
-          <span class="overview-metric-label">已发布</span>
+          <span class="overview-metric-label">{{ t('status.published') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ draftCount }}</span>
-          <span class="overview-metric-label">草稿</span>
+          <span class="overview-metric-label">{{ t('status.draft') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ pendingCount }}</span>
-          <span class="overview-metric-label">待审核</span>
+          <span class="overview-metric-label">{{ t('status.pending') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ rejectedCount }}</span>
-          <span class="overview-metric-label">已驳回</span>
+          <span class="overview-metric-label">{{ t('status.rejected') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ deletedArticles.length }}</span>
-          <span class="overview-metric-label">垃圾箱</span>
+          <span class="overview-metric-label">{{ t('status.trash') }}</span>
         </div>
       </div>
     </div>
 
     <div class="panel overview-panel overview-comments-panel">
-      <h3>评论统计</h3>
+      <h3>{{ t('overview.commentStats') }}</h3>
       <div class="overview-metrics comments-metrics">
         <div class="overview-metric">
           <span class="overview-metric-value">{{ approvedCommentCount }}</span>
-          <span class="overview-metric-label">已通过</span>
+          <span class="overview-metric-label">{{ t('status.approved') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ pendingCommentCount }}</span>
-          <span class="overview-metric-label">待审核</span>
+          <span class="overview-metric-label">{{ t('status.pending') }}</span>
         </div>
         <div class="overview-metric">
           <span class="overview-metric-value">{{ rejectedCommentCount }}</span>
-          <span class="overview-metric-label">已拒绝</span>
+          <span class="overview-metric-label">{{ t('status.rejectedComment') }}</span>
         </div>
       </div>
     </div>
@@ -53,6 +53,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   articles: any[]
