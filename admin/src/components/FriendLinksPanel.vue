@@ -21,7 +21,9 @@
         <option value="pending">待审核</option>
         <option value="rejected">已拒绝</option>
       </select>
-      <button class="fl-refresh-btn" type="button" @click="refresh">刷新</button>
+      <button class="fl-refresh-btn" type="button" :disabled="props.refreshing" @click="emit('refresh')">
+        {{ props.refreshing ? '刷新中...' : '刷新' }}
+      </button>
     </div>
 
     <div class="fl-list">
@@ -113,12 +115,13 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 
-const props = defineProps<{ links: any[] }>()
+const props = defineProps<{ links: any[]; refreshing?: boolean }>()
 const emit = defineEmits<{
   approve: [id: number]
   reject: [id: number]
   delete: [id: number]
   edit: [id: number, payload: { name: string; email: string; description: string }]
+  refresh: []
 }>()
 
 const keyword = ref('')
@@ -145,8 +148,6 @@ const statusText = (value: string) => {
 }
 
 const formatTime = (value: string) => String(value || '').replace('T', ' ').slice(0, 19)
-
-const refresh = () => window.location.reload()
 
 const editingId = ref<number | null>(null)
 const saving = ref(false)

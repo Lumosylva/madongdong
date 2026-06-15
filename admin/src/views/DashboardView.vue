@@ -82,7 +82,7 @@
                     class="sidebar-flyout-item"
                     :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
                     :disabled="sub.key === 'edit' && !editingArticleId"
-                    @click="setArticleSubView(sub.key)"
+                    @click="sub.key === 'edit' && !editingArticleId ? undefined : setArticleSubView(sub.key)"
                   >
                     {{ sub.label }}
                   </button>
@@ -95,7 +95,7 @@
                   :key="sub.key"
                   href="#"
                   :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
-                  @click.prevent="setArticleSubView(sub.key)"
+                  @click.prevent="sub.key === 'edit' && !editingArticleId ? undefined : setArticleSubView(sub.key)"
                 >
                   <span class="sidebar-text">{{ sub.label }}</span>
                 </a>
@@ -532,6 +532,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'friend-links':
       return {
         links: friendLinks.value,
+        refreshing: friendLinksRefreshing.value,
       }
     case 'users':
       return {
@@ -618,6 +619,7 @@ const activePanelListeners = computed(() => {
         reject: rejectFriendLink,
         delete: deleteFriendLink,
         edit: editFriendLink,
+        refresh: refreshFriendLinks,
       }
     case 'articles-category':
       return {
@@ -862,6 +864,21 @@ const approveComment = async (commentId: number) => {
   if (!target || String(target.status).toUpperCase() === 'APPROVED') return
   await adminApi.approveComment(commentId)
   await loadAll()
+}
+
+const friendLinksRefreshing = ref(false)
+
+const refreshFriendLinks = async () => {
+  if (friendLinksRefreshing.value) return
+  friendLinksRefreshing.value = true
+  try {
+    const res = await adminApi.getFriendLinks()
+    friendLinks.value = res.data || []
+  } catch {
+    // ignore
+  } finally {
+    friendLinksRefreshing.value = false
+  }
 }
 
 const approveFriendLink = async (linkId: number) => {
