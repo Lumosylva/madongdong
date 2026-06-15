@@ -80,7 +80,7 @@
 
 .settings-card-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
 }
 
@@ -182,6 +182,14 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.logo-dropzone-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
 }
 
 .logo-placeholder {

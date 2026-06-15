@@ -9,10 +9,12 @@
 
     <div class="settings-grid">
       <section class="settings-card">
-        <div class="settings-card-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <div class="settings-card-head">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <h4>{{ t('siteSettings.brandSection') }}</h4>
         </div>
-        <h4>{{ t('siteSettings.brandSection') }}</h4>
 
         <div class="logo-uploader">
           <div
@@ -54,13 +56,20 @@
           <span>{{ t('siteSettings.subtitleLabel') }}</span>
           <input class="settings-input" :value="siteSubtitle" :placeholder="t('siteSettings.subtitlePlaceholder')" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
         </label>
+        <label class="settings-field">
+          <span>{{ t('siteSettings.footerSection') }}</span>
+          <textarea class="settings-input settings-textarea" :value="icpBeian" :placeholder="t('siteSettings.footerPlaceholder')" rows="2" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.footerTip') }}</p>
+        </label>
       </section>
 
       <section class="settings-card">
-        <div class="settings-card-icon">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <div class="settings-card-head">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <h4>{{ t('siteSettings.heroLabel') }}</h4>
         </div>
-        <h4>{{ t('siteSettings.heroLabel') }}</h4>
 
         <label class="settings-field">
           <span>{{ t('siteSettings.heroLabel') }}</span>
@@ -72,12 +81,6 @@
           <span>{{ t('siteSettings.bgmLabel') }}</span>
           <textarea class="settings-input settings-textarea" :value="homepageBgmUrl" :placeholder="t('siteSettings.bgmPlaceholder')" rows="3" @input="$emit('update:homepageBgmUrl', ($event.target as HTMLTextAreaElement).value)"></textarea>
           <p class="tips">{{ t('siteSettings.bgmTip') }}</p>
-        </label>
-
-        <label class="settings-field">
-          <span>{{ t('siteSettings.footerSection') }}</span>
-          <textarea class="settings-input settings-textarea" :value="icpBeian" :placeholder="t('siteSettings.footerPlaceholder')" rows="2" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
-          <p class="tips">{{ t('siteSettings.footerTip') }}</p>
         </label>
 
         <div class="save-row">
