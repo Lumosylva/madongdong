@@ -529,6 +529,11 @@
   border-color: rgba(14, 165, 164, 0.3);
 }
 
+.media-insert-btns {
+  display: flex;
+  gap: 6px;
+}
+
 .video-modal-mask {
   position: fixed;
   inset: 0;

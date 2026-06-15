@@ -216,8 +216,8 @@ const articleEditorId = 'web-article-preview'
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, {
   USE_PROFILES: { html: true },
-  ADD_TAGS: ['video', 'iframe', 'source'],
-  ADD_ATTR: ['controls', 'preload', 'allow', 'allowfullscreen', 'frameborder', 'scrolling', 'type', 'width', 'height'],
+  ADD_TAGS: ['video', 'iframe', 'source', 'audio'],
+  ADD_ATTR: ['controls', 'preload', 'allow', 'allowfullscreen', 'frameborder', 'scrolling', 'type', 'width', 'height', 'marginwidth', 'marginheight'],
 })
 
 const previewMarkdownItConfig = (md: any) => {

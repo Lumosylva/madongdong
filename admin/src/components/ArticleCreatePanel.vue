@@ -28,10 +28,16 @@
         <div class="article-markdown-toolbar-main">
           <label for="article-content-input">{{ t('articleCreate.contentLabel') }}</label>
         </div>
-        <button type="button" class="video-insert-btn" @click="openVideoModal">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-          {{ t('articleCreate.insertVideo') }}
-        </button>
+        <div class="media-insert-btns">
+          <button type="button" class="video-insert-btn" @click="openMediaModal('video')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            {{ t('articleCreate.insertVideo') }}
+          </button>
+          <button type="button" class="video-insert-btn" @click="openMediaModal('audio')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            {{ t('articleCreate.insertAudio') }}
+          </button>
+        </div>
       </div>
 
       <div ref="markdownWorkspaceRef" class="article-markdown-workspace">
@@ -59,47 +65,94 @@
       @change="onVideoFileSelect"
     />
 
+    <input
+      ref="audioFileInputRef"
+      type="file"
+      accept="audio/mpeg,audio/wav,audio/ogg,audio/mp3"
+      style="display: none"
+      @change="onAudioFileSelect"
+    />
+
     <transition name="video-modal-fade">
-      <div v-if="videoModalOpen" class="video-modal-mask" @click.self="closeVideoModal"></div>
+      <div v-if="mediaModalOpen" class="video-modal-mask" @click.self="closeMediaModal"></div>
     </transition>
     <transition name="video-modal-slide">
-      <div v-if="videoModalOpen" class="video-modal-panel">
+      <div v-if="mediaModalOpen" class="video-modal-panel">
         <div class="video-modal-header">
-          <h4>{{ t('articleCreate.insertVideo') }}</h4>
-          <button type="button" class="video-modal-close" @click="closeVideoModal">&times;</button>
+          <h4>{{ mediaModalType === 'video' ? t('articleCreate.insertVideo') : t('articleCreate.insertAudio') }}</h4>
+          <button type="button" class="video-modal-close" @click="closeMediaModal">&times;</button>
         </div>
         <div class="video-modal-tabs">
           <button
+            v-if="mediaModalType === 'video'"
             type="button"
             class="video-tab"
-            :class="{ active: videoModalTab === 'upload' }"
-            @click="videoModalTab = 'upload'"
+            :class="{ active: mediaModalTab === 'upload' }"
+            @click="mediaModalTab = 'upload'"
           >{{ t('articleCreate.uploadVideo') }}</button>
           <button
+            v-if="mediaModalType === 'video'"
             type="button"
             class="video-tab"
-            :class="{ active: videoModalTab === 'embed' }"
-            @click="videoModalTab = 'embed'"
+            :class="{ active: mediaModalTab === 'embed' }"
+            @click="mediaModalTab = 'embed'"
           >{{ t('articleCreate.embedVideo') }}</button>
+          <button
+            v-if="mediaModalType === 'audio'"
+            type="button"
+            class="video-tab"
+            :class="{ active: mediaModalTab === 'upload' }"
+            @click="mediaModalTab = 'upload'"
+          >{{ t('articleCreate.uploadAudio') }}</button>
+          <button
+            v-if="mediaModalType === 'audio'"
+            type="button"
+            class="video-tab"
+            :class="{ active: mediaModalTab === 'embed' }"
+            @click="mediaModalTab = 'embed'"
+          >{{ t('articleCreate.embedAudio') }}</button>
         </div>
         <div class="video-modal-body">
-          <div v-if="videoModalTab === 'upload'" class="video-upload-area">
+          <!-- Video upload -->
+          <div v-if="mediaModalType === 'video' && mediaModalTab === 'upload'" class="video-upload-area">
             <p class="video-upload-hint">{{ t('articleCreate.uploadVideoHint') }}</p>
-            <button type="button" class="video-upload-btn" :disabled="videoUploading" @click="videoFileInputRef?.click()">
+            <button type="button" class="video-upload-btn" :disabled="mediaUploading" @click="videoFileInputRef?.click()">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              {{ videoUploading ? t('articleCreate.uploadingVideo') : t('articleCreate.uploadVideo') }}
+              {{ mediaUploading ? t('articleCreate.uploadingVideo') : t('articleCreate.uploadVideo') }}
             </button>
           </div>
-          <div v-else class="video-embed-area">
+          <!-- Video embed -->
+          <div v-else-if="mediaModalType === 'video' && mediaModalTab === 'embed'" class="video-embed-area">
             <p class="video-embed-hint">{{ t('articleCreate.embedVideoHint') }}</p>
             <textarea
-              v-model="embedVideoUrl"
+              v-model="embedMediaUrl"
               class="video-embed-input"
               :placeholder="t('articleCreate.embedVideoPlaceholder')"
               rows="4"
             ></textarea>
-            <button type="button" class="video-embed-insert-btn" :disabled="!embedVideoUrl.trim()" @click="insertEmbedVideo">
+            <button type="button" class="video-embed-insert-btn" :disabled="!embedMediaUrl.trim()" @click="insertEmbedMedia">
               {{ t('articleCreate.insertVideoConfirm') }}
+            </button>
+          </div>
+          <!-- Audio upload -->
+          <div v-else-if="mediaModalType === 'audio' && mediaModalTab === 'upload'" class="video-upload-area">
+            <p class="video-upload-hint">{{ t('articleCreate.uploadAudioHint') }}</p>
+            <button type="button" class="video-upload-btn" :disabled="mediaUploading" @click="audioFileInputRef?.click()">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              {{ mediaUploading ? t('articleCreate.uploadingAudio') : t('articleCreate.uploadAudio') }}
+            </button>
+          </div>
+          <!-- Audio embed (NetEase Cloud Music) -->
+          <div v-else-if="mediaModalType === 'audio' && mediaModalTab === 'embed'" class="video-embed-area">
+            <p class="video-embed-hint">{{ t('articleCreate.embedAudioHint') }}</p>
+            <textarea
+              v-model="embedMediaUrl"
+              class="video-embed-input"
+              :placeholder="t('articleCreate.embedAudioPlaceholder')"
+              rows="4"
+            ></textarea>
+            <button type="button" class="video-embed-insert-btn" :disabled="!embedMediaUrl.trim()" @click="insertEmbedMedia">
+              {{ t('articleCreate.insertAudioConfirm') }}
             </button>
           </div>
         </div>
@@ -246,10 +299,12 @@ onBeforeUnmount(() => {
 
 const titleInputRef = ref<HTMLInputElement | null>(null)
 const videoFileInputRef = ref<HTMLInputElement | null>(null)
-const videoModalOpen = ref(false)
-const videoModalTab = ref<'upload' | 'embed'>('upload')
-const videoUploading = ref(false)
-const embedVideoUrl = ref('')
+const audioFileInputRef = ref<HTMLInputElement | null>(null)
+const mediaModalOpen = ref(false)
+const mediaModalType = ref<'video' | 'audio'>('video')
+const mediaModalTab = ref<'upload' | 'embed'>('upload')
+const mediaUploading = ref(false)
+const embedMediaUrl = ref('')
 
 const focusFirstMissingField = async (missingField?: 'title' | 'content') => {
   await nextTick()
@@ -314,15 +369,16 @@ const handleUploadImg = async (files: File[], callback: (urls: string[]) => void
   callback(urls)
 }
 
-const openVideoModal = () => {
-  videoModalOpen.value = true
-  videoModalTab.value = 'upload'
-  embedVideoUrl.value = ''
+const openMediaModal = (type: 'video' | 'audio') => {
+  mediaModalOpen.value = true
+  mediaModalType.value = type
+  mediaModalTab.value = 'upload'
+  embedMediaUrl.value = ''
 }
 
-const closeVideoModal = () => {
-  videoModalOpen.value = false
-  videoUploading.value = false
+const closeMediaModal = () => {
+  mediaModalOpen.value = false
+  mediaUploading.value = false
 }
 
 const insertAtCursor = (html: string) => {
@@ -343,17 +399,36 @@ const onVideoFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
-  videoUploading.value = true
+  mediaUploading.value = true
   try {
     const res = await adminApi.uploadMediaFile(file)
     const url = fullUrl(res.data?.url || '')
     const html = `<video controls width="100%" preload="metadata">\n  <source src="${url}" type="${file.type}">\n</video>`
     insertAtCursor(html)
-    closeVideoModal()
+    closeMediaModal()
   } catch {
     // ignore
   } finally {
-    videoUploading.value = false
+    mediaUploading.value = false
+    target.value = ''
+  }
+}
+
+const onAudioFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  mediaUploading.value = true
+  try {
+    const res = await adminApi.uploadMediaFile(file)
+    const url = fullUrl(res.data?.url || '')
+    const html = `<audio controls preload="metadata" style="width:100%">\n  <source src="${url}" type="${file.type}">\n</audio>`
+    insertAtCursor(html)
+    closeMediaModal()
+  } catch {
+    // ignore
+  } finally {
+    mediaUploading.value = false
     target.value = ''
   }
 }
@@ -378,11 +453,38 @@ const parseVideoEmbed = (input: string): string => {
   return `<iframe width="100%" height="400" src="${trimmed}" frameborder="0" allowfullscreen></iframe>`
 }
 
-const insertEmbedVideo = () => {
-  if (!embedVideoUrl.value.trim()) return
-  const html = parseVideoEmbed(embedVideoUrl.value)
+const parseAudioEmbed = (input: string): string => {
+  const trimmed = input.trim()
+
+  if (trimmed.startsWith('<iframe') || trimmed.startsWith('<audio')) {
+    return trimmed
+  }
+
+  const songMatch = trimmed.match(/music\.163\.com\/#\/song\?id=(\d+)/)
+  if (songMatch) {
+    return `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="100%" height="132" src="https://music.163.com/outchain/player?type=2&id=${songMatch[1]}&auto=0&height=132"></iframe>`
+  }
+
+  const playlistMatch = trimmed.match(/music\.163\.com\/#\/playlist\?id=(\d+)/)
+  if (playlistMatch) {
+    return `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="100%" height="450" src="https://music.163.com/outchain/player?type=0&id=${playlistMatch[1]}&auto=0&height=450"></iframe>`
+  }
+
+  const directSongMatch = trimmed.match(/music\.163\.com.*[?&]id=(\d+)/)
+  if (directSongMatch) {
+    return `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="100%" height="132" src="https://music.163.com/outchain/player?type=2&id=${directSongMatch[1]}&auto=0&height=132"></iframe>`
+  }
+
+  return `<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width="100%" height="132" src="${trimmed}"></iframe>`
+}
+
+const insertEmbedMedia = () => {
+  if (!embedMediaUrl.value.trim()) return
+  const html = mediaModalType.value === 'video'
+    ? parseVideoEmbed(embedMediaUrl.value)
+    : parseAudioEmbed(embedMediaUrl.value)
   insertAtCursor(html)
-  closeVideoModal()
+  closeMediaModal()
 }
 
 watch(

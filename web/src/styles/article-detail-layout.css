@@ -125,6 +125,12 @@
   border: none;
 }
 
+.article-body audio,
+.article-body-md audio {
+  width: 100%;
+  margin: 12px 0;
+}
+
 
 :root:not([data-theme='dark']) .article-extra {
   margin-top: 22px;
