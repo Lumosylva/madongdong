@@ -267,12 +267,42 @@ onBeforeUnmount(() => {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
 }
 
-.home-shell :deep(.layout) {
+@media (max-width: 960px) {
+  .home-hero {
+    height: 40vh;
+    min-height: 260px;
+  }
+
+  .home-shell .layout {
+    grid-template-columns: 1fr !important;
+    padding-right: 0 !important;
+  }
+
+  .home-shell aside.sidebar {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .home-shell .sidebar-card {
+    position: static !important;
+    width: auto !important;
+    max-height: none !important;
+    top: auto !important;
+    right: auto !important;
+  }
+}
+</style>
+
+<style>
+.home-shell[data-hero="1"] .layout {
   grid-template-columns: 1fr minmax(280px, 340px);
   padding-right: 0;
 }
 
-.home-shell :deep(aside.sidebar) {
+.home-shell[data-hero="1"] aside.sidebar {
   position: static;
   width: auto;
   height: auto;
@@ -280,7 +310,7 @@ onBeforeUnmount(() => {
   pointer-events: auto;
 }
 
-.home-shell :deep(.sidebar-card) {
+.home-shell[data-hero="1"] .sidebar-card {
   position: static;
   width: auto;
   max-height: none;
@@ -289,14 +319,28 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 960px) {
-  .home-hero {
-    height: 40vh;
-    min-height: 260px;
+  .home-shell[data-hero="1"] .layout {
+    grid-template-columns: 1fr;
+    padding-right: 0;
+  }
+
+  .home-shell[data-hero="1"] aside.sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    pointer-events: auto;
+  }
+
+  .home-shell[data-hero="1"] .sidebar-card {
+    position: static;
+    width: auto;
+    max-height: none;
+    top: auto;
+    right: auto;
   }
 }
-</style>
 
-<style>
 .home-shell[data-hero="1"] .topbar {
   background: transparent !important;
   backdrop-filter: none !important;

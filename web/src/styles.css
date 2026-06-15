@@ -187,6 +187,8 @@ a {
   border: none;
   box-shadow: none;
   backdrop-filter: blur(16px);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .topbar {
@@ -1135,6 +1137,7 @@ aside.sidebar {
   display: block;
   padding: 20px 0;
   border-bottom: none;
+  overflow-wrap: anywhere;
 }
 
 .search-card {
@@ -1318,6 +1321,8 @@ aside.sidebar {
   margin: 10px 0;
   font-size: 24px;
   font-weight: 700;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .card-title {
@@ -2041,7 +2046,7 @@ aside.sidebar {
   }
 
   .layout {
-    padding-right: 0;
+    padding-right: 0 !important;
   }
 
   .auth-main {
@@ -2442,7 +2447,8 @@ aside.sidebar {
   }
 
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    padding-right: 0 !important;
   }
 
   aside.sidebar {
