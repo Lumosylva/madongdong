@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { MdEditor, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import 'md-editor-v3/lib/preview.css'
@@ -152,6 +152,21 @@ const previewTheme = ref<'default' | 'github'>('github')
 const editorId = 'article-create-md-editor'
 const scrollElement = '.article-markdown-preview'
 const toolbarsExclude: ToolbarNames[] = ['save', 'htmlPreview', 'catalog', 'pageFullscreen']
+
+const syncEditorTheme = () => {
+  editorTheme.value = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+}
+
+onMounted(() => {
+  syncEditorTheme()
+})
+
+const themeObserver = new MutationObserver(syncEditorTheme)
+themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+
+onBeforeUnmount(() => {
+  themeObserver.disconnect()
+})
 const titleInputRef = ref<HTMLInputElement | null>(null)
 const focusFirstMissingField = async (missingField?: 'title' | 'content') => {
   await nextTick()
@@ -172,9 +187,7 @@ watch(
   },
 )
 
-onBeforeUnmount(() => {
-  // no-op placeholder for future cleanup hooks
-})
+
 
 const contentMarkdownLocal = computed({
   get: () => props.contentMarkdown,
