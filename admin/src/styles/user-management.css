@@ -54,7 +54,7 @@
 
 .toolbarRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px auto;
+  grid-template-columns: minmax(0, 1fr) 180px auto auto;
   gap: 14px;
   align-items: center;
 }

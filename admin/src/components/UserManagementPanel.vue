@@ -17,6 +17,7 @@
         <option value="reader">普通读者</option>
       </select>
       <button type="button" class="button buttonSecondary" @click="openAddUser">添加用户</button>
+      <button type="button" class="button buttonSecondary" :disabled="props.refreshing" @click="emit('refresh')">{{ props.refreshing ? '刷新中...' : '刷新' }}</button>
     </div>
 
     <div class="bulkBar">
@@ -153,12 +154,13 @@ type UserRow = {
   role_names: string[]
 }
 
-const props = defineProps<{ users: UserRow[] }>()
+const props = defineProps<{ users: UserRow[]; refreshing?: boolean }>()
 const emit = defineEmits<{
   create: [payload: Record<string, unknown>]
   update: [payload: Record<string, unknown>]
   delete: [ids: number[]]
   batchChangeRole: [ids: number[], role: string]
+  refresh: []
 }>()
 
 const keyword = ref('')

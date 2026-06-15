@@ -537,6 +537,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'users':
       return {
         users: users.value,
+        refreshing: usersRefreshing.value,
       }
     case 'site':
       return {
@@ -633,6 +634,7 @@ const activePanelListeners = computed(() => {
         update: updateUser,
         delete: deleteUsers,
         batchChangeRole: batchChangeUsersRole,
+        refresh: refreshUsers,
       }
     case 'site':
       return {
@@ -980,6 +982,21 @@ const deleteCategory = async (categoryIdValue: number) => {
   if (!confirm('确认删除该分类吗？')) return
   await adminApi.deleteCategory(categoryIdValue)
   await loadAll()
+}
+
+const usersRefreshing = ref(false)
+
+const refreshUsers = async () => {
+  if (usersRefreshing.value) return
+  usersRefreshing.value = true
+  try {
+    const res = await adminApi.getUsers()
+    users.value = res.data || []
+  } catch {
+    // ignore
+  } finally {
+    usersRefreshing.value = false
+  }
 }
 
 const createUser = async (payload: Record<string, unknown>) => {
