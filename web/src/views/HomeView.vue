@@ -1,5 +1,5 @@
 <template>
-  <div class="shell home-shell" v-if="data">
+  <div class="shell home-shell" :data-hero="data.site.homepage_hero_image ? '1' : '0'" v-if="data">
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || t('home.subtitle')"
@@ -10,7 +10,6 @@
       :current-full-path="route.fullPath"
       :search-keyword="keyword"
       :collapsible-search="true"
-      :class="{ 'topbar-transparent': data.site.homepage_hero_image }"
       @update:search-keyword="keyword = $event"
       @toggle-theme="toggleTheme"
       @search="goSearch"
@@ -211,39 +210,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.topbar-transparent {
-  background: rgba(0, 0, 0, 0.06) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-.topbar-transparent :deep(.brand-block h1),
-.topbar-transparent :deep(.brand-subtitle),
-.topbar-transparent :deep(.nav a),
-.topbar-transparent :deep(.search-launch-btn),
-.topbar-transparent :deep(.auth-entry),
-.topbar-transparent :deep(.lang-trigger),
-.topbar-transparent :deep(.lang-label) {
-  color: #fff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-}
-
-.topbar-transparent :deep(.nav a:hover),
-.topbar-transparent :deep(.auth-entry:hover),
-.topbar-transparent :deep(.lang-trigger:hover) {
-  color: var(--accent);
-}
-
-.topbar-transparent :deep(.brand-mark) {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-}
-
 .home-hero {
   position: relative;
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   height: 55vh;
   min-height: 360px;
   max-height: 520px;
@@ -266,17 +236,6 @@ onMounted(async () => {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
-}
-
-@media (max-width: 960px) {
-  .home-hero {
-    height: 40vh;
-    min-height: 260px;
-  }
-}
-
-:root[data-theme='dark'] .topbar-transparent {
-  background: rgba(0, 0, 0, 0.2) !important;
 }
 
 .home-shell :deep(.layout) {
@@ -305,5 +264,54 @@ onMounted(async () => {
     height: 40vh;
     min-height: 260px;
   }
+}
+</style>
+
+<style>
+.home-shell[data-hero="1"] .topbar {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.home-shell[data-hero="1"] .topbar .brand-block h1,
+.home-shell[data-hero="1"] .topbar .brand-subtitle,
+.home-shell[data-hero="1"] .topbar .nav a,
+.home-shell[data-hero="1"] .topbar .search-launch-btn,
+.home-shell[data-hero="1"] .topbar .auth-entry,
+.home-shell[data-hero="1"] .topbar .lang-trigger,
+.home-shell[data-hero="1"] .topbar .lang-label {
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.home-shell[data-hero="1"] .topbar .nav a:hover,
+.home-shell[data-hero="1"] .topbar .auth-entry:hover,
+.home-shell[data-hero="1"] .topbar .lang-trigger:hover {
+  color: var(--accent);
+}
+
+.home-shell[data-hero="1"] .topbar .brand-mark {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.home-shell[data-hero="1"] .topbar .lang-trigger,
+.home-shell[data-hero="1"] .topbar .auth-entry.icon-entry,
+:root[data-theme='dark'] .home-shell[data-hero="1"] .topbar .lang-trigger,
+:root[data-theme='dark'] .home-shell[data-hero="1"] .topbar .auth-entry.icon-entry {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.home-shell[data-hero="1"] .topbar .lang-trigger:hover,
+.home-shell[data-hero="1"] .topbar .auth-entry.icon-entry:hover,
+:root[data-theme='dark'] .home-shell[data-hero="1"] .topbar .lang-trigger:hover,
+:root[data-theme='dark'] .home-shell[data-hero="1"] .topbar .auth-entry.icon-entry:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
 }
 </style>
