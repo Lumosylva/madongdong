@@ -112,6 +112,11 @@ export default {
   },
   search: {
     title: '搜索结果',
+    resultCount: '共找到 {n} 篇文章',
+    noResults: '未找到相关结果',
+    noResultsHint: '请尝试更换关键词，或浏览分类和标签查找内容。',
+    searching: '正在搜索...',
+    tryOther: '换个关键词试试',
   },
   tag: {
     title: '标签文章',

@@ -112,6 +112,11 @@ export default {
   },
   search: {
     title: 'Search Results',
+    resultCount: '{n} articles found',
+    noResults: 'No results found',
+    noResultsHint: 'Try different keywords, or browse categories and tags.',
+    searching: 'Searching...',
+    tryOther: 'Try other keywords',
   },
   tag: {
     title: 'Tag Articles',

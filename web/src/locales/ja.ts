@@ -112,6 +112,11 @@ export default {
   },
   search: {
     title: '検索結果',
+    resultCount: '{n} 件の記事が見つかりました',
+    noResults: '結果が見つかりませんでした',
+    noResultsHint: 'キーワードを変えてみてください。',
+    searching: '検索中...',
+    tryOther: '別のキーワードをお試しください',
   },
   tag: {
     title: 'タグ記事',
