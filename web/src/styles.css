@@ -15,6 +15,7 @@
   --accent-2: #ea9a18;
   --danger: #e35b77;
   --shadow: 0 18px 42px rgba(26, 45, 78, 0.08);
+  --hero-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
   font-family: 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
   color: var(--text);
   background:
@@ -34,6 +35,7 @@
   --accent-2: #f59e0b;
   --danger: #fb7185;
   --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  --hero-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
   background:
     radial-gradient(circle at top left, rgba(94, 234, 212, 0.12), transparent 32%),
     radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 28%),
@@ -300,9 +302,9 @@ a {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--bg-soft);
-  color: var(--text);
+  border: none;
+  background: transparent;
+  color: #fff;
   cursor: pointer;
   place-items: center;
   font-size: 16px;
@@ -1796,7 +1798,8 @@ aside.sidebar {
   right: 0;
   width: min(84vw, 320px);
   height: 100vh;
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) 52%, transparent);
+  backdrop-filter: blur(20px);
   border-left: 1px solid var(--line);
   box-shadow: var(--shadow);
   z-index: 61;
@@ -1807,9 +1810,9 @@ aside.sidebar {
 }
 
 .drawer-header {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
@@ -2120,11 +2123,41 @@ aside.sidebar {
     order: 2;
   }
 
+  .topbar-right .auth-entry.icon-entry {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .topbar-right .auth-entry.icon-entry:hover {
+    background: rgba(237, 242, 249, 0.32) !important;
+    box-shadow: none !important;
+  }
+
+  :root[data-theme='dark'] .topbar-right .auth-entry.icon-entry {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent;
+  }
+
+  :root[data-theme='dark'] .topbar-right .auth-entry.icon-entry:hover {
+    background: rgba(94, 234, 212, 0.08) !important;
+    box-shadow: none !important;
+  }
+
   .hamburger-btn {
     display: grid;
     margin-left: 0;
     order: 3;
     flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .drawer-panel {
+    top: var(--app-topbar-min-height);
+    height: calc(100vh - var(--app-topbar-min-height));
+    width: min(72vw, 260px);
   }
 
   .search-box {

@@ -96,12 +96,7 @@
   <transition name="drawer-slide">
     <aside v-if="mobileMenuOpen" class="drawer-panel">
       <div class="drawer-header">
-        <img v-if="logoUrl" :src="logoUrl" class="brand-logo drawer-brand-logo" alt="site logo" />
-        <span v-else class="brand-mark">MD</span>
-        <div>
-          <p class="drawer-title">{{ title }}</p>
-          <p class="drawer-subtitle">{{ t('topbar.quickNav') }}</p>
-        </div>
+        <span class="drawer-title">{{ t('topbar.quickNav') }}</span>
         <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
       </div>
       <nav class="drawer-nav">

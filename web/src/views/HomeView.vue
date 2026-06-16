@@ -264,7 +264,7 @@ onBeforeUnmount(() => {
 .home-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+  background: var(--hero-overlay);
 }
 
 @media (max-width: 960px) {
