@@ -43,23 +43,41 @@
     </div>
 
     <template v-else>
-      <div class="categories-grid">
-        <button
-          v-for="cat in data.categories"
-          :key="cat.id"
-          type="button"
-          class="category-card"
-          :class="{ 'is-selected': selectedSlug === cat.slug }"
-          @click="selectCategory(cat)"
-        >
-          <div class="category-card-top">
-            <div class="category-card-icon">{{ cat.name.slice(0, 1) }}</div>
-            <span class="category-card-count">{{ t('categories.articleCount', { n: cat.article_count }) }}</span>
+      <div class="categories-tree">
+        <template v-for="cat in rootCategories" :key="cat.id">
+          <button
+            type="button"
+            class="category-card category-card-root"
+            :class="{ 'is-selected': selectedSlug === cat.slug }"
+            @click="selectCategory(cat)"
+          >
+            <div class="category-card-top">
+              <div class="category-card-icon">{{ cat.name.slice(0, 1) }}</div>
+              <span class="category-card-count">{{ t('categories.articleCount', { n: cat.article_count }) }}</span>
+            </div>
+            <h2 class="category-card-name">{{ cat.name }}</h2>
+            <p class="category-card-desc">{{ cat.description || t('common.noDescription') }}</p>
+            <span class="category-card-arrow" aria-hidden="true">▾</span>
+          </button>
+          <div v-if="getChildCategories(cat.id).length" class="category-children">
+            <button
+              v-for="child in getChildCategories(cat.id)"
+              :key="child.id"
+              type="button"
+              class="category-card category-card-child"
+              :class="{ 'is-selected': selectedSlug === child.slug }"
+              @click="selectCategory(child)"
+            >
+              <div class="category-card-top">
+                <div class="category-card-icon">{{ child.name.slice(0, 1) }}</div>
+                <span class="category-card-count">{{ t('categories.articleCount', { n: child.article_count }) }}</span>
+              </div>
+              <h2 class="category-card-name">{{ child.name }}</h2>
+              <p class="category-card-desc">{{ child.description || t('common.noDescription') }}</p>
+              <span class="category-card-arrow" aria-hidden="true">▾</span>
+            </button>
           </div>
-          <h2 class="category-card-name">{{ cat.name }}</h2>
-          <p class="category-card-desc">{{ cat.description || t('common.noDescription') }}</p>
-          <span class="category-card-arrow" aria-hidden="true">▾</span>
-        </button>
+        </template>
       </div>
 
       <transition name="cat-panel">
@@ -121,7 +139,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -138,6 +156,9 @@ const route = useRoute()
 const data = ref<CategoriesResponse | null>(null)
 type ThemeMode = 'light' | 'dark'
 const theme = ref<ThemeMode>('light')
+
+const rootCategories = computed(() => data.value?.categories.filter((c) => !c.parent_id) || [])
+const getChildCategories = (parentId: number) => data.value?.categories.filter((c) => c.parent_id === parentId) || []
 
 const selectedSlug = ref<string | null>(null)
 const selectedCatName = ref('')
@@ -380,11 +401,35 @@ onMounted(() => {
 
 /* ── Category grid ────────────────────────────── */
 
+.categories-tree {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 18px;
+}
+
+.category-children {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-left: 32px;
+  padding-left: 20px;
+  border-left: 2px solid rgba(14, 165, 164, 0.15);
+}
+
+.category-card-child {
+  background: var(--bg-panel);
+  opacity: 0.92;
+}
+
+.category-card-child:hover {
+  opacity: 1;
 }
 
 .category-card {
@@ -497,6 +542,10 @@ onMounted(() => {
 
 :global([data-theme='dark']) .category-card-desc {
   color: var(--text);
+}
+
+:global([data-theme='dark']) .category-children {
+  border-left-color: rgba(56, 189, 248, 0.15);
 }
 
 .category-card-arrow {
@@ -795,6 +844,12 @@ onMounted(() => {
     gap: 10px;
   }
 
+  .category-children {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-left: 20px;
+    padding-left: 14px;
+  }
+
   .cat-article-summary {
     display: none;
   }
@@ -803,6 +858,12 @@ onMounted(() => {
 @media (max-width: 560px) {
   .categories-grid {
     grid-template-columns: 1fr;
+  }
+
+  .category-children {
+    grid-template-columns: 1fr;
+    margin-left: 14px;
+    padding-left: 10px;
   }
 }
 </style>
