@@ -1,4 +1,4 @@
-import type { ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse } from './types'
+import type { ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, SiteSetting, TagArticlesResponse } from './types'
 import { resolveAssetUrl } from '../../assets'
 import i18n from './i18n'
 
@@ -103,6 +103,9 @@ export const webApi = {
       method: 'POST',
       body: JSON.stringify({ refresh_token: '' }),
     })
+  },
+  getSiteSettings(): Promise<SiteSetting> {
+    return request<SiteSetting>('/web/site-settings')
   },
   getFriendLinks() {
     return request<Array<{ id: number; name: string; url: string; description: string; created_at: string }>>('/web/friend-links')

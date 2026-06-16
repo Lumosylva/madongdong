@@ -72,7 +72,6 @@
       </aside>
     </main>
 
-    <HomeBgmPlayer v-if="data.site.homepage_bgm_url" :bgm-url="data.site.homepage_bgm_url" />
     <WebFooter :icp-beian="data.site.icp_beian" :friend-links="friendLinks" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
@@ -83,7 +82,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
-import HomeBgmPlayer from '../components/HomeBgmPlayer.vue'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMeta, setSiteSetting } from '../site-meta'

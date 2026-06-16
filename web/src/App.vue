@@ -1,16 +1,20 @@
 <template>
   <router-view />
+  <HomeBgmPlayer v-if="bgmUrl" :bgm-url="bgmUrl" />
   <FloatingTools :theme="theme" @toggle-theme="toggleTheme" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
+import { webApi } from './api'
 import FloatingTools from './components/FloatingTools.vue'
+import HomeBgmPlayer from './components/HomeBgmPlayer.vue'
 
 type ThemeMode = 'light' | 'dark'
 
 const theme = ref<ThemeMode>('light')
+const bgmUrl = ref('')
 
 const applyTheme = (value: ThemeMode) => {
   theme.value = value
@@ -28,8 +32,15 @@ const toggleTheme = () => {
   applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
-onMounted(() => {
+onMounted(async () => {
   const storedTheme = localStorage.getItem('md-theme')
   applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+
+  try {
+    const settings = await webApi.getSiteSettings()
+    bgmUrl.value = settings.homepage_bgm_url || ''
+  } catch {
+    // ignore
+  }
 })
 </script>

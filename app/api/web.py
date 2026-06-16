@@ -53,6 +53,15 @@ async def home(
     return HomeResponse.model_validate(data)
 
 
+@router.get("/site-settings", summary="获取站点配置")
+async def site_settings(
+    session: AsyncSession = Depends(get_db_session),
+) -> SiteSettingResponse:
+    from app.services.site import get_or_create_site_setting
+    setting = await get_or_create_site_setting(session)
+    return SiteSettingResponse.model_validate(setting)
+
+
 @router.get("/archive", summary="获取归档数据")
 async def archive(
     session: AsyncSession = Depends(get_db_session),
