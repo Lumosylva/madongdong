@@ -277,6 +277,7 @@ const coverUrl = ref('')
 const contentMarkdown = ref('')
 const categoryId = ref(1)
 const tagIdsText = ref('')
+const defaultAction = computed<'draft' | 'submit' | 'publish'>(() => (isAdmin.value ? 'publish' : 'draft'))
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
 const articleDraftStorageKey = 'md-admin-article-draft'
 const articleDraftSavedAt = ref<number | null>(null)
@@ -406,7 +407,7 @@ const setArticleSubView = (subView: ArticleSubView) => {
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
-    action.value = 'draft'
+    action.value = defaultAction.value
     clearArticleDraft()
     resetArticleEditorState()
     pushViewUrl('articles', 'create')
@@ -439,7 +440,7 @@ const setArticleSubView = (subView: ArticleSubView) => {
         coverUrl.value = ''
         contentMarkdown.value = ''
         tagIdsText.value = ''
-        action.value = 'draft'
+        action.value = defaultAction.value
         clearArticleDraft()
       }
     } else {
@@ -447,7 +448,7 @@ const setArticleSubView = (subView: ArticleSubView) => {
       coverUrl.value = ''
       contentMarkdown.value = ''
       tagIdsText.value = ''
-      action.value = 'draft'
+      action.value = defaultAction.value
       clearArticleDraft()
     }
     resetArticleEditorState()

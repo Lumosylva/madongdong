@@ -90,6 +90,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { pinyin } from 'pinyin-pro'
 
 const { t } = useI18n()
 
@@ -124,16 +125,22 @@ const selectedCategoryId = ref<number | null>(null)
 
 const selectedCategory = computed(() => props.categories.find((item) => item.id === selectedCategoryId.value) || null)
 
-const slugify = (value: string) =>
-  value
+const slugify = (value: string) => {
+  const converted = pinyin(value, { toneType: 'none', type: 'array' }).join('')
+  return converted
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '') || 'category'
+}
 
 watch(newName, (value) => {
+  if (!value.trim()) {
+    slugTouched.value = false
+    return
+  }
   if (!slugTouched.value) {
     newSlug.value = slugify(value)
   }
