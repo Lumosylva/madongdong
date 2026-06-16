@@ -27,6 +27,7 @@ async def init_db() -> None:
         await _migrate_slug_column(session)
         await _migrate_bgm_column(session)
         await _migrate_hero_image_column(session)
+        await _migrate_category_parent_id(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -95,3 +96,28 @@ async def _migrate_hero_image_column(session: AsyncSession) -> None:
 
     await session.execute(text("ALTER TABLE site_settings ADD COLUMN homepage_hero_image VARCHAR(500)"))
     await session.commit()
+
+
+async def _migrate_category_parent_id(session: AsyncSession) -> None:
+    """为 categories 表添加 parent_id 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(categories)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "parent_id" not in columns:
+            await session.execute(text("ALTER TABLE categories ADD COLUMN parent_id INTEGER REFERENCES categories(id) ON DELETE SET NULL"))
+            await session.commit()
+            await session.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_categories_parent_id ON categories (parent_id)")
+            )
+            await session.commit()
+    except Exception:
+        return
+
+    try:
+        await session.execute(text("DROP INDEX IF EXISTS ix_categories_name"))
+        await session.commit()
+    except Exception:
+        pass

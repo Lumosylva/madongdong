@@ -47,11 +47,16 @@ async def list_categories(session: AsyncSession) -> list[Category]:
     return list(result.scalars().all())
 
 
-async def create_category(session: AsyncSession, name: str, slug: str, description: str | None) -> Category:
+async def create_category(
+    session: AsyncSession, name: str, slug: str, description: str | None, parent_id: int | None = None
+) -> Category:
     """创建分类。"""
 
+    if parent_id is not None:
+        await get_category_or_404(session, parent_id)
+
     await _ensure_category_slug_unique(session, slug)
-    category = Category(name=name, slug=slug, description=description)
+    category = Category(name=name, slug=slug, description=description, parent_id=parent_id)
     session.add(category)
     await session.commit()
     await session.refresh(category)
@@ -64,6 +69,7 @@ async def update_category(
     name: str,
     slug: str,
     description: str | None,
+    parent_id: int | None = None,
 ) -> Category:
     """更新分类。"""
 
@@ -71,17 +77,25 @@ async def update_category(
     if _is_default_category(category):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="默认分类不允许编辑")
 
+    if parent_id is not None:
+        if parent_id == category_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不能将分类设为自身的子分类")
+        parent = await get_category_or_404(session, parent_id)
+        if parent.parent_id is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="仅支持两级分类")
+
     await _ensure_category_slug_unique(session, slug, exclude_id=category_id)
     category.name = name
     category.slug = slug
     category.description = description
+    category.parent_id = parent_id
     await session.commit()
     await session.refresh(category)
     return category
 
 
 async def delete_category(session: AsyncSession, category_id: int) -> None:
-    """删除分类。"""
+    """删除分类。子分类上移为顶级分类。"""
 
     category = await get_category_or_404(session, category_id)
     if _is_default_category(category):
@@ -90,6 +104,11 @@ async def delete_category(session: AsyncSession, category_id: int) -> None:
     article_result = await session.execute(select(Article).where(Article.category_id == category_id).limit(1))
     if article_result.scalar_one_or_none() is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该分类下仍有文章，无法删除")
+
+    child_result = await session.execute(select(Category).where(Category.parent_id == category_id))
+    children = list(child_result.scalars().all())
+    for child in children:
+        child.parent_id = category.parent_id
 
     await session.delete(category)
     await session.commit()

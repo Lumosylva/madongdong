@@ -114,6 +114,7 @@ class CategoryWithCountResponse(BaseModel):
     name: str
     slug: str
     description: str | None
+    parent_id: int | None = None
     article_count: int
 
 

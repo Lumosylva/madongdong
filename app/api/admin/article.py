@@ -154,7 +154,7 @@ async def create_category_endpoint(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
-    category = await create_category(session, payload.name, payload.slug, payload.description)
+    category = await create_category(session, payload.name, payload.slug, payload.description, payload.parent_id)
     return success_response(CategoryResponse.model_validate(category).model_dump())
 
 
@@ -165,7 +165,7 @@ async def update_category_endpoint(
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
-    category = await update_category(session, category_id, payload.name, payload.slug, payload.description)
+    category = await update_category(session, category_id, payload.name, payload.slug, payload.description, payload.parent_id)
     return success_response(CategoryResponse.model_validate(category).model_dump())
 
 

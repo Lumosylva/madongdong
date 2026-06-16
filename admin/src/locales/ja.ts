@@ -218,6 +218,8 @@ export default {
     editDescPlaceholder: '説明を入力（任意）',
     saveChanges: '変更を保存',
     confirmDelete: 'このカテゴリを削除しますか？',
+    parentLabel: '親カテゴリ',
+    noParent: 'なし（トップレベル）',
   },
   comment: {
     title: 'コメント管理',

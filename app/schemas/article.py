@@ -15,6 +15,7 @@ class CategoryBase(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     slug: str = Field(min_length=1, max_length=120)
     description: str | None = Field(default=None, max_length=255)
+    parent_id: int | None = None
 
 
 class CategoryCreate(CategoryBase):

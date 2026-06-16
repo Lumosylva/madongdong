@@ -1065,7 +1065,7 @@ const refreshComments = async () => {
   }
 }
 
-const createCategory = async (payload: { name: string; slug: string; description: string | null }) => {
+const createCategory = async (payload: { name: string; slug: string; description: string | null; parent_id: number | null }) => {
   await adminApi.createCategory(payload)
   await loadAll()
 }
@@ -1074,11 +1074,12 @@ watch([title, coverUrl, contentMarkdown, categoryId, tagIdsText, action], () => 
   scheduleArticleDraftSave()
 })
 
-const updateCategory = async (payload: { id: number; name: string; slug: string; description: string | null }) => {
+const updateCategory = async (payload: { id: number; name: string; slug: string; description: string | null; parent_id: number | null }) => {
   await adminApi.updateCategory(payload.id, {
     name: payload.name,
     slug: payload.slug,
     description: payload.description,
+    parent_id: payload.parent_id,
   })
   await loadAll()
 }

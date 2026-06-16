@@ -198,7 +198,14 @@
         :value="categoryId"
         @input="emit('update:categoryId', Number(($event.target as HTMLSelectElement).value))"
       >
-        <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        <option v-for="cat in rootCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        <template v-for="cat in rootCategories" :key="'group-' + cat.id">
+          <option
+            v-for="child in getChildCategories(cat.id)"
+            :key="child.id"
+            :value="child.id"
+          >{{ cat.name }} / {{ child.name }}</option>
+        </template>
       </select>
     </div>
 
@@ -250,7 +257,7 @@ const props = defineProps<{
   coverUrl: string
   contentMarkdown: string
   categoryId: number
-  categories: Array<{ id: number; name: string }>
+  categories: Array<{ id: number; name: string; parent_id: number | null }>
   tagIdsText: string
   action: 'draft' | 'submit' | 'publish'
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
@@ -329,6 +336,9 @@ const contentMarkdownLocal = computed({
   get: () => props.contentMarkdown,
   set: (value: string) => emit('update:contentMarkdown', value),
 })
+
+const rootCategories = computed(() => props.categories.filter((cat) => !cat.parent_id))
+const getChildCategories = (parentId: number) => props.categories.filter((cat) => cat.parent_id === parentId)
 
 const imageMedia = computed(() =>
   props.media.filter(

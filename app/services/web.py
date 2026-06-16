@@ -354,6 +354,7 @@ async def get_categories_page_data(session: AsyncSession) -> dict:
             "name": c.name,
             "slug": c.slug,
             "description": c.description,
+            "parent_id": c.parent_id,
             "article_count": count_map.get(c.id, 0),
         }
         for c in sorted(categories, key=lambda c: (-count_map.get(c.id, 0), c.name))

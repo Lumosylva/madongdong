@@ -218,6 +218,8 @@ export default {
     editDescPlaceholder: '请输入分类描述（可选）',
     saveChanges: '保存修改',
     confirmDelete: '确认删除该分类吗？',
+    parentLabel: '父级分类',
+    noParent: '无（顶级分类）',
   },
   comment: {
     title: '评论管理',

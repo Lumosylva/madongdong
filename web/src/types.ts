@@ -159,6 +159,7 @@ export type CategoryWithCount = {
   name: string
   slug: string
   description: string | null
+  parent_id: number | null
   article_count: number
 }
 

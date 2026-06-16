@@ -15,6 +15,13 @@
       </div>
       <div class="category-form-stack">
         <label class="category-field">
+          <span>{{ t('category.parentLabel') }}</span>
+          <select class="category-input" v-model="newParentId">
+            <option :value="null">{{ t('category.noParent') }}</option>
+            <option v-for="item in rootCategories" :key="item.id" :value="item.id">{{ item.name }}</option>
+          </select>
+        </label>
+        <label class="category-field">
           <span>{{ t('category.nameLabel') }}</span>
           <input class="category-input" v-model="newName" :placeholder="t('category.namePlaceholder')" />
         </label>
@@ -42,22 +49,38 @@
       </div>
     </div>
 
-    <div class="category-grid">
-      <button
-        v-for="item in categories"
-        :key="item.id"
-        type="button"
-        class="category-card"
-        :class="{ selected: selectedCategoryId === item.id, 'category-card-default': isDefaultCategory(item) }"
-        @click="selectCategory(item)"
-      >
-        <div class="category-card-head">
-          <strong>{{ item.name }}</strong>
-          <span v-if="isDefaultCategory(item)" class="category-badge category-badge-locked">{{ t('category.locked') }}</span>
+    <div class="category-tree">
+      <template v-for="item in rootCategories" :key="item.id">
+        <div
+          type="button"
+          class="category-card category-card-root"
+          :class="{ selected: selectedCategoryId === item.id, 'category-card-default': isDefaultCategory(item) }"
+          @click="selectCategory(item)"
+        >
+          <div class="category-card-head">
+            <strong>{{ item.name }}</strong>
+            <span v-if="isDefaultCategory(item)" class="category-badge category-badge-locked">{{ t('category.locked') }}</span>
+          </div>
+          <small class="category-card-meta">{{ t('category.slugPrefix') }}{{ item.slug }}</small>
+          <p class="category-card-desc">{{ item.description || t('category.noDescription') }}</p>
         </div>
-        <small class="category-card-meta">{{ t('category.slugPrefix') }}{{ item.slug }}</small>
-        <p class="category-card-desc">{{ item.description || t('category.noDescription') }}</p>
-      </button>
+        <div v-if="getChildCategories(item.id).length" class="category-children">
+          <div
+            v-for="child in getChildCategories(item.id)"
+            :key="child.id"
+            type="button"
+            class="category-card category-card-child"
+            :class="{ selected: selectedCategoryId === child.id }"
+            @click="selectCategory(child)"
+          >
+            <div class="category-card-head">
+              <strong>{{ child.name }}</strong>
+            </div>
+            <small class="category-card-meta">{{ t('category.slugPrefix') }}{{ child.slug }}</small>
+            <p class="category-card-desc">{{ child.description || t('category.noDescription') }}</p>
+          </div>
+        </div>
+      </template>
     </div>
 
     <div v-if="editing" class="category-edit-panel">
@@ -69,6 +92,13 @@
         <button class="category-edit-close" type="button" @click="editing = false">{{ t('common.close') }}</button>
       </div>
       <div class="category-form-stack">
+        <label class="category-field">
+          <span>{{ t('category.parentLabel') }}</span>
+          <select class="category-input" v-model="editParentId" :disabled="isDefaultCategory(selectedCategory!)">
+            <option :value="null">{{ t('category.noParent') }}</option>
+            <option v-for="item in editableParentOptions" :key="item.id" :value="item.id">{{ item.name }}</option>
+          </select>
+        </label>
         <label class="category-field">
           <span>{{ t('category.editNameLabel') }}</span>
           <input class="category-input" v-model="editName" :placeholder="t('category.editNamePlaceholder')" />
@@ -99,6 +129,7 @@ type CategoryItem = {
   name: string
   slug: string
   description: string | null
+  parent_id: number | null
 }
 
 const props = defineProps<{
@@ -106,14 +137,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  create: [payload: { name: string; slug: string; description: string | null }]
-  update: [payload: { id: number; name: string; slug: string; description: string | null }]
+  create: [payload: { name: string; slug: string; description: string | null; parent_id: number | null }]
+  update: [payload: { id: number; name: string; slug: string; description: string | null; parent_id: number | null }]
   delete: [categoryId: number]
 }>()
 
 const newName = ref('')
 const newSlug = ref('')
 const newDescription = ref('')
+const newParentId = ref<number | null>(null)
 const slugTouched = ref(false)
 
 const editing = ref(false)
@@ -121,9 +153,18 @@ const editId = ref<number | null>(null)
 const editName = ref('')
 const editSlug = ref('')
 const editDescription = ref('')
+const editParentId = ref<number | null>(null)
 const selectedCategoryId = ref<number | null>(null)
 
+const rootCategories = computed(() => props.categories.filter((item) => !item.parent_id))
+const getChildCategories = (parentId: number) => props.categories.filter((item) => item.parent_id === parentId)
+
 const selectedCategory = computed(() => props.categories.find((item) => item.id === selectedCategoryId.value) || null)
+
+const editableParentOptions = computed(() => {
+  if (!editing.value || editId.value == null) return rootCategories.value
+  return rootCategories.value.filter((item) => item.id !== editId.value)
+})
 
 const slugify = (value: string) => {
   const converted = pinyin(value, { toneType: 'none', type: 'array' }).join('')
@@ -162,10 +203,12 @@ const create = () => {
     name: newName.value.trim(),
     slug: newSlug.value.trim(),
     description: newDescription.value.trim() || null,
+    parent_id: newParentId.value,
   })
   newName.value = ''
   newSlug.value = ''
   newDescription.value = ''
+  newParentId.value = null
   slugTouched.value = false
 }
 
@@ -186,6 +229,7 @@ const startEdit = (item: CategoryItem) => {
   editName.value = item.name
   editSlug.value = item.slug
   editDescription.value = item.description || ''
+  editParentId.value = item.parent_id
 }
 
 const openEditSelected = () => {
@@ -205,6 +249,7 @@ const saveEdit = () => {
     name: editName.value.trim(),
     slug: editSlug.value.trim(),
     description: editDescription.value.trim() || null,
+    parent_id: editParentId.value,
   })
   editing.value = false
   editId.value = null

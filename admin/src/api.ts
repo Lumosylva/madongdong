@@ -131,13 +131,13 @@ export const adminApi = {
   getCategories(): Promise<WrappedResponse<any[]>> {
     return request<WrappedResponse<any[]>>('/admin/categories')
   },
-  createCategory(payload: { name: string; slug: string; description: string | null }): Promise<WrappedResponse<any>> {
+  createCategory(payload: { name: string; slug: string; description: string | null; parent_id: number | null }): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/categories', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
   },
-  updateCategory(categoryId: number, payload: { name: string; slug: string; description: string | null }): Promise<WrappedResponse<any>> {
+  updateCategory(categoryId: number, payload: { name: string; slug: string; description: string | null; parent_id: number | null }): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>(`/admin/categories/${categoryId}`, {
       method: 'PUT',
       body: JSON.stringify(payload),

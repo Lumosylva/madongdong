@@ -39,10 +39,17 @@ class Category(TimestampMixin, Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(100), index=True)
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
+    parent: Mapped["Category | None"] = relationship(
+        back_populates="children", remote_side="Category.id", lazy="selectin"
+    )
+    children: Mapped[list["Category"]] = relationship(back_populates="parent", lazy="selectin")
     articles: Mapped[list[Article]] = relationship(back_populates="category")
 
 

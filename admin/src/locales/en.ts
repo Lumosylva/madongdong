@@ -218,6 +218,8 @@ export default {
     editDescPlaceholder: 'Enter description (optional)',
     saveChanges: 'Save Changes',
     confirmDelete: 'Delete this category?',
+    parentLabel: 'Parent Category',
+    noParent: 'None (Top Level)',
   },
   comment: {
     title: 'Comment Management',
