@@ -196,8 +196,10 @@ a {
   border-left: none;
   border-right: none;
   box-shadow: none;
+  backdrop-filter: none;
   position: relative;
   z-index: 120;
+  overflow: visible;
 }
 
 :root[data-theme='dark'] .topbar {
