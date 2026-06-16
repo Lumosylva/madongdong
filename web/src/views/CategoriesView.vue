@@ -53,9 +53,9 @@
           >
             <div class="category-card-top">
               <div class="category-card-icon">{{ cat.name.slice(0, 1) }}</div>
+              <h2 class="category-card-name">{{ cat.name }}</h2>
               <span class="category-card-count">{{ t('categories.articleCount', { n: cat.article_count }) }}</span>
             </div>
-            <h2 class="category-card-name">{{ cat.name }}</h2>
             <p class="category-card-desc">{{ cat.description || t('common.noDescription') }}</p>
             <span class="category-card-arrow" aria-hidden="true">▾</span>
           </button>
@@ -70,9 +70,9 @@
             >
               <div class="category-card-top">
                 <div class="category-card-icon">{{ child.name.slice(0, 1) }}</div>
+                <h2 class="category-card-name">{{ child.name }}</h2>
                 <span class="category-card-count">{{ t('categories.articleCount', { n: child.article_count }) }}</span>
               </div>
-              <h2 class="category-card-name">{{ child.name }}</h2>
               <p class="category-card-desc">{{ child.description || t('common.noDescription') }}</p>
               <span class="category-card-arrow" aria-hidden="true">▾</span>
             </button>
@@ -489,7 +489,6 @@ onMounted(() => {
 .category-card-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
 }
 
@@ -526,6 +525,8 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .category-card-desc {
