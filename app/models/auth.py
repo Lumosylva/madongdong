@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from sqlalchemy import Boolean, ForeignKey, String, Text, UniqueConstraint
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -90,3 +92,15 @@ class Permission(TimestampMixin, Base):
         back_populates="permissions",
         lazy="selectin",
     )
+
+
+class LoginAttempt(Base):
+    """登录失败记录，用于账户锁定。"""
+
+    __tablename__ = "login_attempts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lock_key: Mapped[str] = mapped_column(String(100), index=True)
+    attempted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    is_lockout: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    lockout_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

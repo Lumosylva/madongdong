@@ -8,6 +8,9 @@ from collections import defaultdict
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
+_MAX_KEYS = 10_000
+_PURGE_AGE = 120.0
+
 
 class _SlidingWindowCounter:
     """按 IP 记录请求时间戳的滑动窗口计数器。"""
@@ -30,6 +33,21 @@ class _SlidingWindowCounter:
         expired = [k for k, v in self._requests.items() if not v or v[-1] <= now - max_age]
         for k in expired:
             del self._requests[k]
+
+    def enforce_limit(self) -> None:
+        """当全局 key 数量超过上限时，清除最旧的条目。"""
+        if len(self._requests) <= _MAX_KEYS:
+            return
+        now = time.monotonic()
+        sorted_keys = sorted(
+            self._requests.keys(),
+            key=lambda k: self._requests[k][-1] if self._requests[k] else 0,
+        )
+        to_remove = len(self._requests) - _MAX_KEYS + 1000
+        for k in sorted_keys[:to_remove]:
+            timestamps = self._requests[k]
+            if not timestamps or timestamps[-1] <= now - _PURGE_AGE:
+                del self._requests[k]
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -86,6 +104,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         now = time.monotonic()
         if now - self._last_cleanup > self._cleanup_interval:
             self._counter.cleanup()
+            self._counter.enforce_limit()
             self._last_cleanup = now
 
         client_ip = self._get_client_ip(request)

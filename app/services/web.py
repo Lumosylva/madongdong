@@ -2,22 +2,19 @@
 
 from __future__ import annotations
 
-import time
-from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from math import ceil
 
 from fastapi import Request
 from sqlalchemy import Select, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.article import Article, ArticleStatus, Category, Tag
+from app.models.article import Article, ArticleStatus, ArticleViewLog, Category, Tag
 from app.models.comment import Comment, CommentStatus
 from app.schemas.web import PaginatedResponse
 from app.services.site import get_or_create_site_setting, list_nav_items
 
-# 浏览量去重：{article_id: {ip: timestamp}}
-_view_log: dict[int, dict[str, float]] = defaultdict(dict)
-_VIEW_DEDUP_SECONDS = 86400  # 24 小时内同一 IP 不重复计数
+_VIEW_DEDUP_HOURS = 24  # 24 小时内同一 IP 不重复计数
 
 
 async def get_homepage_data(session: AsyncSession, page: int) -> dict:
@@ -98,25 +95,37 @@ def _get_client_ip(request: Request) -> str:
     return "unknown"
 
 
-def _should_count_view(article_id: int, client_ip: str) -> bool:
+async def _should_count_view(session: AsyncSession, article_id: int, client_ip: str) -> bool:
     """检查是否应该计入浏览量（24 小时内同一 IP 不重复计数）。"""
 
-    now = time.monotonic()
-    cutoff = now - _VIEW_DEDUP_SECONDS
-    timestamps = _view_log[article_id]
-
-    # 先清理过期条目
-    expired = [k for k, v in timestamps.items() if v <= cutoff]
-    for k in expired:
-        del timestamps[k]
-
-    # 如果该 IP 在窗口内已有记录，不计数
-    if client_ip in timestamps:
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=_VIEW_DEDUP_HOURS)
+    result = await session.execute(
+        select(ArticleViewLog.id).where(
+            ArticleViewLog.article_id == article_id,
+            ArticleViewLog.client_ip == client_ip,
+            ArticleViewLog.viewed_at > cutoff,
+        ).limit(1)
+    )
+    if result.scalar_one_or_none() is not None:
         return False
 
-    # 新的 IP，记录并计数
-    timestamps[client_ip] = now
+    session.add(ArticleViewLog(
+        article_id=article_id,
+        client_ip=client_ip,
+        viewed_at=datetime.now(timezone.utc),
+    ))
+    await session.flush()
     return True
+
+
+async def _cleanup_old_view_logs(session: AsyncSession) -> None:
+    """清理超过 24 小时的浏览记录，防止表无限增长。"""
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=_VIEW_DEDUP_HOURS)
+    await session.execute(
+        text("DELETE FROM article_view_logs WHERE viewed_at < :cutoff"),
+        {"cutoff": cutoff},
+    )
 
 
 async def get_published_article_detail(session: AsyncSession, article_id: int, client_ip: str = "unknown") -> Article | None:
@@ -128,12 +137,7 @@ async def get_published_article_detail(session: AsyncSession, article_id: int, c
     )
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
-    # 直接执行原生 SQL 的方式
-    # 这样做的目的就是：
-    # 避免 ORM 把整条文章对象判定成“改过”
-    # 只更新 view_count
-    # 尽量不要触发 updated_at
-    if article is not None and _should_count_view(article_id, client_ip):
+    if article is not None and await _should_count_view(session, article_id, client_ip):
         await session.execute(
             text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
             {"article_id": article_id},
@@ -152,7 +156,26 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str,
     )
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
-    if article is not None and _should_count_view(article.id, client_ip):
+    if article is not None and await _should_count_view(session, article.id, client_ip):
+        await session.execute(
+            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
+            {"article_id": article.id},
+        )
+        await session.commit()
+        await session.refresh(article)
+    return article
+
+
+async def get_published_article_detail_by_slug(session: AsyncSession, slug: str, client_ip: str = "unknown") -> Article | None:
+    """通过 slug 获取已发布文章详情。"""
+
+    statement = select(Article).where(
+        Article.slug == slug,
+        Article.status == ArticleStatus.PUBLISHED,
+    )
+    result = await session.execute(statement)
+    article = result.scalar_one_or_none()
+    if article is not None and await _should_count_view(session, article.id, client_ip):
         await session.execute(
             text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
             {"article_id": article.id},

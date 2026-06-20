@@ -15,6 +15,7 @@ from app.api.health import router as health_router
 from app.api.install import router as install_router
 from app.api.web import router as web_router
 from app.core.config import settings
+from app.core.database import AsyncSessionLocal
 from app.core.init_db import init_db
 from app.core.rate_limit import RateLimitMiddleware
 from app.core.safe_static import SafeStaticFiles
@@ -26,6 +27,14 @@ async def lifespan(_: FastAPI):
     """应用生命周期。"""
 
     await init_db()
+
+    async with AsyncSessionLocal() as session:
+        from app.services.web import _cleanup_old_view_logs
+        await _cleanup_old_view_logs(session)
+        from app.core import login_lockout
+        await login_lockout.cleanup_old_records(session)
+        await session.commit()
+
     yield
 
 

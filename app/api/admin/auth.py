@@ -55,17 +55,17 @@ async def login(
     """后台管理员或作者登录。"""
 
     from app.core.captcha import verify_captcha
-    from app.core.login_lockout import tracker
+    from app.core import login_lockout
 
     if payload.captcha_token:
         verify_captcha(payload.captcha_token, payload.captcha_answer)
 
     lock_key = f"admin:{payload.username}"
-    tracker.check(lock_key)
+    await login_lockout.check(session, lock_key)
 
     user = await get_user_by_username(session, payload.username)
     if user is None or not verify_password(payload.password, user.password_hash):
-        tracker.record_failure(lock_key)
+        await login_lockout.record_failure(session, lock_key)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户名或密码错误")
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="当前用户已被禁用")
@@ -74,7 +74,7 @@ async def login(
     if not any(role_name in role_names for role_name in ["admin", "author"]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅系统管理员和内容作者可登录后台")
 
-    tracker.reset(lock_key)
+    await login_lockout.reset(session, lock_key)
     user_roles = list(role_names)
     token = create_access_token(user.id, roles=user_roles)
     refresh = create_refresh_token(user.id, roles=user_roles)

@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.schema import Index
 
 from app.core.database import Base
 from app.models.base import TimestampMixin
@@ -104,3 +105,17 @@ class Article(TimestampMixin, Base):
         back_populates="articles",
         lazy="selectin",
     )
+
+
+class ArticleViewLog(Base):
+    """文章浏览记录，用于 24 小时内同一 IP 去重。"""
+
+    __tablename__ = "article_view_logs"
+    __table_args__ = (
+        Index("ix_view_logs_article_ip_time", "article_id", "client_ip", "viewed_at"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    client_ip: Mapped[str] = mapped_column(String(45), nullable=False)
+    viewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
