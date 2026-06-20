@@ -1,5 +1,8 @@
 """前台公开接口。"""
 
+from datetime import datetime, timezone
+from xml.etree.ElementTree import Element, SubElement, tostring
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,6 +42,7 @@ from app.services.web import (
     get_search_page_data,
     get_tag_page_data,
     list_approved_comments_by_article,
+    list_rss_articles,
 )
 from app.utils.ip import get_client_ip
 
@@ -59,6 +63,86 @@ async def home(
 ) -> HomeResponse:
     data = await get_homepage_data(session, page)
     return HomeResponse.model_validate(data)
+
+
+@router.get("/rss", summary="获取 RSS Feed")
+async def rss_feed(request: Request, session: AsyncSession = Depends(get_db_session)) -> Response:
+    site = await get_or_create_site_setting(session)
+    articles = await list_rss_articles(session, limit=20)
+
+    base_url = str(request.base_url).rstrip("/")
+    site_title = site.site_title or "MaDongDong Blog"
+    site_subtitle = site.site_subtitle or ""
+
+    rss = Element("rss", version="2.0")
+    channel = SubElement(rss, "channel")
+    SubElement(channel, "title").text = site_title
+    SubElement(channel, "link").text = base_url
+    SubElement(channel, "description").text = site_subtitle
+    SubElement(channel, "language").text = "zh-CN"
+    SubElement(channel, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+    for article in articles:
+        item = SubElement(channel, "item")
+        SubElement(item, "title").text = article.title
+        SubElement(item, "link").text = f"{base_url}/article/{article.slug}"
+        SubElement(item, "guid").text = f"{base_url}/article/{article.slug}"
+        SubElement(item, "description").text = article.summary
+        if article.published_at:
+            SubElement(item, "pubDate").text = article.published_at.strftime("%a, %d %b %Y %H:%M:%S +0000")
+        if article.author:
+            SubElement(item, "author").text = article.author.nickname
+
+    xml_bytes = tostring(rss, encoding="unicode", xml_declaration=False)
+    xml_output = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_bytes
+
+    return Response(
+        content=xml_output,
+        media_type="application/rss+xml; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@router.get("/sitemap.xml", summary="获取 Sitemap")
+async def sitemap(request: Request, session: AsyncSession = Depends(get_db_session)) -> Response:
+    site = await get_or_create_site_setting(session)
+    articles = await list_rss_articles(session, limit=500)
+
+    base_url = str(request.base_url).rstrip("/")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    urlset = Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
+
+    url = SubElement(urlset, "url")
+    SubElement(url, "loc").text = base_url
+    SubElement(url, "lastmod").text = now
+    SubElement(url, "changefreq").text = "daily"
+    SubElement(url, "priority").text = "1.0"
+
+    for article in articles:
+        url = SubElement(urlset, "url")
+        SubElement(url, "loc").text = f"{base_url}/article/{article.slug}"
+        if article.published_at:
+            SubElement(url, "lastmod").text = article.published_at.strftime("%Y-%m-%d")
+        SubElement(url, "changefreq").text = "monthly"
+        SubElement(url, "priority").text = "0.8"
+
+    static_pages = ["/categories", "/archive", "/about", "/friend-links"]
+    for path in static_pages:
+        url = SubElement(urlset, "url")
+        SubElement(url, "loc").text = f"{base_url}{path}"
+        SubElement(url, "lastmod").text = now
+        SubElement(url, "changefreq").text = "monthly"
+        SubElement(url, "priority").text = "0.6"
+
+    xml_bytes = tostring(urlset, encoding="unicode", xml_declaration=False)
+    xml_output = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_bytes
+
+    return Response(
+        content=xml_output,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 @router.get("/site-settings", summary="获取站点配置")

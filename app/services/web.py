@@ -88,6 +88,20 @@ async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Artic
     return list(result.scalars().unique().all())
 
 
+async def list_rss_articles(session: AsyncSession, limit: int = 20) -> list[Article]:
+    """查询最新文章用于 RSS Feed。"""
+
+    statement = (
+        select(Article)
+        .where(Article.status == ArticleStatus.PUBLISHED)
+        .options(*get_article_eager_loaders())
+        .order_by(Article.published_at.desc(), Article.id.desc())
+        .limit(limit)
+    )
+    result = await session.execute(statement)
+    return list(result.scalars().unique().all())
+
+
 
 
 async def _should_count_view(session: AsyncSession, article_id: int, client_ip: str) -> bool:
