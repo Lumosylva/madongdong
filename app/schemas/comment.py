@@ -16,10 +16,6 @@ class CommentCreate(BaseModel):
     parent_id: int | None = None
     guest_nickname: str | None = Field(default=None, max_length=100)
     guest_email: EmailStr | None = None
-    client_browser: str | None = Field(default=None, max_length=100)
-    client_browser_version: str | None = Field(default=None, max_length=50)
-    client_os: str | None = Field(default=None, max_length=100)
-    client_os_version: str | None = Field(default=None, max_length=50)
 
 
 class CommentReviewRequest(BaseModel):

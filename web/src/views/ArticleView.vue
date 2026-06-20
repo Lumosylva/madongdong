@@ -287,10 +287,6 @@ const submitComment = async () => {
       content: commentContent.value,
       guest_nickname: guestNickname.value || null,
       guest_email: guestEmail.value || null,
-      client_browser: (navigator as any).userAgentData?.brands?.[0]?.brand || null,
-      client_browser_version: (navigator as any).userAgentData?.brands?.[0]?.version || null,
-      client_os: (navigator as any).userAgentData?.platform || null,
-      client_os_version: (navigator as any).userAgentData?.platformVersion || null,
     }) as { status?: string }
 
     const createdStatus = String(created?.status || '').toUpperCase()
