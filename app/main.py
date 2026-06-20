@@ -33,6 +33,8 @@ async def lifespan(_: FastAPI):
         await _cleanup_old_view_logs(session)
         from app.core import login_lockout
         await login_lockout.cleanup_old_records(session)
+        from app.core.security import cleanup_expired_refresh_tokens
+        await cleanup_expired_refresh_tokens(session)
         await session.commit()
 
     yield

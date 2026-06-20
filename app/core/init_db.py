@@ -2,19 +2,11 @@
 
 from __future__ import annotations
 
-import re
-
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import Base, engine, AsyncSessionLocal
-
-
-def _generate_slug(title: str) -> str:
-    title = title.strip().lower()
-    slug = re.sub(r"[^a-z0-9\u4e00-\u9fff\s-]", "", title)
-    slug = re.sub(r"[\s_]+", "-", slug).strip("-")
-    return slug or "article"
+from app.services.article import generate_article_slug
 
 
 async def init_db() -> None:
@@ -28,6 +20,7 @@ async def init_db() -> None:
         await _migrate_bgm_column(session)
         await _migrate_hero_image_column(session)
         await _migrate_category_parent_id(session)
+        await _migrate_refresh_token_expires_at(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -51,7 +44,7 @@ async def _migrate_slug_column(session: AsyncSession) -> None:
     if rows:
         for row in rows:
             article_id, title = row
-            slug = _generate_slug(title or "")
+            slug = generate_article_slug(title or "")
             await session.execute(
                 text("UPDATE articles SET slug = :slug WHERE id = :id"),
                 {"slug": slug, "id": article_id},
@@ -118,6 +111,30 @@ async def _migrate_category_parent_id(session: AsyncSession) -> None:
 
     try:
         await session.execute(text("DROP INDEX IF EXISTS ix_categories_name"))
+        await session.commit()
+    except Exception:
+        pass
+
+
+async def _migrate_refresh_token_expires_at(session: AsyncSession) -> None:
+    """将 refresh_tokens.expires_at 从字符串迁移到 DATETIME。"""
+
+    try:
+        result = await session.execute(text("PRAGMA table_info(refresh_tokens)"))
+        columns = {row[1]: row[2] for row in result.fetchall()}
+    except Exception:
+        return
+
+    col_type = columns.get("expires_at", "")
+    if "DATETIME" in col_type.upper():
+        return
+
+    try:
+        await session.execute(text("""
+            UPDATE refresh_tokens
+            SET expires_at = datetime(expires_at)
+            WHERE expires_at IS NOT NULL
+        """))
         await session.commit()
     except Exception:
         pass

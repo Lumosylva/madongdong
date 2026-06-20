@@ -5,14 +5,14 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from math import ceil
 
-from fastapi import Request
 from sqlalchemy import Select, func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.article import Article, ArticleStatus, ArticleViewLog, Category, Tag
+from app.models.article import Article, ArticleStatus, ArticleViewLog, Category, Tag, get_article_eager_loaders
 from app.models.comment import Comment, CommentStatus
 from app.schemas.web import PaginatedResponse
 from app.services.site import get_or_create_site_setting, list_nav_items
+from app.utils.ip import get_client_ip
 
 _VIEW_DEDUP_HOURS = 24  # 24 小时内同一 IP 不重复计数
 
@@ -40,7 +40,11 @@ async def paginate_published_articles(
 ) -> PaginatedResponse[Article]:
     """分页查询已发布文章。"""
 
-    statement: Select[tuple[Article]] = select(Article).where(Article.status == ArticleStatus.PUBLISHED)
+    statement: Select[tuple[Article]] = (
+        select(Article)
+        .where(Article.status == ArticleStatus.PUBLISHED)
+        .options(*get_article_eager_loaders())
+    )
     count_statement = select(func.count(Article.id)).where(Article.status == ArticleStatus.PUBLISHED)
     if keyword:
         like_keyword = f"%{keyword}%"
@@ -76,6 +80,7 @@ async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Artic
     statement = (
         select(Article)
         .where(Article.status == ArticleStatus.PUBLISHED)
+        .options(*get_article_eager_loaders())
         .order_by(Article.view_count.desc(), Article.comment_count.desc(), Article.id.desc())
         .limit(limit)
     )
@@ -83,16 +88,6 @@ async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Artic
     return list(result.scalars().unique().all())
 
 
-def _get_client_ip(request: Request) -> str:
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    real_ip = request.headers.get("X-Real-IP")
-    if real_ip:
-        return real_ip.strip()
-    if request.client:
-        return request.client.host
-    return "unknown"
 
 
 async def _should_count_view(session: AsyncSession, article_id: int, client_ip: str) -> bool:
@@ -134,7 +129,7 @@ async def get_published_article_detail(session: AsyncSession, article_id: int, c
     statement = select(Article).where(
         Article.id == article_id,
         Article.status == ArticleStatus.PUBLISHED,
-    )
+    ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
     if article is not None and await _should_count_view(session, article_id, client_ip):
@@ -153,26 +148,7 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str,
     statement = select(Article).where(
         Article.slug == slug,
         Article.status == ArticleStatus.PUBLISHED,
-    )
-    result = await session.execute(statement)
-    article = result.scalar_one_or_none()
-    if article is not None and await _should_count_view(session, article.id, client_ip):
-        await session.execute(
-            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
-            {"article_id": article.id},
-        )
-        await session.commit()
-        await session.refresh(article)
-    return article
-
-
-async def get_published_article_detail_by_slug(session: AsyncSession, slug: str, client_ip: str = "unknown") -> Article | None:
-    """通过 slug 获取已发布文章详情。"""
-
-    statement = select(Article).where(
-        Article.slug == slug,
-        Article.status == ArticleStatus.PUBLISHED,
-    )
+    ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
     if article is not None and await _should_count_view(session, article.id, client_ip):
@@ -215,6 +191,7 @@ async def get_prev_next_published_articles(session: AsyncSession, article: Artic
                 (Article.published_at == published_at) & (Article.id > article_id),
             ),
         )
+        .options(*get_article_eager_loaders())
         .order_by(Article.published_at.asc(), Article.id.asc())
         .limit(1)
     )
@@ -228,6 +205,7 @@ async def get_prev_next_published_articles(session: AsyncSession, article: Artic
                 (Article.published_at == published_at) & (Article.id < article_id),
             ),
         )
+        .options(*get_article_eager_loaders())
         .order_by(Article.published_at.desc(), Article.id.desc())
         .limit(1)
     )
@@ -398,16 +376,21 @@ async def get_archive_data(session: AsyncSession) -> dict:
     nav_items = await list_nav_items(session, visible_only=True)
 
     statement = (
-        select(Article)
+        select(
+            Article.id,
+            Article.slug,
+            Article.title,
+            Article.published_at,
+        )
         .where(Article.status == ArticleStatus.PUBLISHED)
         .order_by(Article.published_at.desc(), Article.id.desc())
     )
     result = await session.execute(statement)
-    articles = list(result.scalars().unique().all())
+    rows = result.all()
 
     year_month_map: dict[int, dict[int, list]] = {}
-    for article in articles:
-        dt = article.published_at
+    for row in rows:
+        dt = row.published_at
         if dt is None:
             continue
         year = dt.year
@@ -416,7 +399,12 @@ async def get_archive_data(session: AsyncSession) -> dict:
             year_month_map[year] = {}
         if month not in year_month_map[year]:
             year_month_map[year][month] = []
-        year_month_map[year][month].append(article)
+        year_month_map[year][month].append({
+            "id": row.id,
+            "slug": row.slug,
+            "title": row.title,
+            "published_at": dt.isoformat(),
+        })
 
     archive = []
     for year in sorted(year_month_map.keys(), reverse=True):
@@ -427,10 +415,7 @@ async def get_archive_data(session: AsyncSession) -> dict:
             months.append({
                 "month": month,
                 "count": len(month_articles),
-                "articles": [
-                    {"id": a.id, "slug": a.slug, "title": a.title, "published_at": a.published_at.isoformat()}
-                    for a in month_articles
-                ],
+                "articles": month_articles,
             })
             year_count += len(month_articles)
         archive.append({
@@ -442,7 +427,7 @@ async def get_archive_data(session: AsyncSession) -> dict:
     return {
         "site": site,
         "nav_items": nav_items,
-        "total": len(articles),
+        "total": len(rows),
         "archive": archive,
     }
 

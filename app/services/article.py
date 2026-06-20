@@ -8,8 +8,9 @@ from datetime import datetime, timezone
 from fastapi import HTTPException, status
 from sqlalchemy import Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import load_only
 
-from app.models.article import Article, ArticleStatus, Category, Tag
+from app.models.article import Article, ArticleStatus, Category, Tag, get_article_eager_loaders
 from app.models.auth import User
 
 
@@ -144,12 +145,21 @@ async def update_tag(session: AsyncSession, tag_id: int, name: str, slug: str) -
     return tag
 
 
+_LIST_COLUMNS = [
+    Article.id, Article.slug, Article.title, Article.summary, Article.cover_url,
+    Article.status, Article.review_comment, Article.published_at,
+    Article.view_count, Article.comment_count, Article.is_deleted, Article.deleted_at,
+    Article.created_at, Article.updated_at, Article.author_id, Article.category_id,
+]
+
+
 async def list_articles(session: AsyncSession, current_user: User) -> list[Article]:
-    """查询未删除文章列表。"""
+    """查询未删除文章列表（不含正文）。"""
 
     statement: Select[tuple[Article]] = (
         select(Article)
         .where(Article.is_deleted.is_(False))
+        .options(load_only(*_LIST_COLUMNS), *get_article_eager_loaders())
         .order_by(Article.created_at.desc())
     )
     if not _is_admin(current_user):
@@ -159,11 +169,12 @@ async def list_articles(session: AsyncSession, current_user: User) -> list[Artic
 
 
 async def list_deleted_articles(session: AsyncSession, current_user: User) -> list[Article]:
-    """查询垃圾箱文章列表。"""
+    """查询垃圾箱文章列表（不含正文）。"""
 
     statement: Select[tuple[Article]] = (
         select(Article)
         .where(Article.is_deleted.is_(True))
+        .options(load_only(*_LIST_COLUMNS), *get_article_eager_loaders())
         .order_by(Article.deleted_at.desc(), Article.created_at.desc())
     )
     if not _is_admin(current_user):
@@ -317,7 +328,9 @@ async def reject_article(
 async def get_article_or_404(session: AsyncSession, article_id: int) -> Article:
     """按主键获取文章。"""
 
-    result = await session.execute(select(Article).where(Article.id == article_id))
+    result = await session.execute(
+        select(Article).where(Article.id == article_id).options(*get_article_eager_loaders())
+    )
     article = result.scalar_one_or_none()
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在")

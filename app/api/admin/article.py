@@ -10,6 +10,7 @@ from app.schemas.article import (
     ArticleCreate,
     ArticleDetailResponse,
     ArticleReviewRequest,
+    ArticleSummaryResponse,
     ArticleUpdate,
     CategoryCreate,
     CategoryResponse,
@@ -48,7 +49,7 @@ async def get_articles(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     articles = await list_articles(session, current_user)
-    data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
+    data = [ArticleSummaryResponse.model_validate(article).model_dump() for article in articles]
     return success_response(data)
 
 
@@ -58,7 +59,7 @@ async def get_deleted_articles(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     articles = await list_deleted_articles(session, current_user)
-    data = [ArticleDetailResponse.model_validate(article).model_dump() for article in articles]
+    data = [ArticleSummaryResponse.model_validate(article).model_dump() for article in articles]
     return success_response(data)
 
 

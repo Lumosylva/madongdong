@@ -9,8 +9,11 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.article import Article
+from app.models.article import Article
 from app.models.auth import User
 from app.models.comment import Comment, CommentStatus
+from app.services.article import get_article_or_404
+
 
 _BROWSER_PATTERNS = [
     ('Edge', r'Edg(?:e|A|iOS)?/([0-9.]+)'),
@@ -170,26 +173,6 @@ async def delete_comments(session: AsyncSession, comment_ids: list[int]) -> int:
 
     await session.commit()
     return len(comments)
-
-
-async def get_comment_or_404(session: AsyncSession, comment_id: int) -> Comment:
-    """获取评论。"""
-
-    result = await session.execute(select(Comment).where(Comment.id == comment_id))
-    comment = result.scalar_one_or_none()
-    if comment is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="评论不存在")
-    return comment
-
-
-async def get_article_or_404(session: AsyncSession, article_id: int) -> Article:
-    """获取文章。"""
-
-    result = await session.execute(select(Article).where(Article.id == article_id))
-    article = result.scalar_one_or_none()
-    if article is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在")
-    return article
 
 
 async def count_article_comments(session: AsyncSession, article_id: int) -> int:

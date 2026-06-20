@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import StrEnum
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, joinedload, mapped_column, relationship, selectinload
 from sqlalchemy.schema import Index
 
 from app.core.database import Base
@@ -48,10 +48,10 @@ class Category(TimestampMixin, Base):
     )
 
     parent: Mapped["Category | None"] = relationship(
-        back_populates="children", remote_side="Category.id", lazy="selectin"
+        back_populates="children", remote_side="Category.id", lazy="noload"
     )
-    children: Mapped[list["Category"]] = relationship(back_populates="parent", lazy="selectin")
-    articles: Mapped[list[Article]] = relationship(back_populates="category")
+    children: Mapped[list["Category"]] = relationship(back_populates="parent", lazy="noload")
+    articles: Mapped[list[Article]] = relationship(back_populates="category", lazy="noload")
 
 
 class Tag(TimestampMixin, Base):
@@ -103,7 +103,17 @@ class Article(TimestampMixin, Base):
     tags: Mapped[list[Tag]] = relationship(
         secondary="article_tags",
         back_populates="articles",
-        lazy="selectin",
+        lazy="noload",
+    )
+
+
+def get_article_eager_loaders():
+    """延迟加载器，避免模块级循环引用。"""
+    from app.models.auth import User
+    return (
+        joinedload(Article.author.of_type(User)),
+        joinedload(Article.category),
+        selectinload(Article.tags),
     )
 
 

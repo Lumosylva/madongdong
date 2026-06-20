@@ -130,7 +130,7 @@ async def persist_refresh_token(
         jti=payload["jti"],
         user_id=user_id,
         token_hash=_hash_token(refresh_token),
-        expires_at=datetime.fromtimestamp(payload["exp"], tz=timezone.utc).isoformat(),
+        expires_at=datetime.fromtimestamp(payload["exp"], tz=timezone.utc),
         revoked=False,
     )
     session.add(rt)
@@ -156,6 +156,17 @@ async def revoke_all_user_refresh_tokens(session: AsyncSession, user_id: int) ->
     for rt in result.scalars().all():
         rt.revoked = True
     await session.commit()
+
+
+async def cleanup_expired_refresh_tokens(session: AsyncSession) -> None:
+    """清理过期和已撤销的刷新令牌，防止表无限增长。"""
+
+    from sqlalchemy import delete
+    await session.execute(
+        delete(RefreshToken).where(
+            (RefreshToken.expires_at < datetime.now(timezone.utc)) | (RefreshToken.revoked == True)
+        )
+    )
 
 
 async def _is_token_revoked(session: AsyncSession, jti: str) -> bool:

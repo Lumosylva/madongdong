@@ -27,8 +27,8 @@ from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
 from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
 from app.services.auth import get_user_by_id, get_user_by_username, register_reader_user, update_current_user_profile
 from app.services.comment import create_comment
+from app.services.site import get_or_create_site_setting, list_nav_items
 from app.services.web import (
-    _get_client_ip,
     get_archive_data,
     get_categories_page_data,
     get_category_page_data,
@@ -40,8 +40,16 @@ from app.services.web import (
     get_tag_page_data,
     list_approved_comments_by_article,
 )
+from app.utils.ip import get_client_ip
 
 router = APIRouter(prefix="/web", tags=["web"])
+
+
+async def _get_site_and_nav(session: AsyncSession) -> tuple[SiteSettingResponse, list[NavItemResponse]]:
+    """获取站点配置和导航项（复用，避免加载首页文章列表）。"""
+    site = await get_or_create_site_setting(session)
+    nav_items = await list_nav_items(session, visible_only=True)
+    return SiteSettingResponse.model_validate(site), [NavItemResponse.model_validate(item) for item in nav_items]
 
 
 @router.get("/home", summary="获取首页数据")
@@ -84,24 +92,19 @@ async def article_detail(
     request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> ArticlePageResponse:
-    client_ip = _get_client_ip(request)
+    client_ip = get_client_ip(request)
     article = await get_published_article_detail(session, article_id, client_ip)
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
-    data = await get_homepage_data(session, page=1)
+    site, nav_items = await _get_site_and_nav(session)
     comments = await list_approved_comments_by_article(session, article_id)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
-    site_data = data["site"]
-    nav_items_data = data["nav_items"]
-    article_detail = ArticleDetailResponse.model_validate(article)
-    previous_article_summary = ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None
-    next_article_summary = ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None
     return ArticlePageResponse(
-        site=SiteSettingResponse.model_validate(site_data),
-        nav_items=[NavItemResponse.model_validate(item) for item in nav_items_data],
-        article=article_detail,
-        previous_article=previous_article_summary,
-        next_article=next_article_summary,
+        site=site,
+        nav_items=nav_items,
+        article=ArticleDetailResponse.model_validate(article),
+        previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
+        next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
         comments=[CommentResponse.model_validate(item) for item in comments],
     )
 
@@ -112,24 +115,19 @@ async def article_detail_by_slug(
     request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> ArticlePageResponse:
-    client_ip = _get_client_ip(request)
+    client_ip = get_client_ip(request)
     article = await get_published_article_detail_by_slug(session, slug, client_ip)
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
-    data = await get_homepage_data(session, page=1)
+    site, nav_items = await _get_site_and_nav(session)
     comments = await list_approved_comments_by_article(session, article.id)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
-    site_data = data["site"]
-    nav_items_data = data["nav_items"]
-    article_detail = ArticleDetailResponse.model_validate(article)
-    previous_article_summary = ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None
-    next_article_summary = ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None
     return ArticlePageResponse(
-        site=SiteSettingResponse.model_validate(site_data),
-        nav_items=[NavItemResponse.model_validate(item) for item in nav_items_data],
-        article=article_detail,
-        previous_article=previous_article_summary,
-        next_article=next_article_summary,
+        site=site,
+        nav_items=nav_items,
+        article=ArticleDetailResponse.model_validate(article),
+        previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
+        next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
         comments=[CommentResponse.model_validate(item) for item in comments],
     )
 
