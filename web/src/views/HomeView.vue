@@ -351,6 +351,7 @@ onBeforeUnmount(() => {
 .home-shell[data-hero="1"] .topbar .brand-subtitle,
 .home-shell[data-hero="1"] .topbar .nav a,
 .home-shell[data-hero="1"] .topbar .search-launch-btn,
+.home-shell[data-hero="1"] .topbar .hamburger-btn,
 .home-shell[data-hero="1"] .topbar .auth-entry,
 .home-shell[data-hero="1"] .topbar .lang-trigger,
 .home-shell[data-hero="1"] .topbar .lang-label {
