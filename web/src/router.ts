@@ -1,98 +1,84 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import AboutView from './views/AboutView.vue'
-import ArchiveView from './views/ArchiveView.vue'
-import ArticleView from './views/ArticleView.vue'
-import CategoriesView from './views/CategoriesView.vue'
-import HomeView from './views/HomeView.vue'
-import SearchView from './views/SearchView.vue'
-import CategoryView from './views/CategoryView.vue'
-import TagView from './views/TagView.vue'
-import RegisterView from './views/RegisterView.vue'
-import LoginView from './views/LoginView.vue'
-import FriendLinksView from './views/FriendLinksView.vue'
-import InstallView from './views/InstallView.vue'
-import ProfileView from './views/ProfileView.vue'
-
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/install',
       name: 'install',
-      component: InstallView,
+      component: () => import('./views/InstallView.vue'),
       meta: { title: 'install.title' },
     },
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('./views/HomeView.vue'),
       meta: { title: 'common.home' },
     },
     {
       path: '/article/:slug',
       name: 'article',
-      component: ArticleView,
+      component: () => import('./views/ArticleView.vue'),
       meta: { title: 'article.content' },
     },
     {
       path: '/search',
       name: 'search',
-      component: SearchView,
+      component: () => import('./views/SearchView.vue'),
       meta: { title: 'search.title' },
     },
     {
       path: '/category/:slug',
       name: 'category',
-      component: CategoryView,
+      component: () => import('./views/CategoryView.vue'),
       meta: { title: 'categories.title' },
     },
     {
       path: '/tag/:slug',
       name: 'tag',
-      component: TagView,
+      component: () => import('./views/TagView.vue'),
       meta: { title: 'tag.title' },
     },
     {
       path: '/register',
       name: 'register',
-      component: RegisterView,
+      component: () => import('./views/RegisterView.vue'),
       meta: { title: 'register.title' },
     },
     {
       path: '/login',
       name: 'login',
-      component: LoginView,
+      component: () => import('./views/LoginView.vue'),
       meta: { title: 'login.title' },
     },
     {
       path: '/friend-links',
       name: 'friend-links',
-      component: FriendLinksView,
+      component: () => import('./views/FriendLinksView.vue'),
       meta: { title: 'friendLinks.title' },
     },
     {
       path: '/categories',
       name: 'categories',
-      component: CategoriesView,
+      component: () => import('./views/CategoriesView.vue'),
       meta: { title: 'categories.title' },
     },
     {
       path: '/archive',
       name: 'archive',
-      component: ArchiveView,
+      component: () => import('./views/ArchiveView.vue'),
       meta: { title: 'archive.title' },
     },
     {
       path: '/about',
       name: 'about',
-      component: AboutView,
+      component: () => import('./views/AboutView.vue'),
       meta: { title: 'about.title' },
     },
     {
       path: '/profile',
       name: 'profile',
-      component: ProfileView,
+      component: () => import('./views/ProfileView.vue'),
       meta: { title: 'profile.title', requiresAuth: true },
     },
   ],
