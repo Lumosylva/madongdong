@@ -173,7 +173,7 @@ import { useI18n } from 'vue-i18n'
 import { setLocale } from '../i18n'
 
 import { webApi } from '../api'
-import type { NavItem, Article } from '../types'
+import type { ThemeMode, NavItem, Article } from '../types'
 
 const { t, locale } = useI18n()
 
@@ -202,8 +202,6 @@ const navTitleMap = computed<Record<string, string>>(() => ({
   '/login': t('common.login'),
   '/profile': t('common.profile'),
 }))
-
-type ThemeMode = 'light' | 'dark'
 
 const props = withDefaults(
   defineProps<{

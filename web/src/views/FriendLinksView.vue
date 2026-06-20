@@ -127,23 +127,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { useTheme } from '../composables/useTheme'
 
-type ThemeMode = 'light' | 'dark'
 type FriendLinkItem = { name: string; url: string; description: string }
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const data = ref<Awaited<ReturnType<typeof webApi.getHome>> | null>(null)
 const keyword = ref('')
-const theme = ref<ThemeMode>('light')
 const submitting = ref(false)
 const message = ref('')
 const status = ref<'success' | 'error' | ''>('')
@@ -179,16 +179,6 @@ const validateFriendLinkEmail = (value: string) => {
   if (!/^\S+@\S+\.\S+$/.test(input)) return t('friendLinks.emailInvalid')
   if (input.length > 255) return t('friendLinks.emailMaxLength')
   return ''
-}
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 const goSearch = () => {
@@ -256,10 +246,14 @@ const submitApplication = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   document.title = buildPageTitle(t('friendLinks.title'))
   await loadData()
+})
+
+onBeforeUnmount(() => {
+  destroyTheme()
 })
 </script>
 

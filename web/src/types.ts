@@ -1,3 +1,5 @@
+export type ThemeMode = 'light' | 'dark'
+
 export type NavItem = {
   id: number
   title: string

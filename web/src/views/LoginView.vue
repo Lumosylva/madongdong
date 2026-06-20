@@ -30,11 +30,11 @@
 
         <div class="auth-field-group">
           <label class="auth-input-shell">
-            <span class="auth-input-icon" aria-hidden="true">👤</span>
+            <span class="auth-input-icon" aria-hidden="true">馃懁</span>
             <input v-model="username" autocomplete="username" :placeholder="t('login.usernamePlaceholder')" />
           </label>
           <label class="auth-input-shell auth-password-shell">
-            <span class="auth-input-icon" aria-hidden="true">🔒</span>
+            <span class="auth-input-icon" aria-hidden="true">馃敀</span>
             <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="current-password" :placeholder="t('login.passwordPlaceholder')" @keyup.enter="submit" />
             <button type="button" class="auth-password-toggle" :aria-label="showPassword ? t('login.hidePassword') : t('login.showPassword')" :title="showPassword ? t('login.hidePassword') : t('login.showPassword')" @click="showPassword = !showPassword">
               <svg v-if="showPassword" class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -74,21 +74,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
-import { applySiteMetaFromSetting, buildPageTitle } from '../site-meta'
+import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import type { NavItem } from '../types'
-
-type ThemeMode = 'light' | 'dark'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -106,16 +105,6 @@ const authNavItems = computed<NavItem[]>(() => [
   { id: 3, title: t('common.register'), path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
 ])
 
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
-
 const loadCaptcha = async () => {
   try {
     const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
@@ -132,6 +121,7 @@ const loadSiteLogo = async () => {
   try {
     const home = await webApi.getHome(1, 1)
     siteLogoUrl.value = toAbsoluteAssetUrl(home.site.site_logo)
+    setSiteSetting(home.site)
     applySiteMetaFromSetting(home.site)
   } catch {
     siteLogoUrl.value = ''
@@ -175,8 +165,8 @@ const submit = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   const savedUsername = localStorage.getItem('md-login-username')
   if (savedUsername) {
     username.value = savedUsername
@@ -184,5 +174,9 @@ onMounted(async () => {
   }
   document.title = buildPageTitle(t('login.title'))
   await Promise.all([loadSiteLogo(), loadCaptcha()])
+})
+
+onBeforeUnmount(() => {
+  destroyTheme()
 })
 </script>

@@ -4,38 +4,56 @@ import i18n from './i18n'
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
+const DEFAULT_TIMEOUT = 15_000
 
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const { headers: extraHeaders, ...rest } = init ?? {}
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...rest,
-    headers: {
-      'Content-Type': 'application/json',
-      ...extraHeaders,
-    },
-  })
+  const { headers: extraHeaders, signal: userSignal, ...rest } = init ?? {}
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
 
-  if (!response.ok) {
-    const rawText = await response.text()
-    try {
-      const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
-      if (typeof parsed.detail === 'string') {
-        throw new Error(parsed.detail)
-      }
-      if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
-        const msg = parsed.detail[0]?.msg || i18n.global.t('common.requestFailed')
-        throw new Error(msg.replace(/^Value error,?\s*/i, ''))
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message !== i18n.global.t('common.requestFailed')) throw e
-    }
-    throw new Error(rawText || i18n.global.t('common.requestFailed'))
+  if (userSignal) {
+    userSignal.addEventListener('abort', () => controller.abort(), { once: true })
   }
 
-  return response.json() as Promise<T>
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...extraHeaders,
+      },
+    })
+
+    if (!response.ok) {
+      const rawText = await response.text()
+      try {
+        const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
+        if (typeof parsed.detail === 'string') {
+          throw new Error(parsed.detail)
+        }
+        if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
+          const msg = parsed.detail[0]?.msg || i18n.global.t('common.requestFailed')
+          throw new Error(msg.replace(/^Value error,?\s*/i, ''))
+        }
+      } catch (e) {
+        if (e instanceof Error && e.message !== i18n.global.t('common.requestFailed')) throw e
+      }
+      throw new Error(rawText || i18n.global.t('common.requestFailed'))
+    }
+
+    return response.json() as Promise<T>
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      throw new Error(i18n.global.t('common.requestFailed'))
+    }
+    throw e
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 export const webApi = {
@@ -120,31 +138,57 @@ export const webApi = {
     })
   },
   async getCurrentWebUser() {
-    const response = await fetch(`${API_BASE}/web/auth/me`, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
 
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(text || i18n.global.t('common.requestFailed'))
+    try {
+      const response = await fetch(`${API_BASE}/web/auth/me`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || i18n.global.t('common.requestFailed'))
+      }
+
+      return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        throw new Error(i18n.global.t('common.requestFailed'))
+      }
+      throw e
+    } finally {
+      clearTimeout(timer)
     }
-
-    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
   },
   async updateCurrentWebUser(payload: { nickname: string; email: string; avatar?: string | null; password?: string | null }) {
-    const response = await fetch(`${API_BASE}/web/auth/me`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
 
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(text || i18n.global.t('common.requestFailed'))
+    try {
+      const response = await fetch(`${API_BASE}/web/auth/me`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || i18n.global.t('common.requestFailed'))
+      }
+
+      return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        throw new Error(i18n.global.t('common.requestFailed'))
+      }
+      throw e
+    } finally {
+      clearTimeout(timer)
     }
-
-    return response.json() as Promise<{ id: number; username: string; nickname: string; email: string; avatar: string | null }>
   },
 }

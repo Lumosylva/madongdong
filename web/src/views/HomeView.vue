@@ -84,8 +84,10 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
+import { useTheme } from '../composables/useTheme'
 import { applySiteMeta, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
+import { truncateText } from '../utils/text'
 import type { HomeResponse } from '../types'
 
 const { t } = useI18n()
@@ -99,8 +101,7 @@ const homePageSize = ref(20)
 const pageSizeOptions = [10, 20, 30, 50]
 const welcomeMessage = ref('')
 const welcomeShownKey = 'md-home-welcome-shown'
-type ThemeMode = 'light' | 'dark'
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const friendLinks = ref<Array<{ id: number; name: string }>>([])
 
 let lastScrollY = 0
@@ -122,16 +123,6 @@ const handleScroll = () => {
     lastScrollY = scrollY
     ticking = false
   })
-}
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 const applyHomeMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
@@ -204,15 +195,9 @@ const goSearch = () => {
   router.push(`/search?keyword=${encodeURIComponent(keyword.value.trim())}`)
 }
 
-const truncateText = (value: string | null | undefined, maxLength: number) => {
-  const text = String(value || '').trim()
-  if (!text) return ''
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
-}
-
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
 
   const onceWelcome = localStorage.getItem('md-welcome-once')
   if (onceWelcome) {
@@ -233,6 +218,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
+  destroyTheme()
 })
 </script>
 

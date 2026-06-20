@@ -50,8 +50,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-
-type ThemeMode = 'light' | 'dark'
+import type { ThemeMode } from '../types'
 
 const { t } = useI18n()
 

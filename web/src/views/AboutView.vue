@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -66,23 +66,12 @@ import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import type { HomeResponse } from '../types'
-
-type ThemeMode = 'light' | 'dark'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const { t } = useI18n()
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const data = ref<HomeResponse | null>(null)
-const theme = ref<ThemeMode>('light')
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const loadData = async () => {
   data.value = await webApi.getHome(1, 1)
@@ -92,9 +81,13 @@ const loadData = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   await loadData()
+})
+
+onBeforeUnmount(() => {
+  destroyTheme()
 })
 </script>
 

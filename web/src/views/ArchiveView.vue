@@ -96,13 +96,13 @@ import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { useTheme } from '../composables/useTheme'
 import type { ArchiveResponse } from '../types'
 
 const route = useRoute()
 const { t } = useI18n()
 const data = ref<ArchiveResponse | null>(null)
-type ThemeMode = 'light' | 'dark'
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange } = useTheme()
 
 const openYears = ref<Set<number>>(new Set())
 
@@ -114,16 +114,6 @@ const yearRangeText = computed(() => {
 })
 
 const monthNames = computed(() => t('archive.months') as unknown as string[])
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const isYearOpen = (year: number) => openYears.value.has(year)
 
@@ -161,8 +151,8 @@ const loadData = async () => {
 }
 
 onMounted(() => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   loadData()
 })
 </script>

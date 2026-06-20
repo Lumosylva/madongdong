@@ -147,6 +147,7 @@ import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { useTheme } from '../composables/useTheme'
 import type { Article, CategoriesResponse, CategoryWithCount } from '../types'
 import { useFormatRelativeTime } from '../utils/time'
 
@@ -154,8 +155,7 @@ const { t } = useI18n()
 const { formatRelativeTime } = useFormatRelativeTime()
 const route = useRoute()
 const data = ref<CategoriesResponse | null>(null)
-type ThemeMode = 'light' | 'dark'
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange } = useTheme()
 
 const rootCategories = computed(() => data.value?.categories.filter((c) => !c.parent_id) || [])
 const getChildCategories = (parentId: number) => data.value?.categories.filter((c) => c.parent_id === parentId) || []
@@ -169,16 +169,6 @@ const catPage = ref(1)
 const catTotalPages = ref(1)
 const catTotal = ref(0)
 const articlePanelRef = ref<HTMLElement | null>(null)
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const scrollToPanel = async () => {
   await nextTick()
@@ -253,8 +243,8 @@ const loadData = async () => {
 }
 
 onMounted(() => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   loadData()
 })
 </script>

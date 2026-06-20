@@ -85,13 +85,12 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle } from '../site-meta'
-
-type ThemeMode = 'light' | 'dark'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange } = useTheme()
 const username = ref('')
 const nickname = ref('')
 const email = ref('')
@@ -109,16 +108,6 @@ const authNavItems = computed(() => [
   { id: 2, title: t('common.login'), path: '/login', sort_order: 2, is_visible: true, target: null, description: null },
   { id: 3, title: t('common.register'), path: '/register', sort_order: 3, is_visible: true, target: null, description: null },
 ])
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const loadCaptcha = async () => {
   try {
@@ -184,8 +173,8 @@ const submit = async () => {
 }
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   document.title = buildPageTitle(t('register.title'))
   await Promise.all([loadSiteLogo(), loadCaptcha()])
 })

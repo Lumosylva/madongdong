@@ -189,8 +189,10 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { applyArticleMeta, applySiteMetaFromSetting } from '../site-meta'
+import { useTheme } from '../composables/useTheme'
+import { applyArticleMeta, applySiteMetaFromSetting, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
+import { truncateText } from '../utils/text'
 import type { ArticlePageResponse, Comment } from '../types'
 
 const { t } = useI18n()
@@ -208,8 +210,7 @@ const commentToastMessage = ref('')
 const commentToastStatus = ref<'success' | 'warning' | 'error' | ''>('')
 const commentSubmitting = ref(false)
 const commentFieldFocused = ref(false)
-type ThemeMode = 'light' | 'dark'
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
@@ -222,16 +223,6 @@ const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, {
 
 const previewMarkdownItConfig = (md: any) => {
   md.options.html = true
-}
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 const syncTopbarOffset = () => {
@@ -263,6 +254,7 @@ const goSearch = () => {
 
 const loadData = async () => {
   data.value = await webApi.getArticle(String(route.params.slug))
+  setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
   applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url)
 }
@@ -329,12 +321,6 @@ const getClientMetaText = (comment: Comment) => {
   return parts.join(' ')
 }
 
-const truncateText = (value: string | null | undefined, maxLength: number) => {
-  const text = String(value || '').trim()
-  if (!text) return ''
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
-}
-
 const AVATAR_COLORS = [
   '#0ea5a4', '#3b82f6', '#8b5cf6', '#ec4899', '#f97316',
   '#14b8a6', '#6366f1', '#a855f7', '#e11d48', '#f59e0b',
@@ -364,17 +350,9 @@ watch(() => route.params.slug, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
-const handleThemeChange = (event: Event) => {
-  const detail = (event as CustomEvent<ThemeMode>).detail
-  if (detail === 'dark' || detail === 'light') {
-    applyTheme(detail)
-  }
-}
-
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
-  window.addEventListener('md-theme-change', handleThemeChange as EventListener)
+  initTheme()
+  listenThemeChange()
 
   const savedNickname = localStorage.getItem('md-reader-nickname')
   if (savedNickname && !guestNickname.value.trim()) {
@@ -395,6 +373,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   topbarResizeObserver.value?.disconnect()
-  window.removeEventListener('md-theme-change', handleThemeChange as EventListener)
+  destroyTheme()
 })
 </script>

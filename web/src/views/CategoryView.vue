@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -72,28 +72,18 @@ import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime } from '../utils/time'
 import type { CategoryArticlesResponse } from '../types'
+import { useTheme } from '../composables/useTheme'
 
 const { t } = useI18n()
 const { formatRelativeTime } = useFormatRelativeTime()
 const route = useRoute()
 const router = useRouter()
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const data = ref<CategoryArticlesResponse | null>(null)
 const keyword = ref('')
 const page = ref(1)
 const pageSize = ref(20)
 const pageSizeOptions = [10, 20, 30, 50]
-type ThemeMode = 'light' | 'dark'
-const theme = ref<ThemeMode>('light')
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const goSearch = () => {
   if (!keyword.value.trim()) return
@@ -130,8 +120,12 @@ watch(() => route.params.slug, async () => {
 })
 
 onMounted(() => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
   loadData()
+})
+
+onBeforeUnmount(() => {
+  destroyTheme()
 })
 </script>

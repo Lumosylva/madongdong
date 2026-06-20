@@ -23,7 +23,7 @@
       </section>
 
       <section v-if="!isLoggedIn" class="profile-auth-card">
-        <div class="profile-auth-icon">🔒</div>
+        <div class="profile-auth-icon">馃敀</div>
         <h3>{{ t('profile.notLoggedIn') }}</h3>
         <p>{{ t('profile.notLoggedInDesc') }}</p>
         <div class="profile-auth-actions">
@@ -104,19 +104,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import WebTopbar from '../components/WebTopbar.vue'
 import { webApi, toAbsoluteAssetUrl } from '../api'
 import type { NavItem } from '../types'
-
-type ThemeMode = 'light' | 'dark'
+import { useTheme } from '../composables/useTheme'
 
 const route = useRoute()
 const { t } = useI18n()
 
-const theme = ref<ThemeMode>('light')
+const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTheme()
 const isLoggedIn = ref(false)
 const user = ref<{ id: number; username: string; nickname: string; email: string; avatar: string | null } | null>(null)
 const siteData = ref<{ site_title: string; site_subtitle: string; site_logo: string | null }>({
@@ -135,16 +134,6 @@ const saving = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
 let messageTimer: number | null = null
-
-const applyTheme = (value: ThemeMode) => {
-  theme.value = value
-  document.documentElement.dataset.theme = value
-  localStorage.setItem('md-theme', value)
-}
-
-const toggleTheme = () => {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
-}
 
 const avatarInitial = computed(() => (nickname.value || user.value?.username || 'U').slice(0, 1).toUpperCase())
 
@@ -256,8 +245,8 @@ watch(
 )
 
 onMounted(async () => {
-  const storedTheme = localStorage.getItem('md-theme')
-  applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+  initTheme()
+  listenThemeChange()
 
   try {
     const homeRes = await webApi.getHome(1, 1)
@@ -285,6 +274,10 @@ onMounted(async () => {
   } catch {
     isLoggedIn.value = false
   }
+})
+
+onBeforeUnmount(() => {
+  destroyTheme()
 })
 </script>
 
@@ -396,7 +389,7 @@ onMounted(async () => {
   margin-top: 8px;
 }
 
-/* ── Toast ── */
+/* 鈹€鈹€ Toast 鈹€鈹€ */
 
 .profile-toast {
   display: flex;
@@ -438,7 +431,7 @@ onMounted(async () => {
   transform: translateY(-6px);
 }
 
-/* ── Grid Layout ── */
+/* 鈹€鈹€ Grid Layout 鈹€鈹€ */
 
 .profile-grid {
   display: grid;
@@ -452,7 +445,7 @@ onMounted(async () => {
   gap: 16px;
 }
 
-/* ── Cards ── */
+/* 鈹€鈹€ Cards 鈹€鈹€ */
 
 .profile-card {
   border: 1px solid var(--line);
@@ -482,7 +475,7 @@ onMounted(async () => {
   position: relative;
 }
 
-/* ── Avatar Card ── */
+/* 鈹€鈹€ Avatar Card 鈹€鈹€ */
 
 .profile-avatar-card {
   justify-items: center;
@@ -555,7 +548,7 @@ onMounted(async () => {
   position: relative;
 }
 
-/* ── Form Fields ── */
+/* 鈹€鈹€ Form Fields 鈹€鈹€ */
 
 .profile-field {
   display: grid;
@@ -608,7 +601,7 @@ onMounted(async () => {
   background: rgba(148, 163, 184, 0.06);
 }
 
-/* ── Buttons ── */
+/* 鈹€鈹€ Buttons 鈹€鈹€ */
 
 .profile-btn {
   display: inline-flex;
@@ -713,7 +706,7 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-/* ── Dark Mode ── */
+/* 鈹€鈹€ Dark Mode 鈹€鈹€ */
 
 :root[data-theme='dark'] .profile-card {
   background: rgba(17, 24, 39, 0.72);
@@ -777,7 +770,7 @@ onMounted(async () => {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 34%, transparent 66%, rgba(56, 189, 248, 0.04));
 }
 
-/* ── Responsive ── */
+/* 鈹€鈹€ Responsive 鈹€鈹€ */
 
 @media (max-width: 768px) {
   .profile-grid {
