@@ -10,10 +10,12 @@
 - 安装向导支持配置：站点域名（自动检测）、JWT 签名密钥（自动生成）、数据库连接（默认 SQLite）
 - 安装完成后自动写入 `.env` 配置文件，域名配置自动生成 4 个 CORS 变体（http/https × 域名/www.域名）
 - JWT 登录认证与角色鉴权（admin / author / reader）
+- CSRF 防护（双重提交 Cookie 模式，保护所有写请求）
 - 文章能力：创建 / 更新 / 审核通过 / 审核驳回 / 摘要自动生成
 - 文章 slug URL：`/article/{slug}`，自动生成，标题变更时重新生成
 - 文章垃圾箱：删除 → 软删除 → 恢复 / 彻底删除
-- 分类与标签管理（CRUD）
+- 分类管理（CRUD，支持层级分类）
+- 标签管理（CRUD）
 - 媒体库管理（文件上传、目录管理、批量移动/删除）
 - 评论管理与审核（通过 / 拒绝 / 彻底删除）
 - 友情链接管理（前台申请、后台审核/编辑/删除）
@@ -22,9 +24,10 @@
 - 用户管理（创建/编辑/删除/批量角色变更）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
+- RSS Feed（`/api/v1/web/rss`）和 Sitemap（`/api/v1/web/sitemap.xml`）
 - 浏览量去重（同一 IP 24 小时内同一文章只计 1 次）
 - 速率限制（按端点配置，防止暴力破解）
-- 登录失败锁定（6 次失败锁定 15 分钟）
+- 登录失败锁定（数据库持久化，6 次失败锁定 15 分钟，启动时自动清理过期记录）
 - 数学验证码（HMAC 签名，防止批量注册和暴力破解）
 - Cookie 隔离（admin / web 前端使用独立 Cookie 命名空间）
 - 数据库迁移自动处理（启动时自动添加新字段）
@@ -49,6 +52,7 @@
 - **首页 Hero 背景大图**：可配置背景大图，导航栏透明，滚动时自动隐藏/显示（半透明毛玻璃）
 - **首页背景音乐**：左下角浮动播放器，支持网易云音乐链接嵌入
 - **文章视频/音频插入**：编辑器支持插入本地视频/音频文件、YouTube/Bilibili/网易云音乐链接嵌入
+- **无障碍支持**：所有交互元素添加 aria-label，表单使用 label 关联，屏幕阅读器友好的隐藏文本
 
 ### 后台（admin）
 
@@ -68,7 +72,7 @@
 - **站点设置**：品牌信息（Logo 上传/拖拽、站点标题/副标题、页脚 HTML）、首页背景大图（URL 输入 + 媒体库选择）、首页背景音乐（网易云音乐链接/iframe 嵌入）
 - **服务器配置**：域名、JWT 密钥（可编辑）、数据库连接/上传目录（只读显示）
 - **个人中心**：头像上传、昵称、邮箱、密码修改
-- **分类管理**：CRUD（输入框适配深色模式）
+- **分类管理**：CRUD（支持层级分类，拼音自动生成 slug）
 
 ---
 
@@ -81,7 +85,8 @@
 - Refresh Token 存储于数据库，支持单个/全部撤销
 - JWT 中包含 `roles` claim，通过 `require_token_role()` 从 Token 校验角色
 - JWT `sub` 使用用户 ID（非 username），改名不影响 Token
-- 登录失败锁定：6 次失败锁定 15 分钟
+- CSRF 防护：双重提交 Cookie 模式（`csrf_token` cookie + `X-CSRF-Token` header），使用 `hmac.compare_digest` 防时序攻击
+- 登录失败锁定：数据库持久化记录，6 次失败锁定 15 分钟，启动时自动清理过期记录
 
 ### 请求保护
 
@@ -136,20 +141,29 @@
 ### 前端
 
 - Vue 3 + TypeScript
-- Vue Router
+- Vue Router（路由懒加载）
 - Vite
 - vue-i18n（多语言）
 - md-editor-v3（admin Markdown 编辑器）
 - DOMPurify（web Markdown 渲染消毒）
+- pinyin-pro（分类 slug 自动生成）
 
 ---
 
 ## 项目结构
 
 ```text
-app/          FastAPI 后端（api / models / schemas / services / core）
+app/          FastAPI 后端（api / core / models / schemas / services / utils）
 web/          前台 Vue 应用（端口 5173，多语言：zh-CN / en / ja）
+  src/
+    views/    页面组件（13 个视图）
+    components/ 组件（FloatingTools / HomeBgmPlayer / WebFooter / WebTopbar）
+    styles/   模块化 CSS（base / components / layout / pages / article-detail-*）
 admin/        后台 Vue 应用（端口 5174，基础路径 /admin/）
+  src/
+    views/    页面组件（LoginView / DashboardView）
+    components/ 面板组件（13 个管理面板）
+    styles/   模块化 CSS（13 个独立样式文件）
 assets/       前后端共享工具（resolveAssetUrl）
 scripts/      构建辅助脚本（URL 风险扫描）
 ```
@@ -294,9 +308,9 @@ VITE_WEB_BASE_URL=http://localhost:5173
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET/POST | `/api/v1/admin/categories` | 分类列表/创建 |
-| PUT | `/api/v1/admin/categories/{id}` | 更新分类 |
-| DELETE | `/api/v1/admin/categories/{id}` | 删除分类 |
+| GET/POST | `/api/v1/admin/categories` | 分类列表/创建（支持 parent_id） |
+| PUT | `/api/v1/admin/categories/{id}` | 更新分类（支持 parent_id） |
+| DELETE | `/api/v1/admin/categories/{id}` | 删除分类（子分类自动提升） |
 | GET/POST | `/api/v1/admin/tags` | 标签列表/创建 |
 | PUT | `/api/v1/admin/tags/{id}` | 更新标签 |
 
@@ -349,6 +363,8 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET | `/api/v1/web/categories` | 分类索引 |
 | GET | `/api/v1/web/categories/{slug}/articles` | 分类文章 |
 | GET | `/api/v1/web/tags/{slug}/articles` | 标签文章 |
+| GET | `/api/v1/web/rss` | RSS Feed |
+| GET | `/api/v1/web/sitemap.xml` | Sitemap |
 | POST | `/api/v1/web/comments` | 提交评论 |
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
@@ -547,6 +563,26 @@ CORS_ORIGINS=["https://your-domain.com"]
 ---
 
 ## 更新日志
+
+### 2026-06-21
+
+**后端**
+- 新增 CSRF 防护中间件（双重提交 Cookie 模式），保护所有写请求
+- 新增 RSS Feed（`/api/v1/web/rss`）和 Sitemap（`/api/v1/web/sitemap.xml`）接口
+- 登录失败锁定改为数据库持久化（`login_attempts` 表），启动时自动清理过期记录
+- 分类支持层级结构（`parent_id` 字段），删除父分类时子分类自动提升
+
+**前台（web）**
+- 无障碍支持：所有交互元素添加 aria-label，表单使用 for/id 关联，屏幕阅读器友好的隐藏文本（.sr-only）
+- 新增 i18n key：`common.close`、`topbar.switchLanguage`
+- 路由懒加载优化，提升首屏加载速度
+- 修复登录页用户名/密码输入框图标显示异常（Unicode 编码修复）
+
+**后台（admin）**
+- 分类管理支持层级分类，拼音自动生成 slug
+
+**样式**
+- CSS 模块化重构：web 和 admin 样式拆分为独立模块文件，提升可维护性
 
 ### 2026-06-16
 
