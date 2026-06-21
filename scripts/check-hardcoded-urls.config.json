@@ -1,0 +1,49 @@
+{
+  "scan": {
+    "include": ["app", "web/src", "admin/src"],
+    "exclude": ["node_modules", "dist", ".git", ".venv", "__pycache__"],
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".vue", ".py", ".json", ".md", ".yml", ".yaml", ".env", ".example", ".ini", ".conf", ".txt"]
+  },
+  "patterns": {
+    "allow": [
+      "http://127.0.0.1:8000",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:5174",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173",
+      "http://localhost:4174",
+      "http://127.0.0.1:4174",
+      "https://picsum.photos/seed/md-editor-probe/800/400",
+      "https://github.com/Lumosylva/madongdong",
+      "https://www.youtube.com/embed/",
+      "https://player.bilibili.com/player.html",
+      "https://music.163.com/outchain/player",
+      "http://www.sitemaps.org/schemas/sitemap/0.9",
+      "text.startswith('http://') or text.startswith('https://')"
+    ],
+    "deny": [
+      {
+        "name": "http://",
+        "pattern": "http://"
+      },
+      {
+        "name": "ws://",
+        "pattern": "ws://"
+      },
+      {
+        "name": "localhost:",
+        "pattern": "localhost:\\d+"
+      },
+      {
+        "name": "127.0.0.1:",
+        "pattern": "127\\.0\\.0\\.1:\\d+"
+      },
+      {
+        "name": "absolute domain",
+        "pattern": "(?:https?:\\/\\/)?(?:[a-z0-9-]+\\.)+[a-z]{2,}(?::\\d+)?\\/[^\\s\"'`)]*"
+      }
+    ]
+  }
+}

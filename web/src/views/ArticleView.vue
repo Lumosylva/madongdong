@@ -47,7 +47,7 @@
           <span>{{ data.article.comment_count }} {{ t('common.comments') }}</span>
         </div>
       </div>
-      <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" />
+      <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" decoding="async" />
       <div class="article-content-wrap">
         <div class="article-body article-body-md">
           <MdPreview
@@ -160,7 +160,7 @@
           :data-comment-id="comment.id"
         >
           <div class="comment-avatar">
-            <img v-if="comment.user?.avatar" :src="comment.user.avatar" :alt="comment.user?.nickname" class="comment-avatar-img" />
+            <img v-if="comment.user?.avatar" :src="comment.user.avatar" :alt="comment.user?.nickname" class="comment-avatar-img" loading="lazy" decoding="async" />
             <div v-else class="comment-avatar-fallback" :style="{ background: avatarColor(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }">
               {{ avatarLetter(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }}
             </div>
@@ -185,6 +185,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/preview.css'
 import DOMPurify from 'dompurify'
 import { useI18n } from 'vue-i18n'
 
