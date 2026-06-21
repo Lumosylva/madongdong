@@ -44,7 +44,7 @@
           {{ t('common.page', { n: data.articles.page }) }} / {{ data.articles.total_pages }}
           <span class="pager-size">
             {{ t('common.perPage') }}
-            <select v-model.number="pageSize" class="pager-size-select" @change="changePageSize">
+            <select v-model.number="pageSize" class="pager-size-select" :aria-label="t('common.perPage')" @change="changePageSize">
               <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
             </select>
             {{ t('common.items') }}

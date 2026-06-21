@@ -17,6 +17,7 @@ export default {
     loadMore: '加载更多',
     noMore: '没有更多结果了。',
     noData: '暂无数据',
+    close: '关闭',
     confirm: '确认',
     previous: '上一页',
     next: '下一页',
@@ -55,6 +56,7 @@ export default {
     loginRegister: '登录 / 注册',
     loggedInUser: '已登录用户',
     quickNav: '快速导航',
+    switchLanguage: '切换语言',
   },
   footer: {
     friendLinks: '友情链接',

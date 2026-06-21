@@ -57,7 +57,7 @@
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </span>
             <input v-model="captchaAnswer" :placeholder="captchaQuestion || t('register.captchaPlaceholder')" />
-            <button type="button" class="auth-password-toggle" :title="t('register.refreshCaptcha')" @click="loadCaptcha">
+            <button type="button" class="auth-password-toggle" :aria-label="t('register.refreshCaptcha')" :title="t('register.refreshCaptcha')" @click="loadCaptcha">
               <svg viewBox="0 0 24 24" class="auth-password-icon" aria-hidden="true"><path d="M4 4v5h5M20 20v-5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </label>

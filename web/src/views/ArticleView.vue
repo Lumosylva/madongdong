@@ -117,16 +117,18 @@
 
       <form class="comment-form" @submit.prevent="submitComment">
         <div class="comment-inputs-row" :class="{ 'auto-filled': isLoggedIn }">
-          <label class="comment-field-wrap">
+          <label for="comment-nickname" class="comment-field-wrap">
             <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
-            <input ref="nicknameInputRef" v-model="guestNickname" :placeholder="t('article.nicknamePlaceholder')" :readonly="isLoggedIn" />
+            <input id="comment-nickname" ref="nicknameInputRef" v-model="guestNickname" :placeholder="t('article.nicknamePlaceholder')" :readonly="isLoggedIn" />
           </label>
-          <label class="comment-field-wrap">
+          <label for="comment-email" class="comment-field-wrap">
             <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
-            <input ref="emailInputRef" v-model="guestEmail" :placeholder="t('article.emailPlaceholder')" :readonly="isLoggedIn" />
+            <input id="comment-email" ref="emailInputRef" v-model="guestEmail" :placeholder="t('article.emailPlaceholder')" :readonly="isLoggedIn" />
           </label>
         </div>
+        <label for="comment-content" class="sr-only">{{ t('article.commentPlaceholder') }}</label>
         <textarea
+          id="comment-content"
           ref="commentTextareaRef"
           v-model="commentContent"
           :placeholder="t('article.commentPlaceholder')"
@@ -135,7 +137,7 @@
         ></textarea>
         <div class="comment-actions">
           <span class="comment-tip">{{ t('article.commentTip') }}</span>
-          <button type="submit" :disabled="commentSubmitting || !commentContent.trim()">
+          <button type="submit" :disabled="commentSubmitting || !commentContent.trim()" :aria-label="t('article.submitComment')">
             {{ commentSubmitting ? t('article.submitting') : (!commentContent.trim() ? t('article.inputContent') : t('article.submitComment')) }}
           </button>
         </div>

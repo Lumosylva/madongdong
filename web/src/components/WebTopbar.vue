@@ -38,8 +38,8 @@
         <button
           type="button"
           class="auth-entry icon-entry"
-          aria-label="语言"
-          title="切换语言"
+          :aria-label="t('topbar.switchLanguage')"
+          :title="t('topbar.switchLanguage')"
           @click="langMenuOpen = !langMenuOpen"
         >
           <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.08L5 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor"/></svg>
@@ -97,7 +97,7 @@
     <aside v-if="mobileMenuOpen" class="drawer-panel">
       <div class="drawer-header">
         <span class="drawer-title">{{ t('topbar.quickNav') }}</span>
-        <button type="button" class="drawer-close" @click="mobileMenuOpen = false">✕</button>
+        <button type="button" class="drawer-close" :aria-label="t('common.close')" @click="mobileMenuOpen = false">✕</button>
       </div>
       <nav class="drawer-nav">
         <RouterLink v-for="item in navItems" :key="item.id" :to="item.path" :class="{ active: isActive(item.path) }" @click="mobileMenuOpen = false">
@@ -126,7 +126,7 @@
               <p class="drawer-subtitle">{{ t('topbar.searchSubtitle') }}</p>
             </div>
           </div>
-          <button type="button" class="drawer-close" @click="closeSearchPanel">✕</button>
+          <button type="button" class="drawer-close" :aria-label="t('common.close')" @click="closeSearchPanel">✕</button>
         </div>
 
         <form class="search-overlay-form" @submit.prevent>

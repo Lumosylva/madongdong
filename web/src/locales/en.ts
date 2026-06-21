@@ -17,6 +17,7 @@ export default {
     loadMore: 'Load More',
     noMore: 'No more results.',
     noData: 'No data',
+    close: 'Close',
     confirm: 'Confirm',
     previous: 'Previous',
     next: 'Next',
@@ -55,6 +56,7 @@ export default {
     loginRegister: 'Login / Register',
     loggedInUser: 'Logged in user',
     quickNav: 'Quick Navigation',
+    switchLanguage: 'Switch language',
   },
   footer: {
     friendLinks: 'Friend Links',

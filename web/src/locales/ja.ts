@@ -17,6 +17,7 @@ export default {
     loadMore: 'もっと読む',
     noMore: 'これ以上の結果はありません。',
     noData: 'データなし',
+    close: '閉じる',
     confirm: '確認',
     previous: '前へ',
     next: '次へ',
@@ -55,6 +56,7 @@ export default {
     loginRegister: 'ログイン / 登録',
     loggedInUser: 'ログイン済み',
     quickNav: 'クイックナビ',
+    switchLanguage: '言語を切替',
   },
   footer: {
     friendLinks: '相互リンク',
