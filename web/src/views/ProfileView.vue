@@ -23,7 +23,7 @@
       </section>
 
       <section v-if="!isLoggedIn" class="profile-auth-card">
-        <div class="profile-auth-icon">馃敀</div>
+        <div class="profile-auth-icon">🔒</div>
         <h3>{{ t('profile.notLoggedIn') }}</h3>
         <p>{{ t('profile.notLoggedInDesc') }}</p>
         <div class="profile-auth-actions">
@@ -389,7 +389,7 @@ onBeforeUnmount(() => {
   margin-top: 8px;
 }
 
-/* 鈹€鈹€ Toast 鈹€鈹€ */
+/* ── Toast ── */
 
 .profile-toast {
   display: flex;
@@ -431,7 +431,7 @@ onBeforeUnmount(() => {
   transform: translateY(-6px);
 }
 
-/* 鈹€鈹€ Grid Layout 鈹€鈹€ */
+/* ── Grid Layout ── */
 
 .profile-grid {
   display: grid;
@@ -445,7 +445,7 @@ onBeforeUnmount(() => {
   gap: 16px;
 }
 
-/* 鈹€鈹€ Cards 鈹€鈹€ */
+/* ── Cards ── */
 
 .profile-card {
   border: 1px solid var(--line);
@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-/* 鈹€鈹€ Avatar Card 鈹€鈹€ */
+/* ── Avatar Card ── */
 
 .profile-avatar-card {
   justify-items: center;
@@ -548,7 +548,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-/* 鈹€鈹€ Form Fields 鈹€鈹€ */
+/* ── Form Fields ── */
 
 .profile-field {
   display: grid;
@@ -601,7 +601,7 @@ onBeforeUnmount(() => {
   background: rgba(148, 163, 184, 0.06);
 }
 
-/* 鈹€鈹€ Buttons 鈹€鈹€ */
+/* ── Buttons ── */
 
 .profile-btn {
   display: inline-flex;
@@ -706,7 +706,7 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
-/* 鈹€鈹€ Dark Mode 鈹€鈹€ */
+/* ── Dark Mode ── */
 
 :root[data-theme='dark'] .profile-card {
   background: rgba(17, 24, 39, 0.72);
@@ -770,7 +770,7 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 34%, transparent 66%, rgba(56, 189, 248, 0.04));
 }
 
-/* 鈹€鈹€ Responsive 鈹€鈹€ */
+/* ── Responsive ── */
 
 @media (max-width: 768px) {
   .profile-grid {

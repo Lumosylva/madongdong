@@ -1,5 +1,7 @@
 """认证相关数据结构。"""
 
+import re
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
@@ -63,6 +65,13 @@ class ReaderRegisterRequest(BaseModel):
     captcha_token: str = Field(min_length=1)
     captcha_answer: str = Field(min_length=1)
 
+    @field_validator("nickname")
+    @classmethod
+    def _check_nickname_no_emoji_start(cls, v: str) -> str:
+        if v and re.match(r"[\U0001F000-\U0001FFFF\U00002702-\U000027B0\U0000FE00-\U0000FE0F\U0000200D\U00002600-\U000026FF]", v):
+            raise ValueError("昵称不能以表情符号开头")
+        return v
+
 
 class PermissionOut(BaseModel):
     """权限输出。"""
@@ -106,6 +115,13 @@ class ProfileUpdateRequest(BaseModel):
     email: EmailStr
     avatar: str | None = Field(default=None, max_length=1000000)
     password: str | None = Field(default=None, min_length=6, max_length=128)
+
+    @field_validator("nickname")
+    @classmethod
+    def _check_nickname_no_emoji_start(cls, v: str) -> str:
+        if v and re.match(r"[\U0001F000-\U0001FFFF\U00002702-\U000027B0\U0000FE00-\U0000FE0F\U0000200D\U00002600-\U000026FF]", v):
+            raise ValueError("昵称不能以表情符号开头")
+        return v
 
 
 class AdminUserItem(BaseModel):
