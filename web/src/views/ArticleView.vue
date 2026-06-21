@@ -119,11 +119,11 @@
         <div class="comment-inputs-row" :class="{ 'auto-filled': isLoggedIn }">
           <label for="comment-nickname" class="comment-field-wrap">
             <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
-            <input id="comment-nickname" ref="nicknameInputRef" v-model="guestNickname" :placeholder="t('article.nicknamePlaceholder')" :readonly="isLoggedIn" />
+            <input id="comment-nickname" ref="nicknameInputRef" v-model="guestNickname" autocomplete="name" :placeholder="t('article.nicknamePlaceholder')" :readonly="isLoggedIn" />
           </label>
           <label for="comment-email" class="comment-field-wrap">
             <span v-if="isLoggedIn" class="comment-field-badge">{{ t('article.autoFilled') }}</span>
-            <input id="comment-email" ref="emailInputRef" v-model="guestEmail" :placeholder="t('article.emailPlaceholder')" :readonly="isLoggedIn" />
+            <input id="comment-email" ref="emailInputRef" v-model="guestEmail" type="email" autocomplete="email" :placeholder="t('article.emailPlaceholder')" :readonly="isLoggedIn" />
           </label>
         </div>
         <label for="comment-content" class="sr-only">{{ t('article.commentPlaceholder') }}</label>
