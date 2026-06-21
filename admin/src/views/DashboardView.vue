@@ -1,51 +1,14 @@
 <template>
   <div class="admin-page">
-    <header class="topbar">
-      <a
-        class="brand-block brand-link"
-        :href="webEntryUrl"
-        :title="siteTitle ? `${t('nav.viewSite')}：${siteTitle}` : t('nav.viewSite')"
-      >
-        <img v-if="siteLogo" :src="siteLogo" class="brand-logo" alt="site logo" />
-        <span v-else class="brand-mark">MD</span>
-        <div class="brand-text">
-          <h1>{{ siteTitle || t('nav.dashboard') }}</h1>
-          <p>{{ t('nav.viewSite') }}</p>
-        </div>
-      </a>
-      <div class="topbar-actions">
-        <div class="lang-menu" ref="langMenuRef">
-          <button type="button" class="lang-trigger" @click="toggleLangMenu">
-            <svg class="lang-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.08L5 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="currentColor"/></svg>
-            <span class="lang-label">{{ localeLabel }}</span>
-          </button>
-          <transition name="menu-pop">
-            <div v-if="isLangMenuOpen" class="user-dropdown lang-dropdown">
-              <button
-                v-for="opt in localeOptions"
-                :key="opt.value"
-                type="button"
-                class="dropdown-item"
-                :class="{ 'is-active': locale === opt.value }"
-                @click="switchLocale(opt.value)"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
-          </transition>
-        </div>
-        <div class="user-menu" ref="userMenuRef">
-          <button type="button" class="user-trigger" @click="toggleUserMenu">
-            <span class="user-name">{{ displayName }}</span>
-            <span class="role-badge" :class="isAdmin ? 'admin' : 'author'">{{ roleLabel }}</span>
-          </button>
-          <div v-if="isUserMenuOpen" class="user-dropdown">
-            <button type="button" class="dropdown-item" @click="openProfile">{{ t('nav.profile') }}</button>
-            <button type="button" class="dropdown-item danger" @click="logout">{{ t('nav.logout') }}</button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <AdminTopbar
+      :site-title="siteTitle"
+      :site-logo="siteLogo"
+      :display-name="displayName"
+      :role-label="roleLabel"
+      :is-admin="isAdmin"
+      @open-profile="openProfile"
+      @logout="logout"
+    />
 
     <div v-if="siteToastMessage" class="panel toast-panel" :class="`toast-${siteToastStatus}`">
       <span class="toast-icon" aria-hidden="true">{{ siteToastStatus === 'success' ? '✓' : '!' }}</span>
@@ -53,88 +16,16 @@
     </div>
 
     <div class="dashboard-shell" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <aside class="sidebar" :class="{ collapsed: isSidebarCollapsed }">
-        <div class="sidebar-head">
-          <button type="button" class="sidebar-toggle" :aria-label="sidebarToggleLabel" @click="toggleSidebar">
-            <svg v-if="isSidebarCollapsed" class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-            <svg v-else class="sidebar-toggle-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <nav class="sidebar-nav">
-          <template v-for="item in visibleMainMenus" :key="item.key">
-            <div
-              v-if="item.key === 'articles'"
-              ref="articleMenuGroupRef"
-              class="sidebar-menu-group"
-              @mouseenter="isSidebarCollapsed && openArticleFlyout($event)"
-              @mouseleave="isSidebarCollapsed && closeArticleFlyoutDelayed()"
-            >
-              <a
-                href="#"
-                :class="{ active: currentView === item.key }"
-                @click.prevent="setView(item.key)"
-              >
-                <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
-                <span class="sidebar-text">{{ item.label }}</span>
-                <span v-if="!isSidebarCollapsed" class="sidebar-chevron">›</span>
-              </a>
-
-              <transition name="sidebar-flyout-fade">
-                <div
-                  v-if="isSidebarCollapsed && articleFlyoutOpen"
-                  class="sidebar-flyout"
-                  :class="`flyout-${sidebarFlyoutSide}`"
-                  @mouseenter="openArticleFlyout()"
-                  @mouseleave="closeArticleFlyoutDelayed()"
-                >
-                  <div class="sidebar-flyout-header">
-                    <strong class="sidebar-flyout-title">{{ articleFlyoutTitle }}</strong>
-                  </div>
-                  <button
-                    v-for="sub in articleSubMenus"
-                    :key="sub.key"
-                    type="button"
-                    class="sidebar-flyout-item"
-                    :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
-                    :disabled="sub.key === 'edit' && !editingArticleId"
-                    @click="sub.key === 'edit' && !editingArticleId ? undefined : setArticleSubView(sub.key)"
-                  >
-                    {{ sub.label }}
-                  </button>
-                </div>
-              </transition>
-
-              <div v-if="!isSidebarCollapsed && currentView === 'articles'" class="sidebar-subnav">
-                <a
-                  v-for="sub in articleSubMenus"
-                  :key="sub.key"
-                  href="#"
-                  :class="{ active: articleSubView === sub.key, disabled: sub.key === 'edit' && !editingArticleId }"
-                  @click.prevent="sub.key === 'edit' && !editingArticleId ? undefined : setArticleSubView(sub.key)"
-                >
-                  <span class="sidebar-text">{{ sub.label }}</span>
-                </a>
-              </div>
-            </div>
-
-            <a
-              v-else
-              href="#"
-              :class="{ active: currentView === item.key }"
-              :data-label="item.label"
-              @click.prevent="setView(item.key)"
-            >
-              <span class="sidebar-icon">{{ menuIconMap[item.key] }}</span>
-              <span class="sidebar-text">{{ item.label }}</span>
-            </a>
-          </template>
-        </nav>
-      </aside>
+      <AdminSidebar
+        :current-view="currentView"
+        :article-sub-view="articleSubView"
+        :editing-article-id="editingArticleId"
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :is-admin="isAdmin"
+        @toggle-sidebar="toggleSidebar"
+        @set-view="setView"
+        @set-article-sub-view="setArticleSubView"
+      />
 
       <main class="dashboard-main">
         <ProfilePanel
@@ -155,7 +46,8 @@ import { useI18n } from 'vue-i18n'
 
 import { adminApi, API_ORIGIN, clearAdminAuthCookies } from '../api'
 import { buildPageTitle, setSiteSetting } from '../site-meta'
-import { localeOptions, setLocale } from '../i18n'
+import AdminTopbar from '../components/AdminTopbar.vue'
+import AdminSidebar from '../components/AdminSidebar.vue'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
 import ArticleManagePanel from '../components/ArticleManagePanel.vue'
 import ArticleTrashPanel from '../components/ArticleTrashPanel.vue'
@@ -184,19 +76,7 @@ type ContentViewKey =
   | 'users'
   | 'site'
 
-type MainMenuItem = {
-  key: ViewType
-  label: string
-  adminOnly?: boolean
-}
-
-type ArticleSubMenuItem = {
-  key: ArticleSubView
-  label: string
-  contentKey: Extract<ContentViewKey, 'articles-manage' | 'articles-trash' | 'articles-create' | 'articles-edit' | 'articles-category'>
-}
-
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const currentView = ref<ViewType>('overview')
@@ -243,8 +123,6 @@ const pushViewUrl = (view: ViewType, sub?: ArticleSubView) => {
   router.replace(base + subPath)
 }
 const isSidebarCollapsed = ref(false)
-const articleFlyoutOpen = ref(false)
-const articleFlyoutCloseTimer = ref<number | null>(null)
 const currentUser = ref<AdminUser | null>(null)
 const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
@@ -285,113 +163,24 @@ const articleDraftSessionSaved = ref(false)
 const editingArticleId = ref<number | null>(null)
 const editingArticleTitle = ref('')
 
-const isUserMenuOpen = ref(false)
-const userMenuRef = ref<HTMLElement | null>(null)
-const isLangMenuOpen = ref(false)
-const langMenuRef = ref<HTMLElement | null>(null)
-const logoUploading = ref(false)
-const logoUploadMessage = ref('')
-const logoUploadStatus = ref<'success' | 'error' | ''>('')
-const logoCropApplied = ref(false)
 const siteToastMessage = ref('')
 const siteToastStatus = ref<'success' | 'error' | ''>('')
 let siteToastTimer: number | null = null
 const mediaUploading = ref(false)
 const mediaToastMessage = ref('')
 const mediaToastStatus = ref<'success' | 'error' | ''>('')
-
-const mainMenus = computed<MainMenuItem[]>(() => [
-  { key: 'overview', label: t('menu.overview') },
-  { key: 'articles', label: t('menu.articles') },
-  { key: 'media', label: t('menu.media'), adminOnly: true },
-  { key: 'comments', label: t('menu.comments') },
-  { key: 'friend-links', label: t('menu.friendLinks') },
-  { key: 'users', label: t('menu.users'), adminOnly: true },
-  { key: 'profile', label: t('menu.profile') },
-  { key: 'site', label: t('menu.site'), adminOnly: true },
-])
-
-const articleSubMenus = computed<ArticleSubMenuItem[]>(() => [
-  { key: 'manage', label: t('articleSub.manage'), contentKey: 'articles-manage' },
-  { key: 'create', label: t('articleSub.create'), contentKey: 'articles-create' },
-  { key: 'edit', label: t('articleSub.edit'), contentKey: 'articles-edit' },
-  { key: 'category', label: t('articleSub.category'), contentKey: 'articles-category' },
-  { key: 'trash', label: t('articleSub.trash'), contentKey: 'articles-trash' },
-])
-
-const menuIconMap: Record<ViewType, string> = {
-  overview: '⌂',
-  articles: '✎',
-  media: '◫',
-  comments: '☍',
-  'friend-links': '🔗',
-  users: '⚑',
-  site: '⚙',
-  profile: '◉',
-}
-
-const sidebarToggleLabel = computed(() => (isSidebarCollapsed.value ? t('nav.expandSidebar') : t('nav.collapseSidebar')))
-const sidebarFlyoutSide = ref<'right' | 'left'>('right')
-const articleMenuGroupRef = ref<HTMLElement | null>(null)
-const articleMenuGroupEl = ref<HTMLElement | null>(null)
-const articleFlyoutTitle = computed(() => {
-  if (currentView.value !== 'articles') return t('menu.articles')
-  if (articleSubView.value === 'edit' && !editingArticleId.value) return t('menu.articles')
-  const currentSub = articleSubMenus.value.find((item) => item.key === articleSubView.value)
-  return currentSub ? `${t('menu.articles')} / ${currentSub.label}` : t('menu.articles')
-})
-
-const clearArticleFlyoutTimer = () => {
-  if (articleFlyoutCloseTimer.value !== null) {
-    window.clearTimeout(articleFlyoutCloseTimer.value)
-    articleFlyoutCloseTimer.value = null
-  }
-}
-
-const openArticleFlyout = (event?: MouseEvent) => {
-  clearArticleFlyoutTimer()
-  articleFlyoutOpen.value = true
-  if (event?.currentTarget instanceof HTMLElement) {
-    articleMenuGroupEl.value = event.currentTarget
-  }
-  updateFlyoutSide()
-}
-
-const closeArticleFlyoutDelayed = () => {
-  clearArticleFlyoutTimer()
-  articleFlyoutCloseTimer.value = window.setTimeout(() => {
-    articleFlyoutOpen.value = false
-    articleFlyoutCloseTimer.value = null
-  }, 180)
-}
-
-const updateFlyoutSide = () => {
-  const el = articleMenuGroupEl.value || articleMenuGroupRef.value
-  if (!el || typeof el.getBoundingClientRect !== 'function') return
-  const rect = el.getBoundingClientRect()
-  const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0
-  sidebarFlyoutSide.value = rect.right + 220 > viewportWidth ? 'left' : 'right'
-}
+const logoUploading = ref(false)
+const logoUploadMessage = ref('')
+const logoUploadStatus = ref<'success' | 'error' | ''>('')
+const logoCropApplied = ref(false)
 
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
-  articleFlyoutOpen.value = false
-  clearArticleFlyoutTimer()
   localStorage.setItem('md-admin-sidebar-collapsed', isSidebarCollapsed.value ? '1' : '0')
-  if (isSidebarCollapsed.value) {
-    queueMicrotask(updateFlyoutSide)
-  }
 }
 
 const setView = (view: ViewType) => {
-  const targetMenu = mainMenus.value.find((item) => item.key === view)
-  if (targetMenu?.adminOnly && !isAdmin.value) {
-    return
-  }
   currentView.value = view
-  if (view !== 'articles') {
-    articleFlyoutOpen.value = false
-  }
   if (view === 'articles') {
     articleSubView.value = articleSubView.value || 'manage'
   }
@@ -402,7 +191,6 @@ const setArticleSubView = (subView: ArticleSubView) => {
   if (subView === 'edit' && !editingArticleId.value) {
     articleSubView.value = 'create'
     currentView.value = 'articles'
-    articleFlyoutOpen.value = false
     title.value = ''
     coverUrl.value = ''
     contentMarkdown.value = ''
@@ -455,7 +243,6 @@ const setArticleSubView = (subView: ArticleSubView) => {
   }
   articleSubView.value = subView
   currentView.value = 'articles'
-  articleFlyoutOpen.value = false
   pushViewUrl('articles', subView)
 }
 
@@ -468,13 +255,6 @@ const isAuthor = computed(() =>
 )
 
 const displayName = computed(() => currentUser.value?.nickname || currentUser.value?.username || t('nav.dashboard'))
-const webEntryUrl = computed(() => {
-  const baseUrl = (import.meta.env.VITE_WEB_BASE_URL as string | undefined)?.trim()
-  if (baseUrl) {
-    return baseUrl.replace(/\/$/, '')
-  }
-  return window.location.origin
-})
 
 const roleLabel = computed(() => {
   if (isAdmin.value) return t('role.admin')
@@ -482,25 +262,13 @@ const roleLabel = computed(() => {
   return t('role.reader')
 })
 
-const visibleMainMenus = computed(() =>
-  mainMenus.value.filter((item) => !item.adminOnly || isAdmin.value),
-)
-
-const articleSubViewToContentKey = computed(() =>
-  articleSubMenus.value.reduce<Record<ArticleSubView, ContentViewKey>>(
-  (acc, item) => {
-    acc[item.key] = item.contentKey
-    return acc
-  },
-  {
-    manage: 'articles-manage',
-    trash: 'articles-trash',
-    create: 'articles-create',
-    edit: 'articles-edit',
-    category: 'articles-category',
-  },
-  ),
-)
+const articleSubViewToContentKey: Record<ArticleSubView, ContentViewKey> = {
+  manage: 'articles-manage',
+  trash: 'articles-trash',
+  create: 'articles-create',
+  edit: 'articles-edit',
+  category: 'articles-category',
+}
 
 const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'overview') return 'overview'
@@ -509,7 +277,7 @@ const currentContentView = computed<ContentViewKey>(() => {
   if (currentView.value === 'friend-links') return 'friend-links'
   if (currentView.value === 'users') return 'users'
   if (currentView.value === 'site') return 'site'
-  return articleSubViewToContentKey.value[articleSubView.value] || 'articles-manage'
+  return articleSubViewToContentKey[articleSubView.value] || 'articles-manage'
 })
 
 const panelComponentMap: Record<ContentViewKey, unknown> = {
@@ -791,36 +559,6 @@ const applyAdminMeta = () => {
   iconLink.href = siteLogo.value
 }
 
-const toggleUserMenu = () => {
-  isUserMenuOpen.value = !isUserMenuOpen.value
-  isLangMenuOpen.value = false
-}
-
-const toggleLangMenu = () => {
-  isLangMenuOpen.value = !isLangMenuOpen.value
-  isUserMenuOpen.value = false
-}
-
-const switchLocale = (val: string) => {
-  setLocale(val)
-  isLangMenuOpen.value = false
-}
-
-const localeLabel = computed(() => {
-  const map: Record<string, string> = { 'zh-CN': '中文', en: 'EN', ja: '日本語' }
-  return map[locale.value] || locale.value
-})
-
-const handleDocumentClick = (event: MouseEvent) => {
-  const target = event.target as Node | null
-  if (isUserMenuOpen.value && userMenuRef.value && !userMenuRef.value.contains(target)) {
-    isUserMenuOpen.value = false
-  }
-  if (isLangMenuOpen.value && langMenuRef.value && !langMenuRef.value.contains(target)) {
-    isLangMenuOpen.value = false
-  }
-}
-
 const handleGlobalKeyDown = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement | null
   const tagName = target?.tagName?.toUpperCase() || ''
@@ -843,18 +581,16 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
   }
 
   if (event.key === 'Escape' && !isEditable) {
-    articleFlyoutOpen.value = false
+    // Escape key handler
   }
 }
 
 const openProfile = async () => {
-  isUserMenuOpen.value = false
   currentView.value = 'profile'
   pushViewUrl('profile')
 }
 
 const logout = async () => {
-  isUserMenuOpen.value = false
   try {
     await adminApi.logout()
   } catch {
@@ -1447,7 +1183,6 @@ const editArticle = async (articleId: number) => {
     fillArticleEditor(article)
     currentView.value = 'articles'
     articleSubView.value = 'edit'
-    articleFlyoutOpen.value = false
     pushViewUrl('articles', 'edit')
     await nextTick()
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1537,10 +1272,7 @@ onMounted(async () => {
     articleSubView.value = sub
   }
 
-  document.addEventListener('click', handleDocumentClick)
   document.addEventListener('keydown', handleGlobalKeyDown)
-  window.addEventListener('resize', updateFlyoutSide)
-  updateFlyoutSide()
 
   const savedDraftRaw = localStorage.getItem(articleDraftStorageKey)
   if (savedDraftRaw) {
@@ -1568,10 +1300,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', handleDocumentClick)
   document.removeEventListener('keydown', handleGlobalKeyDown)
-  window.removeEventListener('resize', updateFlyoutSide)
-  clearArticleFlyoutTimer()
   if (articleDraftSaveTimer !== null) {
     window.clearTimeout(articleDraftSaveTimer)
     articleDraftSaveTimer = null
