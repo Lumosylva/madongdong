@@ -17,6 +17,15 @@ def _get_captcha_secret() -> bytes:
     return hashlib.sha256(f"captcha:{settings.secret_key}".encode()).digest()
 
 
+def _hash_answer(answer: int) -> str:
+    """对验证码答案做 SHA-256，避免答案明文出现在 token 中。
+
+    token 仍是 `哈希:时间戳:签名` 的形式，但即便被读出也无法还原出答案。
+    """
+
+    return hashlib.sha256(f"answer:{answer}".encode()).hexdigest()
+
+
 def generate_captcha() -> dict[str, str]:
     """生成一道简单数学题，返回题目和签名令牌。"""
 
@@ -29,7 +38,8 @@ def generate_captcha() -> dict[str, str]:
     question = f"{a} {op} {b} = ?"
 
     ts = str(int(time.time()))
-    payload = f"{answer}:{ts}"
+    # 用答案哈希替代明文答案，配合 HMAC 签名防篡改
+    payload = f"{_hash_answer(answer)}:{ts}"
     sig = hmac.new(_get_captcha_secret(), payload.encode(), hashlib.sha256).hexdigest()[:16]
     token = f"{payload}:{sig}"
 
@@ -43,15 +53,20 @@ def verify_captcha(token: str, answer: str) -> None:
         parts = token.split(":")
         if len(parts) != 3:
             raise ValueError
-        correct_answer_str, ts_str, sig = parts
-        payload = f"{correct_answer_str}:{ts_str}"
+        expected_hash, ts_str, sig = parts
+        payload = f"{expected_hash}:{ts_str}"
         expected_sig = hmac.new(_get_captcha_secret(), payload.encode(), hashlib.sha256).hexdigest()[:16]
         if not hmac.compare_digest(sig, expected_sig):
             raise ValueError
         ts = int(ts_str)
         if time.time() - ts > _TTL:
             raise ValueError
-        if str(answer).strip() != correct_answer_str:
+        # 对用户提交的答案同样哈希后比对，全程不接触明文答案
+        try:
+            answer_int = int(str(answer).strip())
+        except (TypeError, ValueError):
+            raise ValueError
+        if not hmac.compare_digest(_hash_answer(answer_int), expected_hash):
             raise ValueError
     except (ValueError, IndexError):
         raise HTTPException(

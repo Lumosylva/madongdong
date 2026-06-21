@@ -7,7 +7,6 @@ import { adminApi } from './api'
 import { router } from './router'
 import { setSiteSetting, buildPageTitle } from './site-meta'
 import './styles.css'
-import 'vditor/dist/index.css'
 
 const bootstrap = async () => {
   try {

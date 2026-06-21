@@ -12,21 +12,39 @@ type WrappedResponse<T> = {
   data: T
 }
 
+/** 从 cookie 中读取指定键的值 */
+function getCookieValue(name: string): string {
+  return (document.cookie.split('; ').find(c => c.startsWith(`${name}=`)) || '').split('=').slice(1).join('=')
+}
+
+/** 统一清除 admin 认证相关 cookie（所有需要登出/401 的地方调用此函数） */
+export function clearAdminAuthCookies() {
+  const cookies = ['admin_access_token', 'admin_refresh_token', 'admin_logged_in', 'csrf_token']
+  for (const name of cookies) {
+    document.cookie = `${name}=; path=/; max-age=0`
+  }
+}
+
 export const isLoggedIn = () => document.cookie.split('; ').some(c => c.startsWith('admin_logged_in='))
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const method = (init?.method || 'GET').toUpperCase()
+  const isWrite = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
+  const csrfToken = isWrite ? getCookieValue('csrf_token') : ''
+
   const response = await fetch(`${API_BASE}${path}`, {
     credentials: 'include',
     ...init,
     headers: {
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
+      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     },
   })
 
   if (!response.ok) {
     if (response.status === 401) {
-      document.cookie = 'admin_logged_in=; path=/; max-age=0'
+      clearAdminAuthCookies()
     }
 
     const rawText = await response.text()

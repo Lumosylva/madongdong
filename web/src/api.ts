@@ -6,6 +6,11 @@ const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() |
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
 const DEFAULT_TIMEOUT = 15_000
 
+/** 从 cookie 中读取指定键的值（无解码，CSRF token 无需特殊字符） */
+function getCookieValue(name: string): string {
+  return (document.cookie.split('; ').find(c => c.startsWith(`${name}=`)) || '').split('=').slice(1).join('=')
+}
+
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -18,6 +23,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   try {
+    const method = (rest.method || 'GET').toUpperCase()
+    const isWrite = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
+    const csrfToken = isWrite ? getCookieValue('csrf_token') : ''
     const response = await fetch(`${API_BASE}${path}`, {
       credentials: 'include',
       ...rest,
@@ -25,6 +33,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: {
         'Content-Type': 'application/json',
         ...extraHeaders,
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
       },
     })
 
@@ -168,10 +177,11 @@ export const webApi = {
     const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
 
     try {
+      const csrfToken = getCookieValue('csrf_token')
       const response = await fetch(`${API_BASE}/web/auth/me`, {
         method: 'PUT',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}) },
         body: JSON.stringify(payload),
         signal: controller.signal,
       })

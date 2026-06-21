@@ -57,8 +57,8 @@ async def login(
     from app.core.captcha import verify_captcha
     from app.core import login_lockout
 
-    if payload.captcha_token:
-        verify_captcha(payload.captcha_token, payload.captcha_answer)
+    # 无条件校验验证码（原先仅在传入 captcha_token 时校验，可被空字段绕过）
+    verify_captcha(payload.captcha_token, payload.captcha_answer)
 
     lock_key = f"admin:{payload.username}"
     await login_lockout.check(session, lock_key)

@@ -56,11 +56,19 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _validate_settings(self) -> "Settings":
         if not self.secret_key:
-            self.secret_key = secrets.token_urlsafe(48)
-            logger.warning(
-                "SECRET_KEY 未设置，已自动生成随机密钥。"
-                "生产环境请在 .env 中显式设置 SECRET_KEY，否则每次重启后已有 Token 将失效。"
-            )
+            if self.debug:
+                # 仅开发模式允许自动生成随机密钥，方便本地启动
+                self.secret_key = secrets.token_urlsafe(48)
+                logger.warning(
+                    "SECRET_KEY 未设置，已自动生成随机密钥（仅 DEBUG 模式）。"
+                    "每次重启后已有 Token 将失效，生产环境请在 .env 中显式设置 SECRET_KEY。"
+                )
+            else:
+                # 生产模式拒绝启动，避免误用随机密钥导致重启后所有 JWT 失效
+                raise ValueError(
+                    "生产环境（DEBUG=False）必须在 .env 中显式设置 SECRET_KEY，"
+                    "否则每次重启都会使所有已签发的 Token 失效。"
+                )
 
         if "*" in self.cors_origins:
             raise ValueError(

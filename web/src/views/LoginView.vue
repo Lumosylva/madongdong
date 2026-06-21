@@ -30,11 +30,11 @@
 
         <div class="auth-field-group">
           <label class="auth-input-shell">
-            <span class="auth-input-icon" aria-hidden="true">馃懁</span>
+            <span class="auth-input-icon" aria-hidden="true">👤</span>
             <input v-model="username" autocomplete="username" :placeholder="t('login.usernamePlaceholder')" />
           </label>
           <label class="auth-input-shell auth-password-shell">
-            <span class="auth-input-icon" aria-hidden="true">馃敀</span>
+            <span class="auth-input-icon" aria-hidden="true">🔒</span>
             <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="current-password" :placeholder="t('login.passwordPlaceholder')" @keyup.enter="submit" />
             <button type="button" class="auth-password-toggle" :aria-label="showPassword ? t('login.hidePassword') : t('login.showPassword')" :title="showPassword ? t('login.hidePassword') : t('login.showPassword')" @click="showPassword = !showPassword">
               <svg v-if="showPassword" class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">

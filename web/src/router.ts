@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+/** 安装状态缓存：首次查询后不再重复请求（安装态在运行期不会变） */
+let cachedInstallStatus: boolean | null = null
+
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -86,17 +89,23 @@ export const router = createRouter({
 
 router.beforeEach(async (to) => {
   if (to.name === 'install') return true
-  try {
-    const res = await fetch('/api/v1/install/status')
-    if (!res.ok) {
+
+  // 安装状态缓存：只在首次导航时查询一次，后续不再请求
+  if (!cachedInstallStatus) {
+    try {
+      const res = await fetch('/api/v1/install/status')
+      if (!res.ok) {
+        cachedInstallStatus = false
+      } else {
+        const data = (await res.json()) as { success?: boolean; data?: { installed?: boolean } }
+        cachedInstallStatus = !!data?.data?.installed
+      }
+    } catch {
+      cachedInstallStatus = false
+    }
+    if (!cachedInstallStatus) {
       return { name: 'install' }
     }
-    const data = (await res.json()) as { success?: boolean; data?: { installed?: boolean } }
-    if (!data?.data?.installed) {
-      return { name: 'install' }
-    }
-  } catch {
-    return { name: 'install' }
   }
 
   if (to.meta.requiresAuth) {

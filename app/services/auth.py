@@ -54,6 +54,10 @@ async def update_current_user_profile(
     user.avatar = avatar
     if password:
         user.password_hash = pwd_context.hash(password)
+        # 密码已变更，撤销该用户所有已签发的 refresh token，
+        # 防止旧 token 仍可刷新出新的 access token。
+        from app.core.security import revoke_all_user_refresh_tokens
+        await revoke_all_user_refresh_tokens(session, user.id)
 
     await session.commit()
     await session.refresh(user)
@@ -123,6 +127,9 @@ async def update_user(
     user.roles = [role]
     if password:
         user.password_hash = pwd_context.hash(password)
+        # 密码已变更，撤销该用户所有已签发的 refresh token。
+        from app.core.security import revoke_all_user_refresh_tokens
+        await revoke_all_user_refresh_tokens(session, user.id)
 
     await session.commit()
     await session.refresh(user)

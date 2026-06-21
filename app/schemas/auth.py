@@ -42,8 +42,8 @@ class LoginRequest(BaseModel):
 
     username: str = Field(min_length=3, max_length=50)
     password: str = Field(max_length=128)
-    captcha_token: str = ""
-    captcha_answer: str = ""
+    captcha_token: str = Field(min_length=1)
+    captcha_answer: str = Field(min_length=1)
 
     @field_validator("password")
     @classmethod

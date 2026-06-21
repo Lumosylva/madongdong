@@ -153,7 +153,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
-import { adminApi, API_ORIGIN } from '../api'
+import { adminApi, API_ORIGIN, clearAdminAuthCookies } from '../api'
 import { buildPageTitle, setSiteSetting } from '../site-meta'
 import { localeOptions, setLocale } from '../i18n'
 import ArticleCreatePanel from '../components/ArticleCreatePanel.vue'
@@ -860,9 +860,7 @@ const logout = async () => {
   } catch {
     // ignore
   }
-  document.cookie = 'admin_logged_in=; path=/; max-age=0'
-  document.cookie = 'admin_access_token=; path=/; max-age=0'
-  document.cookie = 'admin_refresh_token=; path=/; max-age=0'
+  clearAdminAuthCookies()
   await router.push('/login')
 }
 
@@ -940,7 +938,7 @@ const loadAll = async () => {
   } catch (error) {
     const message = error instanceof Error ? error.message : t('toast.loadFailed')
     if (message.includes('401') || message.includes('未提供认证令牌') || message.includes('无效的认证令牌')) {
-      document.cookie = 'logged_in=; path=/; max-age=0'
+      clearAdminAuthCookies()
       await router.push('/login')
       return
     }

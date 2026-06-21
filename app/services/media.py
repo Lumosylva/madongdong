@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import aiofiles
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -99,13 +100,20 @@ async def upload_media_file(
 
     media_type = _guess_media_type(upload_file.content_type or "application/octet-stream")
     uploads_dir = Path(settings.upload_dir)
-    uploads_dir.mkdir(parents=True, exist_ok=True)
+    # 异步创建目录，避免在事件循环里做同步阻塞 I/O
+    await aiofiles.os.makedirs(uploads_dir, exist_ok=True)
 
     generated_name = f"{uuid4().hex}{suffix}"
     storage_path = uploads_dir / generated_name
 
-    content = await upload_file.read()
-    storage_path.write_bytes(content)
+    # 分块异步写盘：避免一次性 read() 占用内存、避免 write_bytes() 阻塞事件循环
+    chunk_size = 1024 * 1024  # 1 MB
+    async with aiofiles.open(storage_path, "wb") as f:
+        while True:
+            chunk = await upload_file.read(chunk_size)
+            if not chunk:
+                break
+            await f.write(chunk)
     await upload_file.close()
 
     url = f"{settings.upload_url_prefix}/{generated_name}"

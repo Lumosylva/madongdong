@@ -54,7 +54,7 @@ def _cookie_keys(source: str) -> tuple[str, str, str]:
 
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str, source: str = "") -> None:
-    """将令牌设置为 httpOnly Cookie。"""
+    """将令牌设置为 httpOnly Cookie，同时下发 CSRF token cookie。"""
 
     secure = settings.cookie_secure
     at_key, rt_key, li_key = _cookie_keys(source)
@@ -85,15 +85,33 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str, 
         path="/",
         max_age=settings.refresh_token_expire_minutes * 60,
     )
+    # 双重提交 cookie：非 httpOnly，前端 JS 可读，用于写入请求的 X-CSRF-Token 头
+    _set_csrf_cookie(response, secure)
+
+
+def _set_csrf_cookie(response: Response, secure: bool = False) -> None:
+    """下发 CSRF token cookie（非 httpOnly，前端可读）。"""
+    from app.core.csrf import CSRF_COOKIE_NAME
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=secrets.token_urlsafe(32),
+        httponly=False,  # 前端 JS 必须能读到
+        samesite=_COOKIE_SAMESITE,
+        secure=secure,
+        path="/",
+        max_age=86400 * 7,  # 7 天，与 refresh token 生命周期匹配
+    )
 
 
 def clear_auth_cookies(response: Response, source: str = "") -> None:
-    """清除认证 Cookie。"""
+    """清除认证 Cookie（含 CSRF token）。"""
 
     at_key, rt_key, li_key = _cookie_keys(source)
     response.delete_cookie(key=at_key, path="/")
     response.delete_cookie(key=rt_key, path="/")
     response.delete_cookie(key=li_key, path="/")
+    from app.core.csrf import CSRF_COOKIE_NAME
+    response.delete_cookie(key=CSRF_COOKIE_NAME, path="/")
 
 
 def create_access_token(subject: int, roles: list[str] | None = None) -> str:
