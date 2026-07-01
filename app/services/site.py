@@ -47,6 +47,7 @@ async def update_site_setting(
     site_logo: str | None,
     site_subtitle: str | None,
     icp_beian: str | None,
+    police_beian: str | None,
     copyright_text: str | None,
     homepage_page_size: int,
     comment_requires_review: bool,
@@ -60,6 +61,7 @@ async def update_site_setting(
     setting.site_logo = normalize_site_logo_url(site_logo)
     setting.site_subtitle = site_subtitle
     setting.icp_beian = icp_beian
+    setting.police_beian = police_beian
     setting.copyright_text = copyright_text
     setting.homepage_page_size = homepage_page_size
     setting.comment_requires_review = comment_requires_review

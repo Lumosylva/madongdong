@@ -72,7 +72,7 @@
       </aside>
     </main>
 
-    <WebFooter :icp-beian="data.site.icp_beian" :friend-links="friendLinks" :copyright-text="data.site.copyright_text" />
+    <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :friend-links="friendLinks" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
 

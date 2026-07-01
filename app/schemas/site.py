@@ -12,6 +12,7 @@ class SiteSettingUpdate(BaseModel):
     site_logo: str | None = Field(default=None, max_length=500)
     site_subtitle: str | None = Field(default=None, max_length=255)
     icp_beian: str | None = Field(default=None, max_length=1000)
+    police_beian: str | None = Field(default=None, max_length=1000)
     copyright_text: str | None = Field(default=None, max_length=1000)
     homepage_page_size: int = Field(default=10, ge=1, le=50)
     comment_requires_review: bool = True
@@ -29,6 +30,7 @@ class SiteSettingResponse(BaseModel):
     site_logo: str | None
     site_subtitle: str | None
     icp_beian: str | None
+    police_beian: str | None
     copyright_text: str | None
     homepage_page_size: int
     comment_requires_review: bool

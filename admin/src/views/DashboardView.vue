@@ -135,6 +135,7 @@ const siteTitle = ref('')
 const siteSubtitle = ref('')
 const siteLogo = ref('')
 const icpBeian = ref('')
+const policeBeian = ref('')
 const copyrightText = ref('')
 const homepageBgmUrl = ref('')
 const homepageHeroImage = ref('')
@@ -393,6 +394,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         logoUploadStatus: logoUploadStatus.value,
         logoCropApplied: logoCropApplied.value,
         icpBeian: icpBeian.value,
+        policeBeian: policeBeian.value,
         copyrightText: copyrightText.value,
         homepageBgmUrl: homepageBgmUrl.value,
         homepageHeroImage: homepageHeroImage.value,
@@ -498,6 +500,12 @@ const activePanelListeners = computed(() => {
         },
         'update:icpBeian': (value: string) => {
           icpBeian.value = value
+        },
+        'update:policeBeian': (value: string) => {
+          policeBeian.value = value
+        },
+        'update:copyrightText': (value: string) => {
+          copyrightText.value = value
         },
         'update:homepageBgmUrl': (value: string) => {
           homepageBgmUrl.value = value
@@ -687,6 +695,7 @@ const loadAll = async () => {
     setSiteSetting(siteRes.data)
     applyAdminMeta()
     icpBeian.value = siteRes.data.icp_beian || ''
+    policeBeian.value = siteRes.data.police_beian || ''
     copyrightText.value = siteRes.data.copyright_text || ''
     homepageBgmUrl.value = siteRes.data.homepage_bgm_url || ''
     homepageHeroImage.value = siteRes.data.homepage_hero_image || ''
@@ -1031,6 +1040,7 @@ const saveSite = async () => {
       site_logo: siteLogo.value || null,
       site_subtitle: siteSubtitle.value,
       icp_beian: icpBeian.value,
+      police_beian: policeBeian.value,
       copyright_text: copyrightText.value,
       homepage_page_size: 10,
       comment_requires_review: true,

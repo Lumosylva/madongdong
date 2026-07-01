@@ -57,9 +57,19 @@
           <input class="settings-input" :value="siteSubtitle" :placeholder="t('siteSettings.subtitlePlaceholder')" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
         </label>
         <label class="settings-field">
-          <span>{{ t('siteSettings.footerSection') }}</span>
-          <textarea class="settings-input settings-textarea" :value="icpBeian" :placeholder="t('siteSettings.footerPlaceholder')" rows="2" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
-          <p class="tips">{{ t('siteSettings.footerTip') }}</p>
+          <span>{{ t('siteSettings.copyrightLabel') }}</span>
+          <textarea class="settings-input settings-textarea" :value="copyrightText" :placeholder="t('siteSettings.copyrightPlaceholder')" rows="2" @input="$emit('update:copyrightText', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.copyrightTip') }}</p>
+        </label>
+        <label class="settings-field">
+          <span>{{ t('siteSettings.icpLabel') }}</span>
+          <textarea class="settings-input settings-textarea" :value="icpBeian" :placeholder="t('siteSettings.icpPlaceholder')" rows="2" @input="$emit('update:icpBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.icpTip') }}</p>
+        </label>
+        <label class="settings-field">
+          <span>{{ t('siteSettings.policeLabel') }}</span>
+          <textarea class="settings-input settings-textarea" :value="policeBeian" :placeholder="t('siteSettings.policePlaceholder')" rows="3" @input="$emit('update:policeBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.policeTip') }}</p>
         </label>
       </section>
 
@@ -184,6 +194,7 @@ const props = defineProps<{
   siteTitle: string
   siteSubtitle: string
   icpBeian: string
+  policeBeian: string
   copyrightText: string
   homepageBgmUrl: string
   homepageHeroImage: string
@@ -203,6 +214,8 @@ const emit = defineEmits<{
   'update:siteTitle': [value: string]
   'update:siteSubtitle': [value: string]
   'update:icpBeian': [value: string]
+  'update:policeBeian': [value: string]
+  'update:copyrightText': [value: string]
   'update:homepageBgmUrl': [value: string]
   'update:homepageHeroImage': [value: string]
   'update:serverDomain': [value: string]

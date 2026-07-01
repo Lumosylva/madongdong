@@ -177,7 +177,7 @@
       </div>
     </section>
 
-    <WebFooter :icp-beian="data.site.icp_beian" :copyright-text="data.site.copyright_text" />
+    <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :copyright-text="data.site.copyright_text" />
   </div>
 </template>
 

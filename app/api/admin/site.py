@@ -46,6 +46,7 @@ async def update_site_setting_endpoint(
         site_logo=payload.site_logo,
         site_subtitle=payload.site_subtitle,
         icp_beian=payload.icp_beian,
+        police_beian=payload.police_beian,
         copyright_text=payload.copyright_text,
         homepage_page_size=payload.homepage_page_size,
         comment_requires_review=payload.comment_requires_review,

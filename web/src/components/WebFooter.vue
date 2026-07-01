@@ -10,7 +10,10 @@
       </div>
 
       <div class="footer-copy-section">
-        <span v-html="sanitizedIcp"></span>
+        <span v-if="copyrightText" v-html="sanitizedCopyright" class="footer-copyright"></span>
+        <span v-if="icpBeian" v-html="sanitizedIcp" class="footer-icp"></span>
+        <span v-if="policeBeian" v-html="sanitizedPolice" class="footer-police"></span>
+        <span v-if="!copyrightText && !icpBeian && !policeBeian" v-html="sanitizedIcp"></span>
       </div>
     </div>
   </footer>
@@ -25,14 +28,18 @@ const { t } = useI18n()
 
 const props = defineProps<{
   icpBeian?: string | null
+  policeBeian?: string | null
+  copyrightText?: string | null
 }>()
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const rssUrl = `${API_BASE}/web/rss`
 
-const sanitizedIcp = computed(() => {
-  return DOMPurify.sanitize(props.icpBeian || t('footer.footerPending'), { USE_PROFILES: { html: true } })
-})
+const sanitize = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })
+
+const sanitizedCopyright = computed(() => sanitize(props.copyrightText || ''))
+const sanitizedIcp = computed(() => sanitize(props.icpBeian || t('footer.footerPending')))
+const sanitizedPolice = computed(() => sanitize(props.policeBeian || ''))
 </script>
 
 <style scoped>
@@ -99,11 +106,26 @@ const sanitizedIcp = computed(() => {
   text-align: center;
   color: var(--text-soft);
   font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+}
+
+.footer-copyright,
+.footer-icp,
+.footer-police {
+  white-space: nowrap;
 }
 
 @media (max-width: 640px) {
   .footer {
     padding: 18px 0 24px;
+  }
+
+  .footer-copy-section {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 </style>

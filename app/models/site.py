@@ -17,6 +17,7 @@ class SiteSetting(TimestampMixin, Base):
     site_logo: Mapped[str | None] = mapped_column(String(500), nullable=True)
     site_subtitle: Mapped[str | None] = mapped_column(String(255), nullable=True)
     icp_beian: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    police_beian: Mapped[str | None] = mapped_column(String(255), nullable=True)
     copyright_text: Mapped[str | None] = mapped_column(String(255), nullable=True)
     homepage_page_size: Mapped[int] = mapped_column(default=10, nullable=False)
     comment_requires_review: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

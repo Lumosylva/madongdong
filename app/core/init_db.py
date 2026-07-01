@@ -21,6 +21,7 @@ async def init_db() -> None:
         await _migrate_hero_image_column(session)
         await _migrate_category_parent_id(session)
         await _migrate_refresh_token_expires_at(session)
+        await _migrate_police_beian_column(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -138,3 +139,20 @@ async def _migrate_refresh_token_expires_at(session: AsyncSession) -> None:
         await session.commit()
     except Exception:
         pass
+
+
+async def _migrate_police_beian_column(session: AsyncSession) -> None:
+    """为 site_settings 表添加 police_beian 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(site_settings)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "police_beian" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(text("ALTER TABLE site_settings ADD COLUMN police_beian VARCHAR(255)"))
+    await session.commit()

@@ -16,6 +16,7 @@ export type SiteSetting = {
   site_logo: string | null
   site_subtitle: string | null
   icp_beian: string | null
+  police_beian: string | null
   copyright_text: string | null
   homepage_page_size: number
   comment_requires_review: boolean
