@@ -166,6 +166,9 @@ admin/        后台 Vue 应用（端口 5174，基础路径 /admin/）
     styles/   模块化 CSS（13 个独立样式文件）
 assets/       前后端共享工具（resolveAssetUrl）
 scripts/      构建辅助脚本（URL 风险扫描）
+Dockerfile    后端容器镜像构建
+docker-compose.yml  容器编排配置
+nginx.conf    Nginx 反向代理配置（Docker 使用）
 ```
 
 ---
@@ -449,6 +452,56 @@ TRUSTED_PROXY=true
 UPLOAD_DIR=app/static/uploads
 CORS_ORIGINS=["https://your-domain.com"]
 ```
+
+### Docker 部署
+
+#### 前置条件
+
+1. 构建前端静态文件：
+
+```bash
+cd web && npm install && npm run build
+cd ../admin && npm install && npm run build
+```
+
+2. 准备 `.env` 文件（参考 `.env.example`）：
+
+```bash
+cp .env.example .env
+# 编辑 .env 设置 SECRET_KEY 等必要配置
+```
+
+#### 启动服务
+
+```bash
+# 构建并启动
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f
+
+# 停止服务
+docker compose down
+```
+
+#### 数据持久化
+
+Docker Compose 自动创建以下数据卷：
+
+- `uploads` — 用户上传的文件
+- `db-data` — SQLite 数据库文件
+- `web-dist` — 前台构建产物
+- `admin-dist` — 后台构建产物
+
+#### 自定义端口
+
+在 `.env` 中设置 `PORT` 变量：
+
+```env
+PORT=8080
+```
+
+然后重启：`docker compose up -d`
 
 ---
 

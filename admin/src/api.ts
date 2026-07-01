@@ -254,9 +254,13 @@ export const adminApi = {
       formData.append('folder_id', String(folderId))
     }
 
+    const csrfToken = getCookieValue('csrf_token')
     const response = await fetch(`${API_BASE}/admin/media/upload`, {
       method: 'POST',
       credentials: 'include',
+      headers: {
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
       body: formData,
     })
 

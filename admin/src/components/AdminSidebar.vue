@@ -154,7 +154,7 @@ const visibleMainMenus = computed(() =>
 )
 
 const articleFlyoutOpen = ref(false)
-const articleFlyoutCloseTimer = ref<number | null>(null)
+let articleFlyoutCloseTimer: number | null = null
 const articleMenuGroupRef = ref<HTMLElement | null>(null)
 const articleMenuGroupEl = ref<HTMLElement | null>(null)
 const sidebarFlyoutSide = ref<'right' | 'left'>('right')
@@ -167,9 +167,9 @@ const articleFlyoutTitle = computed(() => {
 })
 
 const clearArticleFlyoutTimer = () => {
-  if (articleFlyoutCloseTimer.value !== null) {
-    window.clearTimeout(articleFlyoutCloseTimer.value)
-    articleFlyoutCloseTimer.value = null
+  if (articleFlyoutCloseTimer !== null) {
+    window.clearTimeout(articleFlyoutCloseTimer)
+    articleFlyoutCloseTimer = null
   }
 }
 
@@ -184,9 +184,9 @@ const openArticleFlyout = (event?: MouseEvent) => {
 
 const closeArticleFlyoutDelayed = () => {
   clearArticleFlyoutTimer()
-  articleFlyoutCloseTimer.value = window.setTimeout(() => {
+  articleFlyoutCloseTimer = window.setTimeout(() => {
     articleFlyoutOpen.value = false
-    articleFlyoutCloseTimer.value = null
+    articleFlyoutCloseTimer = null
   }, 180)
 }
 

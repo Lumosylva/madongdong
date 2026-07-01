@@ -332,7 +332,7 @@ const formatResolution = (width?: number, height?: number) => {
   const w = Number(width || 0)
   const h = Number(height || 0)
   if (!w || !h) return t('common.unknown')
-  return `${w} × ${h}`
+  return `${w} × ${h} px`
 }
 </script>
 

@@ -7,6 +7,7 @@ from uuid import uuid4
 
 import aiofiles
 from fastapi import HTTPException, UploadFile, status
+from PIL import Image
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -101,7 +102,7 @@ async def upload_media_file(
     media_type = _guess_media_type(upload_file.content_type or "application/octet-stream")
     uploads_dir = Path(settings.upload_dir)
     # 异步创建目录，避免在事件循环里做同步阻塞 I/O
-    await aiofiles.os.makedirs(uploads_dir, exist_ok=True)
+    uploads_dir.mkdir(parents=True, exist_ok=True)
 
     generated_name = f"{uuid4().hex}{suffix}"
     storage_path = uploads_dir / generated_name
@@ -118,6 +119,11 @@ async def upload_media_file(
 
     url = f"{settings.upload_url_prefix}/{generated_name}"
     thumbnail_url = url if media_type == MediaType.IMAGE else None
+
+    width, height = None, None
+    if media_type == MediaType.IMAGE:
+        width, height = _extract_image_dimensions(storage_path)
+
     media = MediaFile(
         folder=folder,
         filename=generated_name,
@@ -125,8 +131,8 @@ async def upload_media_file(
         mime_type=upload_file.content_type or "application/octet-stream",
         media_type=media_type,
         file_size=file_size,
-        width=None,
-        height=None,
+        width=width,
+        height=height,
         duration=None,
         storage_path=str(storage_path).replace("\\", "/"),
         url=url,
@@ -264,3 +270,11 @@ def _guess_media_type(content_type: str) -> MediaType:
 
 def _is_admin(current_user: User) -> bool:
     return any(role.name == "admin" for role in current_user.roles)
+
+
+def _extract_image_dimensions(path: Path) -> tuple[int | None, int | None]:
+    try:
+        with Image.open(path) as img:
+            return img.size
+    except Exception:
+        return None, None

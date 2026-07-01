@@ -41,3 +41,5 @@ web\.env
 app/static/uploads/
 files.txt
 compress.bat
+optimization.txt
+error.txt
