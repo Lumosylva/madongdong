@@ -2,7 +2,8 @@
   站点设置模块，负责：
 
   settings-panel / settings-head
-  settings-grid / settings-card
+  settings-tabs / settings-tab
+  settings-tab-content / settings-card
   logo-uploader / logo-dropzone / logo-preview
   settings-field / settings-input / settings-textarea
   settings-save-button
@@ -35,6 +36,73 @@
   color: var(--text-soft);
   font-size: 13px;
   line-height: 1.45;
+}
+
+/* ── Tabs ── */
+
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-soft);
+}
+
+.settings-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.settings-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.settings-tab.active {
+  color: var(--text);
+  background: var(--bg-panel);
+  border-color: var(--line);
+  box-shadow: 0 2px 8px rgba(16, 35, 63, 0.06);
+}
+
+.settings-tab-icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.settings-tab-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+:root[data-theme='dark'] .settings-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme='dark'] .settings-tab.active {
+  background: rgba(17, 24, 39, 0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Tab content ── */
+
+.settings-tab-content {
+  display: grid;
 }
 
 .settings-grid {
@@ -494,6 +562,25 @@
   .settings-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .settings-tabs {
+    flex-wrap: wrap;
+  }
+
+  .settings-tab {
+    flex: 0 0 calc(50% - 2px);
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .settings-tab-label {
+    display: none;
+  }
+
+  .settings-tab-icon svg {
+    width: 20px;
+    height: 20px;
   }
 
   .settings-card {

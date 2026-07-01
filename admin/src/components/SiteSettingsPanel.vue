@@ -7,8 +7,23 @@
       </div>
     </div>
 
-    <div class="settings-grid">
-      <section class="settings-card">
+    <div class="settings-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        type="button"
+        class="settings-tab"
+        :class="{ active: activeTab === tab.key }"
+        @click="activeTab = tab.key"
+      >
+        <span class="settings-tab-icon" v-html="tab.icon"></span>
+        <span class="settings-tab-label">{{ tab.label }}</span>
+      </button>
+    </div>
+
+    <div class="settings-tab-content">
+      <!-- Tab 1: Brand -->
+      <div v-show="activeTab === 'brand'" class="settings-card">
         <div class="settings-card-head">
           <div class="settings-card-icon">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -56,6 +71,23 @@
           <span>{{ t('siteSettings.subtitleLabel') }}</span>
           <input class="settings-input" :value="siteSubtitle" :placeholder="t('siteSettings.subtitlePlaceholder')" @input="$emit('update:siteSubtitle', ($event.target as HTMLInputElement).value)" />
         </label>
+
+        <div class="save-row">
+          <button type="button" class="settings-save-button" :disabled="logoUploading" @click="$emit('save')">
+            {{ logoUploading ? t('common.uploading') : t('siteSettings.saveSettings') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 2: Footer -->
+      <div v-show="activeTab === 'footer'" class="settings-card">
+        <div class="settings-card-head">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+          </div>
+          <h4>{{ t('siteSettings.tabFooter') }}</h4>
+        </div>
+
         <label class="settings-field">
           <span>{{ t('siteSettings.copyrightLabel') }}</span>
           <textarea class="settings-input settings-textarea" :value="copyrightText" :placeholder="t('siteSettings.copyrightPlaceholder')" rows="2" @input="$emit('update:copyrightText', ($event.target as HTMLTextAreaElement).value)"></textarea>
@@ -71,54 +103,16 @@
           <textarea class="settings-input settings-textarea" :value="policeBeian" :placeholder="t('siteSettings.policePlaceholder')" rows="3" @input="$emit('update:policeBeian', ($event.target as HTMLTextAreaElement).value)"></textarea>
           <p class="tips">{{ t('siteSettings.policeTip') }}</p>
         </label>
-      </section>
-
-      <section class="settings-card">
-        <div class="settings-card-head">
-          <div class="settings-card-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          </div>
-          <h4>{{ t('siteSettings.heroLabel') }}</h4>
-        </div>
-
-        <label class="settings-field">
-          <span>{{ t('siteSettings.heroLabel') }}</span>
-          <div class="hero-input-row">
-            <input class="settings-input" :value="homepageHeroImage" :placeholder="t('siteSettings.heroPlaceholder')" @input="$emit('update:homepageHeroImage', ($event.target as HTMLInputElement).value)" />
-            <button type="button" class="settings-field-btn" :title="t('siteSettings.heroPickFromMedia')" @click="showHeroPicker = !showHeroPicker">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </button>
-          </div>
-          <p class="tips">{{ t('siteSettings.heroTip') }}</p>
-          <div v-if="showHeroPicker" class="hero-picker">
-            <button
-              v-for="item in heroImageMedia"
-              :key="item.id"
-              type="button"
-              class="hero-picker-item"
-              :class="{ selected: item.url === homepageHeroImage }"
-              @click="selectHeroImage(item.url)"
-            >
-              <img :src="fullUrl(item.url)" :alt="item.original_name" />
-            </button>
-            <p v-if="!heroImageMedia.length" class="tips">{{ t('siteSettings.heroNoImages') }}</p>
-          </div>
-        </label>
-
-        <label class="settings-field">
-          <span>{{ t('siteSettings.bgmLabel') }}</span>
-          <textarea class="settings-input settings-textarea" :value="homepageBgmUrl" :placeholder="t('siteSettings.bgmPlaceholder')" rows="3" @input="$emit('update:homepageBgmUrl', ($event.target as HTMLTextAreaElement).value)"></textarea>
-          <p class="tips">{{ t('siteSettings.bgmTip') }}</p>
-        </label>
 
         <div class="save-row">
-          <button type="button" class="settings-save-button" :disabled="logoUploading" @click="$emit('save')">
-            {{ logoUploading ? t('common.uploading') : t('siteSettings.saveSettings') }}
+          <button type="button" class="settings-save-button" @click="$emit('save')">
+            {{ t('siteSettings.saveSettings') }}
           </button>
         </div>
-      </section>
+      </div>
 
-      <section class="settings-card settings-card-server">
+      <!-- Tab 3: Server -->
+      <div v-show="activeTab === 'server'" class="settings-card">
         <div class="settings-card-head">
           <div class="settings-card-icon-row">
             <div class="settings-card-icon">
@@ -173,7 +167,53 @@
             {{ t('siteSettings.saveServerConfig') }}
           </button>
         </div>
-      </section>
+      </div>
+
+      <!-- Tab 4: Homepage -->
+      <div v-show="activeTab === 'homepage'" class="settings-card">
+        <div class="settings-card-head">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          </div>
+          <h4>{{ t('siteSettings.tabHomepage') }}</h4>
+        </div>
+
+        <label class="settings-field">
+          <span>{{ t('siteSettings.heroLabel') }}</span>
+          <div class="hero-input-row">
+            <input class="settings-input" :value="homepageHeroImage" :placeholder="t('siteSettings.heroPlaceholder')" @input="$emit('update:homepageHeroImage', ($event.target as HTMLInputElement).value)" />
+            <button type="button" class="settings-field-btn" :title="t('siteSettings.heroPickFromMedia')" @click="showHeroPicker = !showHeroPicker">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </button>
+          </div>
+          <p class="tips">{{ t('siteSettings.heroTip') }}</p>
+          <div v-if="showHeroPicker" class="hero-picker">
+            <button
+              v-for="item in heroImageMedia"
+              :key="item.id"
+              type="button"
+              class="hero-picker-item"
+              :class="{ selected: item.url === homepageHeroImage }"
+              @click="selectHeroImage(item.url)"
+            >
+              <img :src="fullUrl(item.url)" :alt="item.original_name" />
+            </button>
+            <p v-if="!heroImageMedia.length" class="tips">{{ t('siteSettings.heroNoImages') }}</p>
+          </div>
+        </label>
+
+        <label class="settings-field">
+          <span>{{ t('siteSettings.bgmLabel') }}</span>
+          <textarea class="settings-input settings-textarea" :value="homepageBgmUrl" :placeholder="t('siteSettings.bgmPlaceholder')" rows="3" @input="$emit('update:homepageBgmUrl', ($event.target as HTMLTextAreaElement).value)"></textarea>
+          <p class="tips">{{ t('siteSettings.bgmTip') }}</p>
+        </label>
+
+        <div class="save-row">
+          <button type="button" class="settings-save-button" @click="$emit('save')">
+            {{ t('siteSettings.saveSettings') }}
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -189,6 +229,21 @@ const isDragging = ref(false)
 const sourceSizeText = ref('')
 const showSecretKey = ref(false)
 const showHeroPicker = ref(false)
+const activeTab = ref('brand')
+
+const tabIcons = {
+  brand: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+  footer: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>',
+  server: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>',
+  homepage: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+}
+
+const tabs = computed(() => [
+  { key: 'brand', label: t('siteSettings.tabBrand'), icon: tabIcons.brand },
+  { key: 'footer', label: t('siteSettings.tabFooter'), icon: tabIcons.footer },
+  { key: 'server', label: t('siteSettings.tabServer'), icon: tabIcons.server },
+  { key: 'homepage', label: t('siteSettings.tabHomepage'), icon: tabIcons.homepage },
+])
 
 const props = defineProps<{
   siteTitle: string

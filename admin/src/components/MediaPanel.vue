@@ -24,12 +24,27 @@
       <button type="button" class="media-bulk-delete-btn" @click="confirmDelete([...selectedIds])">{{ t('media.batchDelete') }}</button>
     </div>
 
-    <div class="media-section-grid">
-      <section class="panel media-group-panel">
+    <div class="media-tabs">
+      <button
+        v-for="tab in tabs"
+        :key="tab.key"
+        type="button"
+        class="media-tab"
+        :class="{ active: activeTab === tab.key }"
+        @click="activeTab = tab.key"
+      >
+        <span class="media-tab-icon" v-html="tab.icon"></span>
+        <span class="media-tab-label">{{ tab.label }}</span>
+        <span class="media-tab-count">{{ tab.count }}</span>
+      </button>
+    </div>
+
+    <div class="media-tab-content">
+      <!-- Images -->
+      <div v-show="activeTab === 'image'" class="media-group-panel">
         <div class="media-group-head">
-          <h4>{{ t('media.imagesGroup') }}</h4>
+          <h4>{{ t('media.tabImages') }}</h4>
           <div class="media-group-toolbar">
-            <span class="media-group-count">{{ grouped.image.length }}</span>
             <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('image')">{{ isGroupFullySelected('image') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
@@ -62,13 +77,13 @@
           </button>
         </div>
         <p v-else class="tips media-empty">{{ t('media.noImages') }}</p>
-      </section>
+      </div>
 
-      <section class="panel media-group-panel">
+      <!-- Audio -->
+      <div v-show="activeTab === 'audio'" class="media-group-panel">
         <div class="media-group-head">
-          <h4>{{ t('media.audioGroup') }}</h4>
+          <h4>{{ t('media.tabAudio') }}</h4>
           <div class="media-group-toolbar">
-            <span class="media-group-count">{{ grouped.audio.length }}</span>
             <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('audio')">{{ isGroupFullySelected('audio') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
@@ -86,13 +101,13 @@
           </article>
         </div>
         <p v-else class="tips media-empty">{{ t('media.noAudio') }}</p>
-      </section>
+      </div>
 
-      <section class="panel media-group-panel">
+      <!-- Video -->
+      <div v-show="activeTab === 'video'" class="media-group-panel">
         <div class="media-group-head">
-          <h4>{{ t('media.videoGroup') }}</h4>
+          <h4>{{ t('media.tabVideo') }}</h4>
           <div class="media-group-toolbar">
-            <span class="media-group-count">{{ grouped.video.length }}</span>
             <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('video')">{{ isGroupFullySelected('video') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
@@ -110,7 +125,7 @@
           </article>
         </div>
         <p v-else class="tips media-empty">{{ t('media.noVideo') }}</p>
-      </section>
+      </div>
     </div>
 
     <teleport to="body">
@@ -204,17 +219,12 @@ const selectedIds = ref<Set<number>>(new Set())
 const deleteConfirmOpen = ref(false)
 const deleteTargetIds = ref<number[]>([])
 const deleteTargetNames = ref<string[]>([])
+const activeTab = ref('image')
 
-const triggerUpload = () => {
-  fileInputRef.value?.click()
-}
-
-const onSelectFile = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-  emit('upload', file)
-  target.value = ''
+const tabIcons = {
+  image: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  audio: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  video: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
 }
 
 const grouped = computed(() => {
@@ -227,6 +237,24 @@ const grouped = computed(() => {
   const video = props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'VIDEO')
   return { image, audio, video }
 })
+
+const tabs = computed(() => [
+  { key: 'image', label: t('media.tabImages'), icon: tabIcons.image, count: grouped.value.image.length },
+  { key: 'audio', label: t('media.tabAudio'), icon: tabIcons.audio, count: grouped.value.audio.length },
+  { key: 'video', label: t('media.tabVideo'), icon: tabIcons.video, count: grouped.value.video.length },
+])
+
+const triggerUpload = () => {
+  fileInputRef.value?.click()
+}
+
+const onSelectFile = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  emit('upload', file)
+  target.value = ''
+}
 
 const fullUrl = (url: string) => toAbsoluteAssetUrl(url)
 
