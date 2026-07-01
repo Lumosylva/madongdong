@@ -303,6 +303,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         articles: articles.value,
         deletedArticles: deletedArticles.value,
         comments: comments.value,
+        friendLinks: friendLinks.value,
         loading: loading.value,
         errorMessage: errorMessage.value,
         formatArticleStatus,
@@ -408,6 +409,11 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
 
 const activePanelListeners = computed(() => {
   switch (currentContentView.value) {
+    case 'overview':
+      return {
+        navigate: handleOverviewNavigate,
+        'edit-article': editArticle,
+      }
     case 'articles-manage':
       return {
         moveToTrash,
@@ -582,6 +588,24 @@ const handleGlobalKeyDown = (event: KeyboardEvent) => {
 
   if (event.key === 'Escape' && !isEditable) {
     // Escape key handler
+  }
+}
+
+const handleOverviewNavigate = (target: string) => {
+  if (target === 'articles-create') {
+    setArticleSubView('create')
+  } else if (target === 'articles-manage') {
+    setView('articles')
+  } else if (target === 'articles-trash') {
+    setArticleSubView('trash')
+  } else if (target === 'media') {
+    setView('media')
+  } else if (target === 'comments') {
+    setView('comments')
+  } else if (target === 'friend-links') {
+    setView('friend-links')
+  } else if (target === 'site') {
+    setView('site')
   }
 }
 
