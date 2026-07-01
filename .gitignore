@@ -42,4 +42,5 @@ app/static/uploads/
 files.txt
 compress.bat
 optimization.txt
-error.txt
+docs/OPTIMIZATION_REPORT.md
+docs/SECURITY_AUDIT.md
