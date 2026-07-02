@@ -1,0 +1,81 @@
+# nginx 配置示例
+# HTTP 自动跳转 HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name domain.com www.domain.com;
+    return 301 https://$server_name$request_uri;
+}
+# HTTPS 主站配置
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name domain.com www.domain.com;
+
+    # SSL 证书（泛域名证书）
+    ssl_certificate /etc/xxx/fullchain.pem;
+    ssl_certificate_key /etc/xxx/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # 统一站点根目录，仅用于前台
+    root /var/www/xxx/web/dist;
+    index index.html;
+
+    # 前台静态资源缓存
+    location ^~ /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # 后台静态资源缓存
+    location ^~ /admin/assets/ {
+        alias /var/www/xxx/admin/dist/assets/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # 上传文件
+    location ^~ /uploads/ {
+        client_max_body_size 50m;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+        proxy_pass http://127.0.0.1:8000/uploads/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 后端 API
+    location ^~ /api/v1/ {
+        client_max_body_size 50m;
+        proxy_pass http://127.0.0.1:8000/api/v1/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 后台页面
+    location ^~ /admin/ {
+        alias /var/www/xxx/admin/dist/;
+        index index.html;
+        try_files $uri $uri/ /admin/index.html;
+    }
+
+    # 允许访问根目录下的静态 txt 文件(不想允许可以注释掉)
+    location ~* \.txt$ {
+        root /var/www/xxx;
+        try_files $uri =404;
+    }
+
+    # 前台安装页与主站
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

@@ -21,6 +21,8 @@
       "https://player.bilibili.com/player.html",
       "https://music.163.com/outchain/player",
       "https://service.weibo.com/share/share.php",
+      "https://connect.qq.com/widget/shareqq/index.html",
+      "www.w3.org/2000/svg",
       "http://www.sitemaps.org/schemas/sitemap/0.9",
       "text.startswith('http://') or text.startswith('https://')"
     ],

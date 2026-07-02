@@ -99,9 +99,11 @@ export default {
     commentPending: 'コメントが送信され、審査待ちです',
     commentFailed: 'コメントの送信に失敗しました。後でもう一度お試しください',
     readingTime: '約 {n} 分で読めます',
+    qrShareTitle: 'QRコード共有',
     shareToWeibo: 'Weiboで共有',
     copyLink: 'リンクをコピー',
     copied: 'コピーしました',
+    scanToShare: 'QRコードをスキャンして共有',
   },
   categories: {
     title: 'カテゴリ',

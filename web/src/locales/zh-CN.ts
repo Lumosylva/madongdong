@@ -99,9 +99,11 @@ export default {
     commentPending: '评论已提交，待审核',
     commentFailed: '评论提交失败，请稍后重试',
     readingTime: '预计阅读 {n} 分钟',
+    qrShareTitle: '二维码分享',
     shareToWeibo: '分享到微博',
     copyLink: '复制链接',
     copied: '已复制',
+    scanToShare: '打开手机扫描二维码分享',
   },
   categories: {
     title: '分类',

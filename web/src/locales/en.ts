@@ -99,9 +99,11 @@ export default {
     commentPending: 'Comment submitted, awaiting review',
     commentFailed: 'Failed to submit comment, please try again later',
     readingTime: 'Estimated {n} min read',
+    qrShareTitle: 'QR Code Share',
     shareToWeibo: 'Share to Weibo',
     copyLink: 'Copy link',
     copied: 'Copied',
+    scanToShare: 'Scan the QR code to share',
   },
   categories: {
     title: 'Categories',

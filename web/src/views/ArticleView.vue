@@ -48,14 +48,41 @@
           <span>{{ data.article.comment_count }} {{ t('common.comments') }}</span>
         </div>
         <div class="article-share-row">
-          <button type="button" class="share-btn" @click="shareToWeibo" :aria-label="t('article.shareToWeibo')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM17.2 6.955c-.266-.749-.935-1.16-1.493-.921-.559.239-.793.976-.527 1.725l.003.007c.263.749.93 1.162 1.49.924.559-.239.796-.978.527-1.735zM20.75 7.7c-.759-2.159-2.691-3.332-4.325-2.611-1.637.725-2.365 2.761-1.606 4.922.759 2.16 2.689 3.33 4.327 2.608 1.634-.723 2.363-2.758 1.604-4.919z"/></svg>
+          <button type="button" class="share-btn" @click="showSharePanel" :aria-label="t('article.qrShareTitle')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>
           <button type="button" class="share-btn" @click="copyArticleLink" :aria-label="t('article.copyLink')">
             <svg v-if="!linkCopied" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           </button>
         </div>
+
+        <teleport to="body">
+          <transition name="qr-modal-fade">
+            <div v-if="qrModalVisible" class="qr-modal-mask" @click="qrModalVisible = false">
+              <div class="qr-modal" @click.stop>
+                <div class="qr-modal-header">
+                  <span class="qr-modal-title">{{ t('article.qrShareTitle') }}</span>
+                  <button type="button" class="qr-modal-close" :aria-label="t('common.close')" @click="qrModalVisible = false">✕</button>
+                </div>
+                <div class="qr-modal-body">
+                  <div class="qr-code" ref="qrCodeRef"></div>
+                  <p class="qr-modal-hint">{{ t('article.scanToShare') }}</p>
+                  <div class="share-platform-row">
+                    <button type="button" class="share-platform-btn" @click="shareToWeibo">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM17.2 6.955c-.266-.749-.935-1.16-1.493-.921-.559.239-.793.976-.527 1.725l.003.007c.263.749.93 1.162 1.49.924.559-.239.796-.978.527-1.735zM20.75 7.7c-.759-2.159-2.691-3.332-4.325-2.611-1.637.725-2.365 2.761-1.606 4.922.759 2.16 2.689 3.33 4.327 2.608 1.634-.723 2.363-2.758 1.604-4.919z"/></svg>
+                      <span>微博</span>
+                    </button>
+                    <button type="button" class="share-platform-btn" @click="shareToQQ">
+                      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M21.395 15.035a39.548 39.548 0 0 0-1.103-2.804c.155-.636.233-1.253.233-1.85 0-3.878-2.963-6.581-6.395-6.581S7.735 6.503 7.735 10.381c0 .597.078 1.214.233 1.85a39.548 39.548 0 0 0-1.103 2.804c-.23.663-.396 1.358-.447 2.002-.014.172-.021.346-.021.516 0 2.68 2.268 4.851 5.067 4.851.89 0 1.755-.22 2.485-.621a4.23 4.23 0 0 0 1.521.621c.527 0 1.045-.135 1.522-.621.73.401 1.594.621 2.485.621 2.799 0 5.067-2.171 5.067-4.851 0-.17-.007-.344-.021-.516-.051-.644-.217-1.339-.447-2.002ZM8.935 10.756a1.072 1.072 0 1 1 0-2.144 1.072 1.072 0 0 1 0 2.144Zm6.13 0a1.072 1.072 0 1 1 0-2.144 1.072 1.072 0 0 1 0 2.144Z"/></svg>
+                      <span>QQ</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </transition>
+        </teleport>
       </div>
       <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" decoding="async" />
       <div class="article-content-wrap">
@@ -212,6 +239,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import DOMPurify from 'dompurify'
+import QRCode from 'qrcode'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
@@ -281,12 +309,41 @@ const estimatedReadingTime = computed(() => {
 })
 
 const linkCopied = ref(false)
+const qrModalVisible = ref(false)
+const qrCodeRef = ref<HTMLElement | null>(null)
+
+const showSharePanel = async () => {
+  qrModalVisible.value = true
+  const url = window.location.href
+  try {
+    const svg = await QRCode.toString(url, {
+      type: 'svg',
+      width: 180,
+      margin: 1,
+      color: { dark: '#000000', light: '#ffffff' },
+    })
+    await nextTick()
+    if (qrCodeRef.value) {
+      qrCodeRef.value.innerHTML = svg
+    }
+  } catch {
+    // ignore
+  }
+}
 
 const shareToWeibo = () => {
   if (!data.value) return
   const url = encodeURIComponent(window.location.href)
   const title = encodeURIComponent(data.value.article.title)
   window.open(`https://service.weibo.com/share/share.php?url=${url}&title=${title}`, '_blank', 'noopener,noreferrer')
+}
+
+const shareToQQ = () => {
+  if (!data.value) return
+  const url = encodeURIComponent(window.location.href)
+  const title = encodeURIComponent(data.value.article.title)
+  const desc = encodeURIComponent(data.value.article.summary)
+  window.open(`https://connect.qq.com/widget/shareqq/index.html?url=${url}&title=${title}&desc=${desc}`, '_blank', 'noopener,noreferrer')
 }
 
 const copyArticleLink = async () => {
@@ -461,5 +518,120 @@ onBeforeUnmount(() => {
 
 :root[data-theme='dark'] .share-btn {
   background: rgba(25, 48, 76, 0.5);
+}
+
+.qr-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.qr-modal {
+  background: var(--bg-panel);
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  width: min(340px, 90vw);
+  overflow: hidden;
+}
+
+.qr-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.qr-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.qr-modal-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.qr-modal-body {
+  padding: 24px 20px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.qr-code {
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  overflow: hidden;
+}
+
+.qr-code svg {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-modal-hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 13px;
+  text-align: center;
+}
+
+.share-platform-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  width: 100%;
+}
+
+.share-platform-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.share-platform-btn:hover {
+  border-color: rgba(14, 165, 164, 0.3);
+  background: rgba(14, 165, 164, 0.06);
+  color: var(--accent);
+}
+
+.qr-modal-fade-enter-active,
+.qr-modal-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.qr-modal-fade-enter-from,
+.qr-modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
