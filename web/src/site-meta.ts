@@ -70,17 +70,27 @@ export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, si
   const normalizedIconUrl = normalizeFaviconUrl(iconUrl)
   if (!normalizedIconUrl) return
 
+  let faviconHref = normalizedIconUrl
+  try {
+    const parsed = new URL(normalizedIconUrl)
+    if (parsed.origin === window.location.origin) {
+      faviconHref = parsed.pathname + parsed.search + parsed.hash
+    }
+  } catch {
+    // keep normalizedIconUrl as-is
+  }
+
   let iconLink = document.querySelector("link[rel='icon']") as HTMLLinkElement | null
   if (!iconLink) {
     iconLink = document.createElement('link')
     iconLink.rel = 'icon'
     document.head.appendChild(iconLink)
   }
-  iconLink.type = normalizedIconUrl.endsWith('.svg') ? 'image/svg+xml' : 'image/png'
-  iconLink.href = normalizedIconUrl
+  iconLink.type = faviconHref.endsWith('.svg') ? 'image/svg+xml' : 'image/png'
+  iconLink.href = faviconHref
   const appleTouch = document.querySelector("link[rel='apple-touch-icon']") as HTMLLinkElement | null
   if (appleTouch) {
-    appleTouch.href = normalizedIconUrl
+    appleTouch.href = faviconHref
   }
 }
 

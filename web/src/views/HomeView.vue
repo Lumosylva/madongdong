@@ -73,6 +73,7 @@
     </main>
 
     <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :friend-links="friendLinks" :copyright-text="data.site.copyright_text" />
+    <HomeBgmPlayer :bgm-url="data.site.homepage_bgm_url || ''" />
   </div>
   <div v-else class="shell home-shell skeleton-page">
     <div class="skeleton-card">
@@ -98,6 +99,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
+import HomeBgmPlayer from '../components/HomeBgmPlayer.vue'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { useTheme } from '../composables/useTheme'
