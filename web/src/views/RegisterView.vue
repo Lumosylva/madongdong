@@ -29,19 +29,27 @@
 
         <div class="auth-field-group">
           <label class="auth-input-shell">
-            <span class="auth-input-icon" aria-hidden="true">👤</span>
+            <span class="auth-input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
             <input v-model="username" autocomplete="username" :placeholder="t('register.usernamePlaceholder')" />
           </label>
           <label class="auth-input-shell">
-            <span class="auth-input-icon" aria-hidden="true">✨</span>
+            <span class="auth-input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </span>
             <input v-model="nickname" autocomplete="nickname" :placeholder="t('register.nicknamePlaceholder')" />
           </label>
           <label class="auth-input-shell">
-            <span class="auth-input-icon" aria-hidden="true">✉️</span>
+            <span class="auth-input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
             <input v-model="email" autocomplete="email" type="email" :placeholder="t('register.emailPlaceholder')" />
           </label>
           <label class="auth-input-shell auth-password-shell">
-            <span class="auth-input-icon" aria-hidden="true">🔒</span>
+            <span class="auth-input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
             <input :type="showPassword ? 'text' : 'password'" v-model="password" autocomplete="new-password" :placeholder="t('register.passwordPlaceholder')" />
             <button type="button" class="auth-password-toggle" :aria-label="showPassword ? t('register.hidePassword') : t('register.showPassword')" :title="showPassword ? t('register.hidePassword') : t('register.showPassword')" @click="showPassword = !showPassword">
               <svg v-if="showPassword" class="auth-password-icon" viewBox="0 0 24 24" aria-hidden="true">

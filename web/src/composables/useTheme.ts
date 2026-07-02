@@ -30,7 +30,13 @@ export function useTheme() {
 
   const initTheme = () => {
     const storedTheme = localStorage.getItem('md-theme')
-    applyTheme(storedTheme === 'dark' ? 'dark' : 'light')
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      applyTheme(storedTheme)
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      applyTheme('dark')
+    } else {
+      applyTheme('light')
+    }
   }
 
   const listenThemeChange = () => {

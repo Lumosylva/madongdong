@@ -899,18 +899,6 @@
   color: var(--accent);
 }
 
-.archive-toggle-icon {
-  display: inline-block;
-  font-size: 11px;
-  color: var(--text-soft);
-  transition: transform 0.2s ease;
-  flex: 0 0 auto;
-}
-
-.archive-toggle-icon.open {
-  transform: rotate(90deg);
-}
-
 .archive-year-title {
   font-size: 20px;
   font-weight: 700;
@@ -1037,7 +1025,19 @@
     padding: 16px;
   }
 
-  .archive-year-title {
+.archive-toggle-icon {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--text-soft);
+  transition: transform 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.archive-toggle-icon.open {
+  transform: rotate(90deg);
+}
+
+.archive-year-title {
     font-size: 18px;
   }
 

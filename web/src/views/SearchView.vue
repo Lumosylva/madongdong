@@ -50,7 +50,7 @@
 
       <template v-else>
         <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
-          <RouterLink :to="`/article/${article.slug}`" class="search-title" v-html="highlightKeyword(article.title)"></RouterLink>
+          <RouterLink :to="`/article/details/${article.id}`" class="search-title" v-html="highlightKeyword(article.title)"></RouterLink>
           <p class="search-card-summary" v-html="highlightKeyword(article.summary)"></p>
           <div class="search-meta unified-list-meta">
             <span class="search-meta-item search-meta-category" v-if="article.category?.name">

@@ -103,7 +103,7 @@
               <RouterLink
                 v-for="article in catArticles"
                 :key="article.id"
-                :to="`/article/${article.slug}`"
+                :to="`/article/details/${article.id}`"
                 class="cat-article-item"
               >
                 <div class="cat-article-main">
@@ -135,6 +135,16 @@
     </template>
 
     <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :copyright-text="data.site.copyright_text" />
+  </div>
+  <div v-else class="shell categories-page skeleton-page">
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-line w-100"></div>
+      <div class="skeleton skeleton-line w-60"></div>
+    </div>
   </div>
 </template>
 

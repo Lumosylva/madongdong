@@ -28,7 +28,7 @@
 
     <section class="search-result-panel unified-list-panel">
       <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
-        <RouterLink :to="`/article/${article.slug}`" class="search-title">{{ article.title }}</RouterLink>
+        <RouterLink :to="`/article/details/${article.id}`" class="search-title">{{ article.title }}</RouterLink>
         <p>{{ article.summary }}</p>
         <div class="search-meta unified-list-meta">
           <span>{{ article.category?.name || t('common.untitled') }}</span>
@@ -58,6 +58,12 @@
     </section>
 
     <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :copyright-text="data.site.copyright_text" />
+  </div>
+  <div v-else class="search-page skeleton-page">
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+    </div>
   </div>
 </template>
 

@@ -146,7 +146,7 @@
             <RouterLink
               v-for="(item, index) in searchPanelResults"
               :key="item.id"
-              :to="`/article/${item.slug}`"
+              :to="`/article/details/${item.id}`"
               class="search-overlay-result-item"
               :class="{ active: index === searchPanelActiveIndex }"
               @mouseenter="searchPanelActiveIndex = index"
@@ -420,7 +420,6 @@ const logout = async () => {
   localStorage.removeItem('md-reader-nickname')
   localStorage.removeItem('md-reader-email')
   accountMenuOpen.value = false
-  window.location.reload()
 }
 
 const handleDocumentClick = (event: MouseEvent) => {

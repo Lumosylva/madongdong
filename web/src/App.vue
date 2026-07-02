@@ -1,10 +1,9 @@
 <template>
   <router-view />
-  <HomeBgmPlayer v-if="bgmUrl" :bgm-url="bgmUrl" />
   <FloatingTools :theme="theme" @toggle-theme="toggleTheme" />
 
   <transition name="error-toast-fade">
-    <div v-if="errorVisible" class="global-error-toast" @click="hideError">
+    <div v-if="errorVisible" class="global-error-toast" role="alert" aria-live="assertive" @click="hideError">
       <span class="global-error-icon">!</span>
       <span>{{ errorMessage }}</span>
     </div>
@@ -12,16 +11,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 
-import { webApi } from './api'
 import FloatingTools from './components/FloatingTools.vue'
-import HomeBgmPlayer from './components/HomeBgmPlayer.vue'
 import { useTheme } from './composables/useTheme'
 import { useErrorToast } from './composables/useErrorToast'
 
 const { theme, toggleTheme, initTheme } = useTheme()
-const bgmUrl = ref('')
 const { message: errorMessage, visible: errorVisible, showError, hideError } = useErrorToast()
 
 window.addEventListener('unhandledrejection', (event) => {
@@ -34,15 +30,8 @@ window.addEventListener('error', (event) => {
   if (msg && !msg.includes('ResizeObserver')) showError(msg)
 })
 
-onMounted(async () => {
+onMounted(() => {
   initTheme()
-
-  try {
-    const settings = await webApi.getSiteSettings()
-    bgmUrl.value = settings.homepage_bgm_url || ''
-  } catch {
-    // ignore
-  }
 })
 </script>
 
@@ -58,10 +47,10 @@ onMounted(async () => {
   gap: 8px;
   padding: 10px 18px;
   border-radius: 12px;
-  background: rgba(227, 91, 119, 0.92);
+  background: var(--danger);
   color: #fff;
   font-size: 14px;
-  box-shadow: 0 8px 24px rgba(227, 91, 119, 0.25);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--danger) 25%, transparent);
   backdrop-filter: blur(8px);
   cursor: pointer;
   white-space: nowrap;

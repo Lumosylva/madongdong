@@ -19,7 +19,7 @@ export const router = createRouter({
       meta: { title: 'common.home' },
     },
     {
-      path: '/article/:slug',
+      path: '/article/details/:id',
       name: 'article',
       component: () => import('./views/ArticleView.vue'),
       meta: { title: 'article.content' },
@@ -83,6 +83,12 @@ export const router = createRouter({
       name: 'profile',
       component: () => import('./views/ProfileView.vue'),
       meta: { title: 'profile.title', requiresAuth: true },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('./views/NotFoundView.vue'),
+      meta: { title: 'notFound.title' },
     },
   ],
 })

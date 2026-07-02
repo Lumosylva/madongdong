@@ -98,6 +98,11 @@ export default {
     commentPublished: 'Comment published',
     commentPending: 'Comment submitted, awaiting review',
     commentFailed: 'Failed to submit comment, please try again later',
+    readingTime: 'Estimated {n} min read',
+    shareToTwitter: 'Share to Twitter',
+    shareToWeibo: 'Share to Weibo',
+    copyLink: 'Copy link',
+    copied: 'Copied',
   },
   categories: {
     title: 'Categories',
@@ -307,5 +312,9 @@ export default {
     contact: 'Contact & Collaboration',
     contactDesc: 'If you\'d like to discuss content, exchange links, provide feedback, or collaborate on anything site-related, feel free to send an email to the address below.',
     contactEmail: 'Contact Email',
+  },
+  notFound: {
+    title: 'Page Not Found',
+    description: 'Sorry, the page you visited does not exist or has been removed.',
   },
 }

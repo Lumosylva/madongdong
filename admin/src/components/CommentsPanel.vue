@@ -186,7 +186,7 @@ const truncateText = (value: string | null | undefined, maxLength: number) => {
 }
 
 const WEB_BASE_URL = String(import.meta.env.VITE_WEB_BASE_URL || 'http://localhost:5173').replace(/\/$/, '')
-const webArticleUrl = (articleId: number) => `${WEB_BASE_URL}/article/${articleId}`
+const webArticleUrl = (articleId: number) => `${WEB_BASE_URL}/article/details/${articleId}`
 
 const parseDateTime = (value: string) => {
   const text = String(value || '').trim()

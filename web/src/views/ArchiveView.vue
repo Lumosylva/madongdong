@@ -64,7 +64,7 @@
               class="archive-month-group"
             >
               <div class="archive-month-header">
-                <span>{{ monthNames[monthGroup.month - 1] }}</span>
+                <span>{{ getMonthName(monthGroup.month - 1) }}</span>
                 <span class="archive-month-count">{{ t('archive.count', { n: monthGroup.count }) }}</span>
               </div>
               <div
@@ -73,7 +73,7 @@
                 class="archive-article-row"
               >
                 <span class="archive-article-date">{{ formatDay(article.published_at) }}</span>
-                <RouterLink :to="`/article/${article.slug}`" class="archive-article-link" :title="article.title">
+                <RouterLink :to="`/article/details/${article.id}`" class="archive-article-link" :title="article.title">
                   {{ article.title }}
                 </RouterLink>
               </div>
@@ -84,6 +84,16 @@
     </section>
 
     <WebFooter :icp-beian="data.site.icp_beian" :police-beian="data.site.police_beian" :copyright-text="data.site.copyright_text" />
+  </div>
+  <div v-else class="search-page skeleton-page">
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+    </div>
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-line w-100"></div>
+      <div class="skeleton skeleton-line w-60"></div>
+    </div>
   </div>
 </template>
 
@@ -97,6 +107,7 @@ import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import { useTheme } from '../composables/useTheme'
+import { parseDateTime } from '../utils/time'
 import type { ArchiveResponse } from '../types'
 
 const route = useRoute()
@@ -113,7 +124,7 @@ const yearRangeText = computed(() => {
   return max === min ? String(max) : `${min} — ${max}`
 })
 
-const monthNames = computed(() => t('archive.months') as unknown as string[])
+const getMonthName = (index: number) => t(`archive.months[${index}]`)
 
 const isYearOpen = (year: number) => openYears.value.has(year)
 
@@ -123,13 +134,6 @@ const toggleYear = (year: number) => {
   } else {
     openYears.value.add(year)
   }
-}
-
-const parseDateTime = (value: string) => {
-  const text = String(value || '').trim()
-  if (!text) return new Date(0)
-  if (/Z|[+-]\d{2}:?\d{2}$/.test(text)) return new Date(text)
-  return new Date(`${text}Z`)
 }
 
 const formatDay = (value: string) => {

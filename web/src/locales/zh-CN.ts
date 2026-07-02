@@ -98,6 +98,11 @@ export default {
     commentPublished: '评论已发布',
     commentPending: '评论已提交，待审核',
     commentFailed: '评论提交失败，请稍后重试',
+    readingTime: '预计阅读 {n} 分钟',
+    shareToTwitter: '分享到 Twitter',
+    shareToWeibo: '分享到微博',
+    copyLink: '复制链接',
+    copied: '已复制',
   },
   categories: {
     title: '分类',
@@ -307,5 +312,9 @@ export default {
     contact: '联系与合作',
     contactDesc: '如果你希望就内容交流、友链合作、问题反馈或其他站点相关事项取得联系，可直接发送邮件至下方邮箱。',
     contactEmail: '联系邮箱',
+  },
+  notFound: {
+    title: '页面不存在',
+    description: '抱歉，您访问的页面不存在或已被移除。',
   },
 }

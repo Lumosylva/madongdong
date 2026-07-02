@@ -98,6 +98,11 @@ export default {
     commentPublished: 'コメントが公開されました',
     commentPending: 'コメントが送信され、審査待ちです',
     commentFailed: 'コメントの送信に失敗しました。後でもう一度お試しください',
+    readingTime: '約 {n} 分で読めます',
+    shareToTwitter: 'Twitterで共有',
+    shareToWeibo: 'Weiboで共有',
+    copyLink: 'リンクをコピー',
+    copied: 'コピーしました',
   },
   categories: {
     title: 'カテゴリ',
@@ -307,5 +312,9 @@ export default {
     contact: 'お問い合わせ・コラボレーション',
     contactDesc: 'コンテンツの議論、相互リンク、フィードバック、その他サイトに関する連絡がございましたら、下記メールアドレスまでご連絡ください。',
     contactEmail: '連絡先メール',
+  },
+  notFound: {
+    title: 'ページが見つかりません',
+    description: '申し訳ありませんが、アクセスされたページは存在しないか、削除されています。',
   },
 }

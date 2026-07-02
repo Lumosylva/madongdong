@@ -119,4 +119,17 @@ export const setHtmlLang = (locale: string) => {
 export const applySiteMetaFromSetting = (value: SiteSetting | null) => {
   if (!value) return
   applySiteMeta(value.site_title, value.site_subtitle, value.site_logo)
+  ensureRssLink()
+}
+
+function ensureRssLink() {
+  let rssLink = document.querySelector("link[rel='alternate'][type='application/rss+xml']") as HTMLLinkElement | null
+  if (!rssLink) {
+    rssLink = document.createElement('link')
+    rssLink.rel = 'alternate'
+    rssLink.type = 'application/rss+xml'
+    rssLink.title = 'RSS'
+    document.head.appendChild(rssLink)
+  }
+  rssLink.href = '/api/v1/web/rss'
 }

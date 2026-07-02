@@ -124,6 +124,12 @@
       </section>
     </main>
   </div>
+  <div v-else class="shell friend-links-page skeleton-page">
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -480,11 +486,11 @@ onBeforeUnmount(() => {
 }
 
 :global([data-theme='dark']) .friend-link-item {
-  background: #0a1829;
+  background: var(--bg-panel);
 }
 
 :global([data-theme='dark']) .friend-link-item:hover {
-  background: #0e2035;
+  background: var(--bg-soft);
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -502,7 +508,7 @@ onBeforeUnmount(() => {
   place-items: center;
   font-weight: 800;
   font-size: 18px;
-  color: #04111d;
+  color: var(--text);
   background: linear-gradient(135deg, var(--accent), #93c5fd);
 }
 

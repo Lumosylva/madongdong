@@ -101,6 +101,12 @@
       </template>
     </main>
   </div>
+  <div v-else class="profile-page skeleton-page">
+    <div class="skeleton-card" style="max-width:860px;margin:40px auto;padding:20px;">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line w-80"></div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -349,7 +355,7 @@ onBeforeUnmount(() => {
   padding: 48px 30px;
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--bg-panel);
   backdrop-filter: blur(10px);
   display: grid;
   gap: 12px;
@@ -409,9 +415,9 @@ onBeforeUnmount(() => {
 }
 
 .profile-toast.success {
-  color: #0f766e;
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.22);
+  color: var(--accent);
+  background: rgba(14, 165, 164, 0.1);
+  border-color: rgba(14, 165, 164, 0.22);
 }
 
 .profile-toast.error {
@@ -450,7 +456,7 @@ onBeforeUnmount(() => {
 .profile-card {
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--bg-panel);
   backdrop-filter: blur(10px);
   padding: 24px;
   display: grid;
@@ -730,7 +736,7 @@ onBeforeUnmount(() => {
 }
 
 :root[data-theme='dark'] .profile-input::placeholder {
-  color: color-mix(in srgb, var(--text-soft) 78%, black);
+  color: color-mix(in srgb, var(--text-soft) 78%, var(--bg));
 }
 
 :root[data-theme='dark'] .profile-input:hover {

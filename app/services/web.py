@@ -42,10 +42,10 @@ async def paginate_published_articles(
 
     statement: Select[tuple[Article]] = (
         select(Article)
-        .where(Article.status == ArticleStatus.PUBLISHED)
+        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
         .options(*get_article_eager_loaders())
     )
-    count_statement = select(func.count(Article.id)).where(Article.status == ArticleStatus.PUBLISHED)
+    count_statement = select(func.count(Article.id)).where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
     if keyword:
         like_keyword = f"%{keyword}%"
         condition = or_(
@@ -79,7 +79,7 @@ async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Artic
 
     statement = (
         select(Article)
-        .where(Article.status == ArticleStatus.PUBLISHED)
+        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
         .options(*get_article_eager_loaders())
         .order_by(Article.view_count.desc(), Article.comment_count.desc(), Article.id.desc())
         .limit(limit)
@@ -93,7 +93,7 @@ async def list_rss_articles(session: AsyncSession, limit: int = 20) -> list[Arti
 
     statement = (
         select(Article)
-        .where(Article.status == ArticleStatus.PUBLISHED)
+        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
         .options(*get_article_eager_loaders())
         .order_by(Article.published_at.desc(), Article.id.desc())
         .limit(limit)
@@ -143,6 +143,7 @@ async def get_published_article_detail(session: AsyncSession, article_id: int, c
     statement = select(Article).where(
         Article.id == article_id,
         Article.status == ArticleStatus.PUBLISHED,
+        Article.is_deleted.is_(False),
     ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
@@ -162,6 +163,7 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str,
     statement = select(Article).where(
         Article.slug == slug,
         Article.status == ArticleStatus.PUBLISHED,
+        Article.is_deleted.is_(False),
     ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
@@ -200,6 +202,7 @@ async def get_prev_next_published_articles(session: AsyncSession, article: Artic
         select(Article)
         .where(
             Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
             or_(
                 Article.published_at > published_at,
                 (Article.published_at == published_at) & (Article.id > article_id),
@@ -214,6 +217,7 @@ async def get_prev_next_published_articles(session: AsyncSession, article: Artic
         select(Article)
         .where(
             Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
             or_(
                 Article.published_at < published_at,
                 (Article.published_at == published_at) & (Article.id < article_id),
@@ -262,11 +266,13 @@ async def get_category_page_data(session: AsyncSession, slug: str, page: int, pa
         select(Article)
         .where(
             Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
             Article.category_id == category.id,
         )
     )
     count_statement = select(func.count(Article.id)).where(
         Article.status == ArticleStatus.PUBLISHED,
+        Article.is_deleted.is_(False),
         Article.category_id == category.id,
     )
     statement = statement.order_by(Article.published_at.desc(), Article.id.desc())
@@ -310,6 +316,7 @@ async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_si
         .join(Article.tags)
         .where(
             Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
             Tag.id == tag.id,
         )
     )
@@ -319,6 +326,7 @@ async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_si
         .join(Article.tags)
         .where(
             Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
             Tag.id == tag.id,
         )
     )
@@ -358,7 +366,7 @@ async def get_categories_page_data(session: AsyncSession) -> dict:
 
     count_result = await session.execute(
         select(Article.category_id, func.count(Article.id).label("cnt"))
-        .where(Article.status == ArticleStatus.PUBLISHED)
+        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
         .group_by(Article.category_id)
     )
     count_map: dict[int, int] = {row.category_id: row.cnt for row in count_result.all()}
@@ -396,7 +404,7 @@ async def get_archive_data(session: AsyncSession) -> dict:
             Article.title,
             Article.published_at,
         )
-        .where(Article.status == ArticleStatus.PUBLISHED)
+        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
         .order_by(Article.published_at.desc(), Article.id.desc())
     )
     result = await session.execute(statement)
