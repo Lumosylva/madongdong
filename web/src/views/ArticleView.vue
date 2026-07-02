@@ -48,9 +48,6 @@
           <span>{{ data.article.comment_count }} {{ t('common.comments') }}</span>
         </div>
         <div class="article-share-row">
-          <button type="button" class="share-btn" @click="shareToTwitter" :aria-label="t('article.shareToTwitter')">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          </button>
           <button type="button" class="share-btn" @click="shareToWeibo" :aria-label="t('article.shareToWeibo')">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10.098 20.323c-3.977.391-7.414-1.406-7.672-4.02-.259-2.609 2.759-5.047 6.74-5.441 3.979-.394 7.413 1.404 7.671 4.018.259 2.6-2.759 5.049-6.737 5.439l-.002.004zM17.2 6.955c-.266-.749-.935-1.16-1.493-.921-.559.239-.793.976-.527 1.725l.003.007c.263.749.93 1.162 1.49.924.559-.239.796-.978.527-1.735zM20.75 7.7c-.759-2.159-2.691-3.332-4.325-2.611-1.637.725-2.365 2.761-1.606 4.922.759 2.16 2.689 3.33 4.327 2.608 1.634-.723 2.363-2.758 1.604-4.919z"/></svg>
           </button>
@@ -284,13 +281,6 @@ const estimatedReadingTime = computed(() => {
 })
 
 const linkCopied = ref(false)
-
-const shareToTwitter = () => {
-  if (!data.value) return
-  const url = window.location.href
-  const text = encodeURIComponent(data.value.article.title)
-  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer')
-}
 
 const shareToWeibo = () => {
   if (!data.value) return

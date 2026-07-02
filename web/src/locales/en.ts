@@ -99,7 +99,6 @@ export default {
     commentPending: 'Comment submitted, awaiting review',
     commentFailed: 'Failed to submit comment, please try again later',
     readingTime: 'Estimated {n} min read',
-    shareToTwitter: 'Share to Twitter',
     shareToWeibo: 'Share to Weibo',
     copyLink: 'Copy link',
     copied: 'Copied',

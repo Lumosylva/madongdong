@@ -20,6 +20,7 @@
       "https://www.youtube.com/embed/",
       "https://player.bilibili.com/player.html",
       "https://music.163.com/outchain/player",
+      "https://service.weibo.com/share/share.php",
       "http://www.sitemaps.org/schemas/sitemap/0.9",
       "text.startswith('http://') or text.startswith('https://')"
     ],

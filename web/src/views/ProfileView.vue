@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-page">
+  <div class="profile-page" v-if="siteData.site_title">
     <WebTopbar
       :title="siteData.site_title"
       :subtitle="siteData.site_subtitle"
