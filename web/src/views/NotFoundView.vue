@@ -13,11 +13,12 @@
 import { onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { applyNotFoundMeta } from '../site-meta'
 
 const { t } = useI18n()
 
 onMounted(() => {
-  document.title = '404 - MaDongDong'
+  applyNotFoundMeta()
 })
 </script>
 

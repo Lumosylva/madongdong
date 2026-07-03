@@ -105,7 +105,7 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { applyArchiveMeta, setSiteSetting } from '../site-meta'
 import { useTheme } from '../composables/useTheme'
 import { parseDateTime } from '../utils/time'
 import type { ArchiveResponse } from '../types'
@@ -146,8 +146,7 @@ const formatDay = (value: string) => {
 const loadData = async () => {
   data.value = await webApi.getArchive()
   setSiteSetting(data.value.site)
-  applySiteMetaFromSetting(data.value.site)
-  document.title = buildPageTitle(t('archive.title'))
+  applyArchiveMeta(data.value.site.site_subtitle)
   // Expand the most recent year by default
   if (data.value.archive.length > 0) {
     openYears.value.add(data.value.archive[0].year)

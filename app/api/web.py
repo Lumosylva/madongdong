@@ -175,17 +175,56 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
 
 
 @router.get("/robots.txt", summary="获取 robots.txt")
-async def robots_txt(request: Request) -> Response:
+async def robots_txt(request: Request, session: AsyncSession = Depends(get_db_session)) -> Response:
     base_url = str(request.base_url).rstrip("/")
-    content = (
-        "User-agent: *\n"
-        "Allow: /\n"
-        "Disallow: /api/\n"
-        "Disallow: /admin/\n"
-        f"\nSitemap: {base_url}/api/v1/web/sitemap.xml\n"
-    )
+    
+    # 获取站点配置
+    site = await get_or_create_site_setting(session)
+    
+    rules = [
+        "# MaDongDong Blog robots.txt",
+        "# See robotstxt.org for documentation",
+        "",
+        "# ===== 全局规则 =====",
+        "User-agent: *",
+        "Allow: /",
+        "",
+        "# ===== 禁止访问的路径 =====",
+        "Disallow: /api/",
+        "Disallow: /admin/",
+        "Disallow: /search?",
+        "Disallow: /*?replytocom=",
+        "",
+        "# ===== 特定爬虫规则 =====",
+        "",
+        "# 百度蜘蛛 - 允许所有内容",
+        "User-agent: Baiduspider",
+        "Allow: /",
+        "",
+        "# 谷歌蜘蛛 - 允许所有内容",
+        "User-agent: Googlebot",
+        "Allow: /",
+        "",
+        "# 必应蜘蛛 - 允许所有内容",
+        "User-agent: bingbot",
+        "Allow: /",
+        "",
+        "# ===== 爬取延迟（可选） =====",
+        "# Crawl-delay: 1",
+        "",
+        "# ===== Sitemap =====",
+        f"Sitemap: {base_url}/api/v1/web/sitemap.xml",
+        "",
+        "# ===== 其他 =====",
+        "# 禁止抓取搜索结果页",
+        "Disallow: /search?",
+        "",
+        "# 禁止抓取评论回复链接",
+        "Disallow: /*?replytocom=",
+    ]
+    
     return Response(
-        content=content,
+        content="\n".join(rules),
         media_type="text/plain; charset=utf-8",
         headers={"Cache-Control": "public, max-age=86400"},
     )
