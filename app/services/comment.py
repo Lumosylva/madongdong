@@ -74,6 +74,16 @@ def parse_client_user_agent(user_agent: str | None) -> dict[str, str | None]:
     }
 
 
+async def get_comment_or_404(session: AsyncSession, comment_id: int) -> Comment:
+    """按主键获取评论。"""
+
+    result = await session.execute(select(Comment).where(Comment.id == comment_id))
+    comment = result.scalar_one_or_none()
+    if comment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="评论不存在")
+    return comment
+
+
 async def create_comment(
     session: AsyncSession,
     article_id: int,
@@ -140,6 +150,72 @@ async def list_comments(session: AsyncSession) -> list[Comment]:
 
     result = await session.execute(select(Comment).order_by(Comment.created_at.desc()))
     return list(result.scalars().unique().all())
+
+
+async def list_comments_paginated(
+    session: AsyncSession,
+    page: int = 1,
+    page_size: int = 20,
+) -> dict:
+    """分页查询评论列表。"""
+    # 计算总数
+    count_result = await session.execute(select(func.count(Comment.id)))
+    total = count_result.scalar() or 0
+
+    # 查询评论列表
+    result = await session.execute(
+        select(Comment)
+        .order_by(Comment.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    comments = list(result.scalars().unique().all())
+
+    return {
+        "items": comments,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
+
+
+async def list_article_comments_paginated(
+    session: AsyncSession,
+    article_id: int,
+    page: int = 1,
+    page_size: int = 20,
+    include_pending: bool = False,
+) -> dict:
+    """分页查询文章评论。"""
+    # 构建查询条件
+    query = select(Comment).where(Comment.article_id == article_id)
+    
+    if not include_pending:
+        query = query.where(Comment.status == CommentStatus.APPROVED)
+    
+    # 计算总数
+    count_result = await session.execute(
+        select(func.count(Comment.id)).where(query.whereclause)
+    )
+    total = count_result.scalar() or 0
+
+    # 查询评论列表
+    result = await session.execute(
+        query
+        .order_by(Comment.created_at.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    comments = list(result.scalars().unique().all())
+
+    return {
+        "items": comments,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
 
 
 async def approve_comment(session: AsyncSession, comment_id: int) -> Comment:

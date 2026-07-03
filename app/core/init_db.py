@@ -24,6 +24,7 @@ async def init_db() -> None:
         await _migrate_police_beian_column(session)
         await _migrate_scheduled_at_column(session)
         await _migrate_lock_columns(session)
+        await _migrate_comment_spam_score(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -195,3 +196,20 @@ async def _migrate_lock_columns(session: AsyncSession) -> None:
         await session.commit()
     except Exception:
         return
+
+
+async def _migrate_comment_spam_score(session: AsyncSession) -> None:
+    """为 comments 表添加 spam_score 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(comments)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "spam_score" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(text("ALTER TABLE comments ADD COLUMN spam_score FLOAT DEFAULT 0.0"))
+    await session.commit()

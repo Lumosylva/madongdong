@@ -686,7 +686,7 @@ const loadAll = async () => {
     deletedArticles.value = deletedRes.data
     categories.value = categoryRes.data
     media.value = mediaRes.data
-    comments.value = commentRes.data
+    comments.value = commentRes.data.items || commentRes.data
     friendLinks.value = linkRes.data || []
     users.value = userRes.data || []
     siteTitle.value = siteRes.data.site_title
@@ -826,7 +826,7 @@ const bulkDeleteComments = async (commentIds: number[]) => {
 const refreshComments = async () => {
   try {
     const res = await adminApi.getComments()
-    comments.value = res.data
+    comments.value = res.data.items || res.data
   } catch {
     // ignore
   }

@@ -296,37 +296,29 @@ async def article_detail(
     )
 
 
-@router.get("/articles/slug/{slug}", summary="通过 slug 获取前台文章详情")
-async def article_detail_by_slug(
-    slug: str,
-    request: Request,
-    session: AsyncSession = Depends(get_db_session),
-) -> ArticlePageResponse:
-    client_ip = get_client_ip(request)
-    article = await get_published_article_detail_by_slug(session, slug, client_ip)
-    if article is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
-    site, nav_items = await _get_site_and_nav(session)
-    comments = await list_approved_comments_by_article(session, article.id)
-    previous_article, next_article = await get_prev_next_published_articles(session, article)
-    return ArticlePageResponse(
-        site=site,
-        nav_items=nav_items,
-        article=ArticleDetailResponse.model_validate(article),
-        previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
-        next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
-        comments=[CommentResponse.model_validate(item) for item in comments],
-    )
-
-
-@router.get("/search", summary="搜索文章")
-async def search_articles(
-    keyword: str = Query(min_length=1),
+@router.get("/articles/{article_id}/comments", summary="获取文章评论（分页）")
+async def get_article_comments(
+    article_id: int,
     page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=50),
     session: AsyncSession = Depends(get_db_session),
-) -> SearchResponse:
-    data = await get_search_page_data(session, keyword, page)
-    return SearchResponse.model_validate(data)
+) -> dict:
+    from app.services.comment import list_article_comments_paginated
+    from app.services.article import get_article_or_404
+    
+    # 验证文章存在
+    await get_article_or_404(session, article_id)
+    
+    result = await list_article_comments_paginated(session, article_id, page, page_size)
+    comments = [CommentResponse.model_validate(item).model_dump() for item in result["items"]]
+    
+    return {
+        "items": comments,
+        "total": result["total"],
+        "page": result["page"],
+        "page_size": result["page_size"],
+        "total_pages": result["total_pages"],
+    }
 
 
 @router.get("/categories/{slug}/articles", summary="获取分类文章")

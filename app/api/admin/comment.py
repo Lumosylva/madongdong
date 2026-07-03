@@ -31,11 +31,22 @@ class CommentDeletePayload(BaseModel):
 
 @router.get("", summary="查询评论列表")
 async def get_comments(
+    page: int = 1,
+    page_size: int = 20,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
-    comments = await list_comments(session)
-    return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
+    from app.services.comment import list_comments_paginated
+    
+    result = await list_comments_paginated(session, page, page_size)
+    comments = [CommentResponse.model_validate(item).model_dump() for item in result["items"]]
+    return success_response({
+        "items": comments,
+        "total": result["total"],
+        "page": result["page"],
+        "page_size": result["page_size"],
+        "total_pages": result["total_pages"],
+    })
 
 
 @router.get("/spam", summary="查询垃圾评论列表")

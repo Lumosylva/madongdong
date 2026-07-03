@@ -196,8 +196,8 @@ export const adminApi = {
       body: JSON.stringify({ media_ids: mediaIds }),
     })
   },
-  getComments(): Promise<WrappedResponse<any[]>> {
-    return request<WrappedResponse<any[]>>('/admin/comments')
+  getComments(): Promise<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>> {
+    return request<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>>('/admin/comments')
   },
   approveComment(commentId: number): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>(`/admin/comments/${commentId}/approve`, {
