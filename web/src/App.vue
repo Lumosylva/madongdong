@@ -1,5 +1,6 @@
 <template>
   <router-view />
+  <HomeBgmPlayer :bgm-url="bgmUrl" />
   <FloatingTools :theme="theme" @toggle-theme="toggleTheme" />
 
   <transition name="error-toast-fade">
@@ -11,14 +12,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 import FloatingTools from './components/FloatingTools.vue'
+import HomeBgmPlayer from './components/HomeBgmPlayer.vue'
 import { useTheme } from './composables/useTheme'
 import { useErrorToast } from './composables/useErrorToast'
+import { webApi } from './api'
 
 const { theme, toggleTheme, initTheme } = useTheme()
 const { message: errorMessage, visible: errorVisible, showError, hideError } = useErrorToast()
+const bgmUrl = ref('')
 
 window.addEventListener('unhandledrejection', (event) => {
   const msg = event.reason instanceof Error ? event.reason.message : String(event.reason || '')
@@ -30,8 +34,14 @@ window.addEventListener('error', (event) => {
   if (msg && !msg.includes('ResizeObserver')) showError(msg)
 })
 
-onMounted(() => {
+onMounted(async () => {
   initTheme()
+  try {
+    const site = await webApi.getSiteSettings()
+    bgmUrl.value = site.homepage_bgm_url || ''
+  } catch {
+    // ignore - player just won't show
+  }
 })
 </script>
 
