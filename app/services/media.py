@@ -121,8 +121,13 @@ async def upload_media_file(
     thumbnail_url = url if media_type == MediaType.IMAGE else None
 
     width, height = None, None
+    image_sizes = {}
     if media_type == MediaType.IMAGE:
         width, height = _extract_image_dimensions(storage_path)
+        # 生成多尺寸图片
+        image_sizes = _generate_image_sizes(storage_path, uploads_dir, generated_name)
+        if "thumbnail" in image_sizes:
+            thumbnail_url = f"{settings.upload_url_prefix}/{image_sizes['thumbnail']}"
 
     media = MediaFile(
         folder=folder,
@@ -278,3 +283,75 @@ def _extract_image_dimensions(path: Path) -> tuple[int | None, int | None]:
             return img.size
     except Exception:
         return None, None
+
+
+# 多尺寸图片配置
+IMAGE_SIZES = {
+    "thumbnail": (150, 150, True),   # (宽, 高, 是否裁剪)
+    "medium": (300, 300, False),
+    "large": (1024, 1024, False),
+}
+
+
+def _generate_image_sizes(
+    original_path: Path,
+    uploads_dir: Path,
+    base_name: str,
+) -> dict[str, str]:
+    """生成多尺寸图片，返回各尺寸的文件名。"""
+    sizes = {}
+    
+    try:
+        with Image.open(original_path) as img:
+            for size_name, (max_width, max_height, crop) in IMAGE_SIZES.items():
+                # 计算缩放比例
+                ratio = min(max_width / img.width, max_height / img.height)
+                
+                if crop:
+                    # 裁剪模式
+                    new_width = max_width
+                    new_height = max_height
+                    # 居中裁剪
+                    left = (img.width - new_width) // 2
+                    top = (img.height - new_height) // 2
+                    right = left + new_width
+                    bottom = top + new_height
+                    
+                    if img.width < new_width or img.height < new_height:
+                        # 如果原图小于目标尺寸，先放大再裁剪
+                        scale = max(new_width / img.width, new_height / img.height)
+                        img_resized = img.resize(
+                            (int(img.width * scale), int(img.height * scale)),
+                            Image.Resampling.LANCZOS
+                        )
+                        left = (img_resized.width - new_width) // 2
+                        top = (img_resized.height - new_height) // 2
+                        right = left + new_width
+                        bottom = top + new_height
+                        img_cropped = img_resized.crop((left, top, right, bottom))
+                    else:
+                        img_cropped = img.crop((left, top, right, bottom))
+                    
+                    suffix = Path(base_name).suffix
+                    size_filename = f"{size_name}_{Path(base_name).stem}{suffix}"
+                    size_path = uploads_dir / size_filename
+                    img_cropped.save(size_path, quality=85, optimize=True)
+                    sizes[size_name] = size_filename
+                else:
+                    # 缩放模式
+                    new_width = int(img.width * ratio)
+                    new_height = int(img.height * ratio)
+                    
+                    if new_width == img.width and new_height == img.height:
+                        continue  # 原图尺寸已足够，不生成缩略图
+                    
+                    img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    suffix = Path(base_name).suffix
+                    size_filename = f"{size_name}_{Path(base_name).stem}{suffix}"
+                    size_path = uploads_dir / size_filename
+                    img_resized.save(size_path, quality=85, optimize=True)
+                    sizes[size_name] = size_filename
+    except Exception:
+        pass  # 生成失败不影响主文件上传
+    
+    return sizes

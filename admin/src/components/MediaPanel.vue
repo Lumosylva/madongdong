@@ -37,6 +37,14 @@
         <span class="media-tab-label">{{ tab.label }}</span>
         <span class="media-tab-count">{{ tab.count }}</span>
       </button>
+      <div class="media-view-toggle">
+        <button type="button" class="media-view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" :title="t('media.gridView')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button type="button" class="media-view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" :title="t('media.listView')">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="media-tab-content">
@@ -48,7 +56,8 @@
             <button type="button" class="media-select-all-btn" @click="toggleGroupSelection('image')">{{ isGroupFullySelected('image') ? t('media.deselectAll') : t('media.selectAll') }}</button>
           </div>
         </div>
-        <div v-if="grouped.image.length" class="media-grid">
+        <!-- Grid View -->
+        <div v-if="viewMode === 'grid' && grouped.image.length" class="media-grid">
           <button
             v-for="item in grouped.image"
             :key="item.id"
@@ -74,6 +83,36 @@
               <p class="media-card-title">{{ item.original_name }}</p>
               <small class="media-card-meta">{{ item.mime_type || 'IMAGE' }}</small>
             </div>
+          </button>
+        </div>
+        <!-- List View -->
+        <div v-else-if="viewMode === 'list' && grouped.image.length" class="media-list">
+          <div class="media-list-header">
+            <span class="media-list-col media-list-col-name">{{ t('media.fileName') }}</span>
+            <span class="media-list-col media-list-col-type">{{ t('media.fileType') }}</span>
+            <span class="media-list-col media-list-col-size">{{ t('media.fileSize') }}</span>
+            <span class="media-list-col media-list-col-date">{{ t('time.uploadTime') }}</span>
+            <span class="media-list-col media-list-col-actions"></span>
+          </div>
+          <button
+            v-for="item in grouped.image"
+            :key="item.id"
+            type="button"
+            class="media-list-row"
+            :class="{ selected: selectedIds.has(item.id) }"
+            @click="openPreview(item)"
+          >
+            <input class="media-list-checkbox" type="checkbox" :checked="selectedIds.has(item.id)" @click.stop="toggleSelected(item.id)" />
+            <span class="media-list-col media-list-col-name">
+              <img v-if="!imageLoadErrorIds.has(item.id)" class="media-list-thumb" :src="fullUrl(item.thumbnail_url || item.url)" :alt="item.original_name" @error="markImageLoadError(item.id)" />
+              {{ item.original_name }}
+            </span>
+            <span class="media-list-col media-list-col-type">{{ item.mime_type || 'IMAGE' }}</span>
+            <span class="media-list-col media-list-col-size">{{ formatFileSize(item.file_size || item.size) }}</span>
+            <span class="media-list-col media-list-col-date">{{ formatDate(item.uploaded_at || item.created_at) }}</span>
+            <span class="media-list-col media-list-col-actions">
+              <button type="button" class="media-copy-btn" @click.stop="copyUrl(item.url, item.original_name)">{{ t('common.copyLink') }}</button>
+            </span>
           </button>
         </div>
         <p v-else class="tips media-empty">{{ t('media.noImages') }}</p>
@@ -220,6 +259,7 @@ const deleteConfirmOpen = ref(false)
 const deleteTargetIds = ref<number[]>([])
 const deleteTargetNames = ref<string[]>([])
 const activeTab = ref('image')
+const viewMode = ref<'grid' | 'list'>('grid')
 
 const tabIcons = {
   image: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
@@ -408,5 +448,162 @@ const formatResolution = (width?: number, height?: number) => {
   place-items: center;
   color: var(--text-soft);
   background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(14, 165, 164, 0.08));
+}
+
+.media-view-toggle {
+  display: flex;
+  gap: 2px;
+  margin-left: 12px;
+  padding: 2px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.media-view-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.media-view-btn:hover {
+  color: var(--text);
+  background: rgba(14, 165, 164, 0.1);
+}
+
+.media-view-btn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 8px rgba(14, 165, 164, 0.3);
+}
+
+.media-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-panel);
+}
+
+.media-list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--bg-soft), rgba(14, 165, 164, 0.03));
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.media-list-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(14, 165, 164, 0.08);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.media-list-row:last-child {
+  border-bottom: none;
+}
+
+.media-list-row:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.04), rgba(14, 165, 164, 0.02));
+}
+
+.media-list-row.selected {
+  background: linear-gradient(135deg, rgba(14, 165, 164, 0.1), rgba(14, 165, 164, 0.05));
+  border-color: rgba(14, 165, 164, 0.2);
+}
+
+.media-list-checkbox {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.media-list-col {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-list-col-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  padding-left: 20px;
+}
+
+.media-list-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+
+.media-list-col-type {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.media-list-col-size {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.media-list-col-date {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.media-list-col-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.media-copy-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--text-soft);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.media-copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(14, 165, 164, 0.08);
 }
 </style>
