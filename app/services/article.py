@@ -492,6 +492,11 @@ async def update_article(
 
     await session.commit()
     await session.refresh(article)
+
+    # 清除文章缓存
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
+
     return article
 
 
@@ -512,6 +517,11 @@ async def approve_article(
     article.published_at = datetime.now(timezone.utc)
     await session.commit()
     await session.refresh(article)
+
+    # 清除文章缓存
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
+
     return article
 
 
@@ -532,11 +542,23 @@ async def reject_article(
     article.published_at = None
     await session.commit()
     await session.refresh(article)
+
+    # 清除文章缓存
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
+
     return article
 
 
 async def get_article_or_404(session: AsyncSession, article_id: int) -> Article:
-    """按主键获取文章。"""
+    """按主键获取文章（带缓存）。"""
+
+    # 尝试从缓存获取
+    cache_key = f"article:{article_id}"
+    from app.core.cache import cache_get, cache_set
+    cached = await cache_get(cache_key)
+    if cached is not None:
+        return cached
 
     result = await session.execute(
         select(Article).where(Article.id == article_id).options(*get_article_eager_loaders())
@@ -544,6 +566,9 @@ async def get_article_or_404(session: AsyncSession, article_id: int) -> Article:
     article = result.scalar_one_or_none()
     if article is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在")
+
+    # 缓存文章（30 分钟）
+    await cache_set(cache_key, article, ttl=1800)
     return article
 
 
@@ -660,6 +685,11 @@ async def delete_article(
     article.is_deleted = True
     article.deleted_at = datetime.now(timezone.utc)
     await session.commit()
+
+    # 清除文章缓存
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
+
     return {"message": "文章已移入垃圾箱"}
 
 
