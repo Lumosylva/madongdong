@@ -182,6 +182,44 @@ async def delete_category_endpoint(
     return success_response({"deleted": True, "id": category_id})
 
 
+@router.get("/categories/{category_id}/meta", summary="获取分类元数据")
+async def get_category_meta_endpoint(
+    category_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import get_category_meta
+    
+    meta = await get_category_meta(session, category_id)
+    return success_response(meta)
+
+
+@router.put("/categories/{category_id}/meta", summary="更新分类元数据")
+async def update_category_meta_endpoint(
+    category_id: int,
+    meta: dict,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_token_role("admin")),
+) -> dict[str, object]:
+    from app.services.article import update_category_meta
+    
+    await update_category_meta(session, category_id, meta)
+    return success_response({"updated": True, "category_id": category_id})
+
+
+@router.delete("/categories/{category_id}/meta/{meta_key}", summary="删除分类元数据")
+async def delete_category_meta_endpoint(
+    category_id: int,
+    meta_key: str,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_token_role("admin")),
+) -> dict[str, object]:
+    from app.services.article import delete_category_meta
+    
+    await delete_category_meta(session, category_id, meta_key)
+    return success_response({"deleted": True, "category_id": category_id, "meta_key": meta_key})
+
+
 @router.get("/tags", summary="查询标签列表")
 async def get_tags(
     session: AsyncSession = Depends(get_db_session),

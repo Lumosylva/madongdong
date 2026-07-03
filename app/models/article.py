@@ -167,3 +167,17 @@ class ArticleRevision(Base):
     summary: Mapped[str] = mapped_column(String(500), default="", nullable=False)
     revised_by: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class TermMeta(Base):
+    """分类/标签元数据，支持扩展字段。"""
+
+    __tablename__ = "term_meta"
+    __table_args__ = (
+        Index("ix_term_meta_term_id", "term_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    term_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"), index=True)
+    meta_key: Mapped[str] = mapped_column(String(255), nullable=False)
+    meta_value: Mapped[str] = mapped_column(Text, default="", nullable=False)

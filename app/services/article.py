@@ -940,3 +940,59 @@ async def get_article_lock_status(
         "locked_by_name": locked_user.nickname if locked_user else None,
         "locked_at": article.locked_at.isoformat() if article.locked_at else None,
     }
+
+
+async def get_category_meta(session: AsyncSession, category_id: int) -> dict:
+    """获取分类元数据。"""
+    from app.models.article import TermMeta
+    
+    result = await session.execute(
+        select(TermMeta).where(TermMeta.term_id == category_id)
+    )
+    return {m.meta_key: m.meta_value for m in result.scalars().all()}
+
+
+async def update_category_meta(session: AsyncSession, category_id: int, meta: dict) -> None:
+    """更新分类元数据。"""
+    from app.models.article import TermMeta
+    
+    # 验证分类存在
+    await get_category_or_404(session, category_id)
+    
+    # 删除现有元数据
+    await session.execute(
+        select(TermMeta).where(TermMeta.term_id == category_id)
+    )
+    existing = await session.execute(
+        select(TermMeta).where(TermMeta.term_id == category_id)
+    )
+    for m in existing.scalars().all():
+        await session.delete(m)
+    
+    # 添加新元数据
+    for key, value in meta.items():
+        if value is not None and str(value).strip():
+            term_meta = TermMeta(
+                term_id=category_id,
+                meta_key=key,
+                meta_value=str(value),
+            )
+            session.add(term_meta)
+    
+    await session.commit()
+
+
+async def delete_category_meta(session: AsyncSession, category_id: int, meta_key: str) -> None:
+    """删除分类元数据。"""
+    from app.models.article import TermMeta
+    
+    result = await session.execute(
+        select(TermMeta).where(
+            TermMeta.term_id == category_id,
+            TermMeta.meta_key == meta_key
+        )
+    )
+    meta = result.scalar_one_or_none()
+    if meta:
+        await session.delete(meta)
+        await session.commit()
