@@ -666,6 +666,8 @@ PORT=8080
 - 新增评论分页：后台评论列表支持分页查询
 - 新增应用密码：`application_passwords` 表支持 API 认证
 - 新增细粒度能力权限系统：15 个能力权限，支持 `require_capability()` 装饰器
+- **新增对象缓存系统**：内存缓存实现，支持 TTL 过期、LRU 淘汰、缓存统计，文章查询自动缓存（30 分钟）
+- **新增数据库索引优化**：`published_at`、`scheduled_at` 字段添加索引，加速排序查询
 - 修复 SQLAlchemy 多外键歧义：明确指定 `foreign_keys` 参数
 - 修复数据库迁移：添加 `spam_score`、`locked_by`、`locked_at`、`scheduled_at` 字段
 - 修复评论服务：添加缺失的 `get_comment_or_404` 函数
@@ -673,6 +675,7 @@ PORT=8080
 
 **前台（web）**
 - 新增文章评论分页接口：`GET /api/v1/web/articles/{id}/comments`
+- **翻译字符串优化**：新增通用翻译 key（delete/edit/create/refresh/reset 等），改进量词表达
 
 **后台（admin）**
 - 新增定时发布 API：设置 / 取消 / 查询定时发布文章
@@ -684,6 +687,8 @@ PORT=8080
 - 新增评论分页：评论列表支持分页查询
 - 新增应用密码 API：创建 / 查询 / 删除应用密码
 - 新增能力查询 API：`GET /api/v1/admin/auth/capabilities` 返回用户能力列表
+- **媒体库视图增强**：支持网格/列表视图切换，列表视图显示文件详情
+- **多尺寸图片生成**：上传图片自动生成 thumbnail/medium/large 三种尺寸
 - 修复评论管理前端：适配分页 API 响应格式
 
 ### 2026-07-02
