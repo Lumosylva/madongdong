@@ -25,6 +25,7 @@ async def init_db() -> None:
         await _migrate_scheduled_at_column(session)
         await _migrate_lock_columns(session)
         await _migrate_comment_spam_score(session)
+        await _migrate_application_passwords(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -212,4 +213,31 @@ async def _migrate_comment_spam_score(session: AsyncSession) -> None:
         return
 
     await session.execute(text("ALTER TABLE comments ADD COLUMN spam_score FLOAT DEFAULT 0.0"))
+    await session.commit()
+
+
+async def _migrate_application_passwords(session: AsyncSession) -> None:
+    """创建 application_passwords 表（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name='application_passwords'")
+        )
+        if result.scalar_one_or_none():
+            return
+    except Exception:
+        return
+
+    await session.execute(text("""
+        CREATE TABLE application_passwords (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            name VARCHAR(100) NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            last_used_at DATETIME,
+            created_at DATETIME NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """))
+    await session.execute(text("CREATE INDEX ix_application_passwords_user_id ON application_passwords (user_id)"))
     await session.commit()

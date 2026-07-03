@@ -186,7 +186,7 @@ async def delete_category_endpoint(
 async def get_category_meta_endpoint(
     category_id: int,
     session: AsyncSession = Depends(get_db_session),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     from app.services.article import get_category_meta
     

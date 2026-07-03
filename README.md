@@ -18,11 +18,12 @@
 - 分类管理（CRUD，支持层级分类）
 - 标签管理（CRUD）
 - 媒体库管理（文件上传、图片分辨率自动提取、目录管理、批量移动/删除）
-- 评论管理与审核（通过 / 拒绝 / 彻底删除）
+- 评论管理与审核（通过 / 拒绝 / 彻底删除 / 垃圾标记 / 垃圾箱）
 - 友情链接管理（前台申请、后台审核/编辑/删除）
 - 站点配置与导航项管理（含首页背景大图、背景音乐配置、页脚版权/ICP备案/公安备案信息）
 - 服务器级配置管理（域名、JWT 密钥、数据库连接、上传目录）
 - 用户管理（创建/编辑/删除/批量角色变更）
+- 应用密码（API 认证增强，支持创建/删除/查询应用密码）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
 - RSS Feed（`/api/v1/web/rss`）、Sitemap（`/api/v1/web/sitemap.xml`）和 robots.txt（`/api/v1/web/robots.txt`）
@@ -301,6 +302,9 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | DELETE | `/api/v1/admin/auth/users/{user_id}` | 删除用户 |
 | POST | `/api/v1/admin/auth/users/batch/delete` | 批量删除 |
 | POST | `/api/v1/admin/auth/users/batch/role` | 批量变更角色 |
+| GET | `/api/v1/admin/auth/app-passwords` | 获取应用密码列表 |
+| POST | `/api/v1/admin/auth/app-passwords` | 创建应用密码 |
+| DELETE | `/api/v1/admin/auth/app-passwords/{id}` | 删除应用密码 |
 
 ### 后台文章
 
@@ -333,6 +337,10 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET/POST | `/api/v1/admin/categories` | 分类列表/创建（支持 parent_id） |
 | PUT | `/api/v1/admin/categories/{id}` | 更新分类（支持 parent_id） |
 | DELETE | `/api/v1/admin/categories/{id}` | 删除分类（子分类自动提升） |
+| GET | `/api/v1/admin/categories/{id}/meta` | 获取分类元数据 |
+| PUT | `/api/v1/admin/categories/{id}/meta` | 更新分类元数据 |
+| DELETE | `/api/v1/admin/categories/{id}/meta/{key}` | 删除分类元数据 |
+| POST | `/api/v1/admin/categories/{id}/convert-to-tag` | 将分类转换为标签 |
 | GET/POST | `/api/v1/admin/tags` | 标签列表/创建 |
 | PUT | `/api/v1/admin/tags/{id}` | 更新标签 |
 
@@ -351,9 +359,14 @@ VITE_WEB_BASE_URL=http://localhost:5173
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/v1/admin/comments` | 评论列表 |
+| GET | `/api/v1/admin/comments` | 评论列表（分页） |
+| GET | `/api/v1/admin/comments/spam` | 垃圾评论列表 |
+| GET | `/api/v1/admin/comments/trash` | 垃圾箱评论列表 |
 | POST | `/api/v1/admin/comments/{id}/approve` | 通过 |
 | POST | `/api/v1/admin/comments/{id}/reject` | 拒绝 |
+| POST | `/api/v1/admin/comments/{id}/spam` | 标记为垃圾 |
+| POST | `/api/v1/admin/comments/{id}/trash` | 移入垃圾箱 |
+| POST | `/api/v1/admin/comments/{id}/restore` | 从垃圾箱恢复 |
 | POST | `/api/v1/admin/comments/delete` | 彻底删除 |
 
 ### 后台友链
@@ -380,6 +393,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET | `/api/v1/web/home` | 首页数据 |
 | GET | `/api/v1/web/articles/slug/{slug}` | 通过 slug 获取文章详情 |
 | GET | `/api/v1/web/articles/{id}` | 通过 ID 获取文章详情（兼容） |
+| GET | `/api/v1/web/articles/{id}/comments` | 获取文章评论（分页） |
 | GET | `/api/v1/web/search` | 搜索 |
 | GET | `/api/v1/web/archive` | 归档 |
 | GET | `/api/v1/web/categories` | 分类索引 |
@@ -644,15 +658,29 @@ PORT=8080
 - 新增文章修订历史功能：`article_revisions` 表存储修订版本，支持版本回滚
 - 新增定时发布功能：`scheduled_at` 字段 + 后台调度器自动发布到期文章
 - 新增文章锁定功能：`locked_by` / `locked_at` 字段，防止并发编辑（15 分钟自动过期）
+- 新增分类元数据支持：`term_meta` 表存储分类扩展字段
+- 新增分类/标签转换工具：支持将分类转换为同名标签
+- 新增垃圾评论分类：`spam` / `trash` 状态 + 自动垃圾检测评分
+- 新增评论分页：后台评论列表支持分页查询
+- 新增应用密码：`application_passwords` 表支持 API 认证
 - 修复 SQLAlchemy 多外键歧义：明确指定 `foreign_keys` 参数
+- 修复数据库迁移：添加 `spam_score`、`locked_by`、`locked_at`、`scheduled_at` 字段
+- 修复评论服务：添加缺失的 `get_comment_or_404` 函数
+- **安全修复**：应用密码接口和分类元数据读取接口限制为管理员角色，防止普通用户越权访问
 
 **前台（web）**
-- 无变更
+- 新增文章评论分页接口：`GET /api/v1/web/articles/{id}/comments`
 
 **后台（admin）**
 - 新增定时发布 API：设置 / 取消 / 查询定时发布文章
 - 新增文章锁定 API：锁定 / 解锁 / 查询锁定状态
 - 新增文章修订 API：查询修订历史 / 查看修订详情 / 从修订恢复
+- 新增分类元数据 API：获取 / 更新 / 删除分类元数据
+- 新增分类转换 API：将分类转换为标签
+- 新增垃圾评论 API：标记垃圾 / 移入垃圾箱 / 恢复
+- 新增评论分页：评论列表支持分页查询
+- 新增应用密码 API：创建 / 查询 / 删除应用密码
+- 修复评论管理前端：适配分页 API 响应格式
 
 ### 2026-07-02
 

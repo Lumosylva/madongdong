@@ -313,3 +313,40 @@ async def batch_change_role(
 ) -> dict[str, object]:
     await change_users_role(session, payload.user_ids, payload.role_name)
     return success_response(None)
+
+
+@router.get("/app-passwords", summary="获取应用密码列表")
+async def get_app_passwords(
+    current_user: User = Depends(require_token_role("admin")),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, object]:
+    from app.services.app_password import list_application_passwords
+    
+    passwords = await list_application_passwords(session, current_user.id)
+    return success_response(passwords)
+
+
+@router.post("/app-passwords", summary="创建应用密码")
+async def create_app_password(
+    name: str,
+    current_user: User = Depends(require_token_role("admin")),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, object]:
+    from app.services.app_password import create_application_password
+    
+    result = await create_application_password(session, current_user.id, name)
+    return success_response(result)
+
+
+@router.delete("/app-passwords/{password_id}", summary="删除应用密码")
+async def delete_app_password(
+    password_id: int,
+    current_user: User = Depends(require_token_role("admin")),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, object]:
+    from app.services.app_password import delete_application_password
+    
+    deleted = await delete_application_password(session, password_id, current_user.id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="应用密码不存在")
+    return success_response({"deleted": True, "id": password_id})
