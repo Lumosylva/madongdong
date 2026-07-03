@@ -11,9 +11,10 @@
 - 安装完成后自动写入 `.env` 配置文件，域名配置自动生成 4 个 CORS 变体（http/https × 域名/www.域名）
 - JWT 登录认证与角色鉴权（admin / author / reader）
 - CSRF 防护（双重提交 Cookie 模式，保护所有写请求）
-- 文章能力：创建 / 更新 / 审核通过 / 审核驳回 / 摘要自动生成
+- 文章能力：创建 / 更新 / 审核通过 / 审核驳回 / 摘要自动生成 / 定时发布 / 修订历史
 - 文章 slug URL：`/article/{slug}`，自动生成，标题变更时重新生成
 - 文章垃圾箱：删除 → 软删除 → 恢复 / 彻底删除
+- 文章锁定：防并发编辑（15 分钟自动过期，锁定者或管理员可解锁）
 - 分类管理（CRUD，支持层级分类）
 - 标签管理（CRUD）
 - 媒体库管理（文件上传、图片分辨率自动提取、目录管理、批量移动/删除）
@@ -65,8 +66,8 @@
 - 顶部栏：用户昵称、角色标记、语言切换下拉、下拉菜单（个人中心 / 退出登录）
 - 左侧菜单：主菜单 + 文章二级菜单（编辑文章未选中时禁用，仅从列表进入）
 - 角色差异化发布策略（admin 直接发布 / author 提交审核）
-- **文章管理**：列表 / 搜索 / 筛选 / 编辑 / 垃圾箱完整流程
-- **创建/编辑文章**：Markdown 编辑器（支持深色模式自动切换）、插入视频（本地上传 + YouTube/Bilibili 嵌入）、插入音频（本地上传 + 网易云音乐嵌入）、封面图选择、分类/标签/状态、临时草稿保存
+- **文章管理**：列表 / 搜索 / 筛选 / 编辑 / 垃圾箱完整流程 / 定时发布 / 修订历史
+- **创建/编辑文章**：Markdown 编辑器（支持深色模式自动切换）、插入视频（本地上传 + YouTube/Bilibili 嵌入）、插入音频（本地上传 + 网易云音乐嵌入）、封面图选择、分类/标签/状态、临时草稿保存、定时发布设置
 - **评论管理**：审核通过/拒绝/删除、批量操作、搜索筛选、刷新按钮
 - **友链管理**：列表/搜索/筛选/编辑/审核/删除，首字符头像、数据刷新按钮
 - **用户管理**：列表/搜索/角色筛选/创建/编辑/删除/批量操作、数据刷新按钮
@@ -307,6 +308,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 |------|------|------|
 | GET | `/api/v1/admin/articles` | 文章列表 |
 | GET | `/api/v1/admin/articles/deleted` | 垃圾箱列表 |
+| GET | `/api/v1/admin/articles/scheduled` | 定时发布列表 |
 | GET | `/api/v1/admin/articles/{id}` | 文章详情 |
 | POST | `/api/v1/admin/articles` | 创建文章（自动生成 slug） |
 | PUT | `/api/v1/admin/articles/{id}` | 更新文章 |
@@ -315,6 +317,14 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | DELETE | `/api/v1/admin/articles/{id}/permanent` | 彻底删除 |
 | POST | `/api/v1/admin/articles/{id}/approve` | 审核通过 |
 | POST | `/api/v1/admin/articles/{id}/reject` | 审核拒绝 |
+| POST | `/api/v1/admin/articles/{id}/schedule` | 设置定时发布 |
+| POST | `/api/v1/admin/articles/{id}/cancel-schedule` | 取消定时发布 |
+| POST | `/api/v1/admin/articles/{id}/lock` | 锁定文章 |
+| POST | `/api/v1/admin/articles/{id}/unlock` | 解锁文章 |
+| GET | `/api/v1/admin/articles/{id}/lock-status` | 获取锁定状态 |
+| GET | `/api/v1/admin/articles/{id}/revisions` | 获取修订历史 |
+| GET | `/api/v1/admin/articles/{id}/revisions/{revision_id}` | 获取修订详情 |
+| POST | `/api/v1/admin/articles/{id}/revisions/{revision_id}/restore` | 从修订恢复 |
 
 ### 后台分类/标签
 
@@ -627,6 +637,22 @@ PORT=8080
 ---
 
 ## 更新日志
+
+### 2026-07-03
+
+**后端**
+- 新增文章修订历史功能：`article_revisions` 表存储修订版本，支持版本回滚
+- 新增定时发布功能：`scheduled_at` 字段 + 后台调度器自动发布到期文章
+- 新增文章锁定功能：`locked_by` / `locked_at` 字段，防止并发编辑（15 分钟自动过期）
+- 修复 SQLAlchemy 多外键歧义：明确指定 `foreign_keys` 参数
+
+**前台（web）**
+- 无变更
+
+**后台（admin）**
+- 新增定时发布 API：设置 / 取消 / 查询定时发布文章
+- 新增文章锁定 API：锁定 / 解锁 / 查询锁定状态
+- 新增文章修订 API：查询修订历史 / 查看修订详情 / 从修订恢复
 
 ### 2026-07-02
 

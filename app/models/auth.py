@@ -53,7 +53,7 @@ class User(TimestampMixin, Base):
         back_populates="users",
         lazy="selectin",
     )
-    articles: Mapped[list["Article"]] = relationship(back_populates="author")
+    articles: Mapped[list["Article"]] = relationship(back_populates="author", foreign_keys="[Article.author_id]")
 
 
 class Role(TimestampMixin, Base):

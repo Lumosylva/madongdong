@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import Select, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
@@ -43,7 +43,6 @@ async def _ensure_slug_unique(session: AsyncSession, slug: str, exclude_id: int 
 
 async def save_slug_history(session: AsyncSession, article_id: int, old_slug: str) -> None:
     """保存文章旧 slug 到历史记录。"""
-    from datetime import datetime, timezone
     from app.models.article import ArticleSlugHistory
     
     # 检查是否已存在相同的旧 slug
@@ -74,6 +73,166 @@ async def find_article_by_old_slug(session: AsyncSession, old_slug: str) -> int 
         .limit(1)
     )
     return result.scalar_one_or_none()
+
+
+async def create_article_revision(session: AsyncSession, article: Article, user_id: int) -> None:
+    """创建文章修订版本。"""
+    from app.models.article import ArticleRevision
+    
+    # 获取当前最大修订号
+    result = await session.execute(
+        select(ArticleRevision.revision_number)
+        .where(ArticleRevision.article_id == article.id)
+        .order_by(ArticleRevision.revision_number.desc())
+        .limit(1)
+    )
+    max_revision = result.scalar_one_or_none() or 0
+    
+    # 创建新修订
+    revision = ArticleRevision(
+        article_id=article.id,
+        revision_number=max_revision + 1,
+        title=article.title,
+        content_markdown=article.content_markdown,
+        content_html=article.content_html,
+        summary=article.summary,
+        revised_by=user_id,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(revision)
+
+
+async def get_article_revisions(
+    session: AsyncSession,
+    article_id: int,
+    page: int = 1,
+    page_size: int = 20,
+) -> dict:
+    """获取文章修订历史列表。"""
+    from app.models.article import ArticleRevision
+    from app.models.auth import User
+    
+    # 计算总数
+    count_result = await session.execute(
+        select(func.count()).where(ArticleRevision.article_id == article_id)
+    )
+    total = count_result.scalar() or 0
+    
+    # 查询修订列表
+    result = await session.execute(
+        select(ArticleRevision)
+        .where(ArticleRevision.article_id == article_id)
+        .order_by(ArticleRevision.revision_number.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    revisions = list(result.scalars().all())
+    
+    # 获取修订者信息
+    revision_data = []
+    for rev in revisions:
+        rev_dict = {
+            "id": rev.id,
+            "revision_number": rev.revision_number,
+            "title": rev.title,
+            "summary": rev.summary,
+            "revised_by": rev.revised_by,
+            "created_at": rev.created_at.isoformat(),
+        }
+        # 查询修订者昵称
+        if rev.revised_by:
+            user_result = await session.execute(
+                select(User).where(User.id == rev.revised_by)
+            )
+            user = user_result.scalar_one_or_none()
+            rev_dict["revised_by_name"] = user.nickname if user else None
+        else:
+            rev_dict["revised_by_name"] = None
+        revision_data.append(rev_dict)
+    
+    return {
+        "items": revision_data,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
+
+
+async def get_article_revision_detail(
+    session: AsyncSession,
+    revision_id: int,
+) -> dict | None:
+    """获取文章修订详情。"""
+    from app.models.article import ArticleRevision
+    from app.models.auth import User
+    
+    result = await session.execute(
+        select(ArticleRevision).where(ArticleRevision.id == revision_id)
+    )
+    revision = result.scalar_one_or_none()
+    
+    if not revision:
+        return None
+    
+    # 查询修订者信息
+    revised_by_name = None
+    if revision.revised_by:
+        user_result = await session.execute(
+            select(User).where(User.id == revision.revised_by)
+        )
+        user = user_result.scalar_one_or_none()
+        revised_by_name = user.nickname if user else None
+    
+    return {
+        "id": revision.id,
+        "article_id": revision.article_id,
+        "revision_number": revision.revision_number,
+        "title": revision.title,
+        "content_markdown": revision.content_markdown,
+        "content_html": revision.content_html,
+        "summary": revision.summary,
+        "revised_by": revision.revised_by,
+        "revised_by_name": revised_by_name,
+        "created_at": revision.created_at.isoformat(),
+    }
+
+
+async def restore_article_revision(
+    session: AsyncSession,
+    revision_id: int,
+    article_id: int,
+) -> Article | None:
+    """从修订版本恢复文章内容。"""
+    from app.models.article import ArticleRevision
+    
+    # 获取修订
+    result = await session.execute(
+        select(ArticleRevision).where(
+            ArticleRevision.id == revision_id,
+            ArticleRevision.article_id == article_id,
+        )
+    )
+    revision = result.scalar_one_or_none()
+    
+    if not revision:
+        return None
+    
+    # 获取文章
+    article = await get_article_or_404(session, article_id)
+    
+    # 先保存当前版本到修订历史
+    await create_article_revision(session, article, revision.revised_by)
+    
+    # 恢复内容
+    article.title = revision.title
+    article.content_markdown = revision.content_markdown
+    article.content_html = revision.content_html
+    article.summary = revision.summary
+    
+    await session.commit()
+    await session.refresh(article)
+    return article
 
 
 async def list_categories(session: AsyncSession) -> list[Category]:
@@ -301,6 +460,15 @@ async def update_article(
     article = await get_article_for_edit(session, article_id, current_user)
     category = await get_category_or_404(session, category_id)
     tags = await _load_tags(session, tag_ids)
+
+    # 保存当前版本到修订历史（仅在内容有变化时）
+    content_changed = (
+        article.title != title or
+        article.summary != summary or
+        article.content_markdown != content_markdown
+    )
+    if content_changed:
+        await create_article_revision(session, article, current_user.id)
 
     old_title = article.title
     old_slug = article.slug
@@ -536,3 +704,239 @@ async def permanently_delete_article(
 def _ensure_admin(current_user: User) -> None:
     if not _is_admin(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅管理员可执行该操作")
+
+
+async def schedule_article(
+    session: AsyncSession,
+    article_id: int,
+    scheduled_at: datetime,
+    current_user: User,
+) -> Article:
+    """设置文章定时发布。"""
+    article = await get_article_or_404(session, article_id)
+    
+    # 检查权限
+    if not _is_admin(current_user) and article.author_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作该文章")
+    
+    # 检查文章状态
+    if article.is_deleted:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="垃圾箱中的文章无法定时发布")
+    
+    if article.status == ArticleStatus.PUBLISHED:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="已发布的文章无需定时发布")
+    
+    # 检查时间
+    if scheduled_at <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="定时发布时间必须在未来")
+    
+    # 设置定时发布
+    article.status = ArticleStatus.SCHEDULED
+    article.scheduled_at = scheduled_at
+    
+    await session.commit()
+    await session.refresh(article)
+    return article
+
+
+async def cancel_scheduled_article(
+    session: AsyncSession,
+    article_id: int,
+    current_user: User,
+) -> Article:
+    """取消文章定时发布。"""
+    article = await get_article_or_404(session, article_id)
+    
+    # 检查权限
+    if not _is_admin(current_user) and article.author_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作该文章")
+    
+    # 检查文章状态
+    if article.status != ArticleStatus.SCHEDULED:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="该文章未设置定时发布")
+    
+    # 取消定时发布，恢复为草稿
+    article.status = ArticleStatus.DRAFT
+    article.scheduled_at = None
+    
+    await session.commit()
+    await session.refresh(article)
+    return article
+
+
+async def publish_scheduled_articles(session: AsyncSession) -> int:
+    """发布所有到期的定时文章。返回发布的文章数量。"""
+    now = datetime.now(timezone.utc)
+    
+    # 查找所有到期的定时文章
+    result = await session.execute(
+        select(Article).where(
+            Article.status == ArticleStatus.SCHEDULED,
+            Article.scheduled_at <= now,
+            Article.is_deleted == False,
+        )
+    )
+    articles = list(result.scalars().all())
+    
+    # 发布文章
+    published_count = 0
+    for article in articles:
+        article.status = ArticleStatus.PUBLISHED
+        article.published_at = article.scheduled_at
+        article.scheduled_at = None
+        published_count += 1
+    
+    if published_count > 0:
+        await session.commit()
+    
+    return published_count
+
+
+async def get_scheduled_articles(
+    session: AsyncSession,
+    page: int = 1,
+    page_size: int = 20,
+) -> dict:
+    """获取定时发布中的文章列表。"""
+    # 计算总数
+    count_result = await session.execute(
+        select(func.count()).where(
+            Article.status == ArticleStatus.SCHEDULED,
+            Article.is_deleted == False,
+        )
+    )
+    total = count_result.scalar() or 0
+    
+    # 查询文章列表
+    result = await session.execute(
+        select(Article)
+        .where(
+            Article.status == ArticleStatus.SCHEDULED,
+            Article.is_deleted == False,
+        )
+        .order_by(Article.scheduled_at.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .options(*get_article_eager_loaders())
+    )
+    articles = list(result.scalars().all())
+    
+    return {
+        "items": articles,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size,
+    }
+
+
+async def lock_article(
+    session: AsyncSession,
+    article_id: int,
+    current_user: User,
+) -> dict:
+    """锁定文章，防止并发编辑。"""
+    article = await get_article_or_404(session, article_id)
+    
+    # 检查是否已锁定
+    if article.locked_by and article.locked_by != current_user.id:
+        # 检查锁定是否过期（15分钟）
+        if article.locked_at and article.locked_at > datetime.now(timezone.utc) - timedelta(minutes=15):
+            # 获取锁定者信息
+            from app.models.auth import User as UserModel
+            user_result = await session.execute(
+                select(UserModel).where(UserModel.id == article.locked_by)
+            )
+            locked_user = user_result.scalar_one_or_none()
+            locked_by_name = locked_user.nickname if locked_user else None
+            
+            return {
+                "locked": True,
+                "locked_by": article.locked_by,
+                "locked_by_name": locked_by_name,
+                "locked_at": article.locked_at.isoformat() if article.locked_at else None,
+                "message": f"文章正在被 {locked_by_name or '其他用户'} 编辑",
+            }
+    
+    # 锁定文章
+    article.locked_by = current_user.id
+    article.locked_at = datetime.now(timezone.utc)
+    await session.commit()
+    
+    return {
+        "locked": True,
+        "locked_by": current_user.id,
+        "locked_by_name": current_user.nickname,
+        "locked_at": article.locked_at.isoformat(),
+        "message": "文章已锁定",
+    }
+
+
+async def unlock_article(
+    session: AsyncSession,
+    article_id: int,
+    current_user: User,
+) -> dict:
+    """解锁文章。"""
+    article = await get_article_or_404(session, article_id)
+    
+    # 检查权限
+    if article.locked_by and article.locked_by != current_user.id:
+        if not _is_admin(current_user):
+            return {
+                "locked": False,
+                "message": "无权解锁该文章",
+            }
+    
+    # 解锁文章
+    article.locked_by = None
+    article.locked_at = None
+    await session.commit()
+    
+    return {
+        "locked": False,
+        "message": "文章已解锁",
+    }
+
+
+async def get_article_lock_status(
+    session: AsyncSession,
+    article_id: int,
+) -> dict:
+    """获取文章锁定状态。"""
+    article = await get_article_or_404(session, article_id)
+    
+    if not article.locked_by:
+        return {
+            "locked": False,
+            "locked_by": None,
+            "locked_by_name": None,
+            "locked_at": None,
+        }
+    
+    # 检查锁定是否过期
+    if article.locked_at and article.locked_at <= datetime.now(timezone.utc) - timedelta(minutes=15):
+        # 锁定已过期，自动解锁
+        article.locked_by = None
+        article.locked_at = None
+        await session.commit()
+        return {
+            "locked": False,
+            "locked_by": None,
+            "locked_by_name": None,
+            "locked_at": None,
+        }
+    
+    # 获取锁定者信息
+    from app.models.auth import User as UserModel
+    user_result = await session.execute(
+        select(UserModel).where(UserModel.id == article.locked_by)
+    )
+    locked_user = user_result.scalar_one_or_none()
+    
+    return {
+        "locked": True,
+        "locked_by": article.locked_by,
+        "locked_by_name": locked_user.nickname if locked_user else None,
+        "locked_at": article.locked_at.isoformat() if article.locked_at else None,
+    }

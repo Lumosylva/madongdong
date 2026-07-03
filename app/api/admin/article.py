@@ -1,5 +1,7 @@
 """后台文章与分类标签接口。"""
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -237,4 +239,134 @@ async def permanently_delete_article_endpoint(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     result = await permanently_delete_article(session, article_id, current_user)
+    return success_response(result)
+
+
+@router.get("/articles/{article_id}/revisions", summary="获取文章修订历史")
+async def get_article_revisions_endpoint(
+    article_id: int,
+    page: int = 1,
+    page_size: int = 20,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import get_article_revisions, get_article_or_404
+    
+    # 验证文章存在
+    await get_article_or_404(session, article_id)
+    
+    result = await get_article_revisions(session, article_id, page, page_size)
+    return success_response(result)
+
+
+@router.get("/articles/{article_id}/revisions/{revision_id}", summary="获取文章修订详情")
+async def get_article_revision_detail_endpoint(
+    article_id: int,
+    revision_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import get_article_revision_detail
+    
+    result = await get_article_revision_detail(session, revision_id)
+    if not result:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="修订版本不存在")
+    return success_response(result)
+
+
+@router.post("/articles/{article_id}/revisions/{revision_id}/restore", summary="从修订版本恢复文章")
+async def restore_article_revision_endpoint(
+    article_id: int,
+    revision_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import restore_article_revision
+    
+    article = await restore_article_revision(session, revision_id, article_id)
+    if not article:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="修订版本不存在")
+    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+
+
+@router.post("/articles/{article_id}/schedule", summary="设置文章定时发布")
+async def schedule_article_endpoint(
+    article_id: int,
+    scheduled_at: datetime,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import schedule_article
+    
+    article = await schedule_article(session, article_id, scheduled_at, current_user)
+    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+
+
+@router.post("/articles/{article_id}/cancel-schedule", summary="取消文章定时发布")
+async def cancel_schedule_article_endpoint(
+    article_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import cancel_scheduled_article
+    
+    article = await cancel_scheduled_article(session, article_id, current_user)
+    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+
+
+@router.get("/articles/scheduled", summary="获取定时发布中的文章列表")
+async def get_scheduled_articles_endpoint(
+    page: int = 1,
+    page_size: int = 20,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import get_scheduled_articles
+    
+    result = await get_scheduled_articles(session, page, page_size)
+    articles = [ArticleSummaryResponse.model_validate(a).model_dump() for a in result["items"]]
+    return success_response({
+        "items": articles,
+        "total": result["total"],
+        "page": result["page"],
+        "page_size": result["page_size"],
+        "total_pages": result["total_pages"],
+    })
+
+
+@router.post("/articles/{article_id}/lock", summary="锁定文章")
+async def lock_article_endpoint(
+    article_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import lock_article
+    
+    result = await lock_article(session, article_id, current_user)
+    return success_response(result)
+
+
+@router.post("/articles/{article_id}/unlock", summary="解锁文章")
+async def unlock_article_endpoint(
+    article_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import unlock_article
+    
+    result = await unlock_article(session, article_id, current_user)
+    return success_response(result)
+
+
+@router.get("/articles/{article_id}/lock-status", summary="获取文章锁定状态")
+async def get_article_lock_status_endpoint(
+    article_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.services.article import get_article_lock_status
+    
+    result = await get_article_lock_status(session, article_id)
     return success_response(result)

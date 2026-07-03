@@ -37,7 +37,18 @@ async def lifespan(_: FastAPI):
         await login_lockout.cleanup_old_records(session)
         from app.core.security import cleanup_expired_refresh_tokens
         await cleanup_expired_refresh_tokens(session)
+        
+        # 发布到期的定时文章
+        from app.services.article import publish_scheduled_articles
+        published_count = await publish_scheduled_articles(session)
+        if published_count > 0:
+            print(f"已自动发布 {published_count} 篇定时文章")
+        
         await session.commit()
+
+    # 启动定时文章调度器
+    from app.core.scheduler import start_scheduler
+    start_scheduler()
 
     yield
 

@@ -23,6 +23,7 @@ class ArticleStatus(StrEnum):
     PENDING_REVIEW = "pending_review"
     PUBLISHED = "published"
     REJECTED = "rejected"
+    SCHEDULED = "scheduled"
 
 
 class ArticleTag(Base):
@@ -90,6 +91,7 @@ class Article(TimestampMixin, Base):
     )
     review_comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     comment_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
@@ -98,7 +100,10 @@ class Article(TimestampMixin, Base):
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="RESTRICT"), index=True)
 
-    author: Mapped["User"] = relationship(back_populates="articles", lazy="selectin")
+    locked_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    locked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    author: Mapped["User"] = relationship(back_populates="articles", lazy="selectin", foreign_keys=[author_id])
     category: Mapped[Category] = relationship(back_populates="articles", lazy="selectin")
     tags: Mapped[list[Tag]] = relationship(
         secondary="article_tags",
@@ -142,4 +147,23 @@ class ArticleSlugHistory(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
     old_slug: Mapped[str] = mapped_column(String(280), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ArticleRevision(Base):
+    """文章修订历史，用于版本回滚。"""
+
+    __tablename__ = "article_revisions"
+    __table_args__ = (
+        Index("ix_revision_article_id", "article_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    revision_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    content_markdown: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    content_html: Mapped[str] = mapped_column(Text, default="", nullable=False)
+    summary: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    revised_by: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

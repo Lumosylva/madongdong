@@ -22,6 +22,8 @@ async def init_db() -> None:
         await _migrate_category_parent_id(session)
         await _migrate_refresh_token_expires_at(session)
         await _migrate_police_beian_column(session)
+        await _migrate_scheduled_at_column(session)
+        await _migrate_lock_columns(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -156,3 +158,40 @@ async def _migrate_police_beian_column(session: AsyncSession) -> None:
 
     await session.execute(text("ALTER TABLE site_settings ADD COLUMN police_beian VARCHAR(255)"))
     await session.commit()
+
+
+async def _migrate_scheduled_at_column(session: AsyncSession) -> None:
+    """为 articles 表添加 scheduled_at 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(articles)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        if "scheduled_at" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(text("ALTER TABLE articles ADD COLUMN scheduled_at DATETIME"))
+    await session.commit()
+
+
+async def _migrate_lock_columns(session: AsyncSession) -> None:
+    """为 articles 表添加 locked_by 和 locked_at 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(
+            text("PRAGMA table_info(articles)")
+        )
+        columns = [row[1] for row in result.fetchall()]
+        
+        if "locked_by" not in columns:
+            await session.execute(text("ALTER TABLE articles ADD COLUMN locked_by INTEGER REFERENCES users(id) ON DELETE SET NULL"))
+        
+        if "locked_at" not in columns:
+            await session.execute(text("ALTER TABLE articles ADD COLUMN locked_at DATETIME"))
+        
+        await session.commit()
+    except Exception:
+        return
