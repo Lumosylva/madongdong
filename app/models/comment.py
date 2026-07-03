@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -21,6 +21,8 @@ class CommentStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+    SPAM = "spam"
+    TRASH = "trash"
 
 
 class Comment(TimestampMixin, Base):
@@ -44,6 +46,7 @@ class Comment(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
+    spam_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
 
     article: Mapped["Article"] = relationship(lazy="selectin")

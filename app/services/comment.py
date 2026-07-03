@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select, func, select
@@ -100,6 +101,17 @@ async def create_comment(
 
     client_meta = parse_client_user_agent(client_user_agent)
 
+    # 检查垃圾评论
+    spam_score = await check_comment_spam(session, content, guest_email, guest_nickname)
+    
+    # 如果垃圾评分超过 0.7，自动标记为垃圾
+    if spam_score >= 0.7:
+        initial_status = CommentStatus.SPAM
+    elif auto_approved:
+        initial_status = CommentStatus.APPROVED
+    else:
+        initial_status = CommentStatus.PENDING
+
     comment = Comment(
         article_id=article.id,
         user_id=current_user.id if current_user else None,
@@ -110,7 +122,8 @@ async def create_comment(
         client_os=client_meta['client_os'],
         client_os_version=client_meta['client_os_version'],
         content=content,
-        status=CommentStatus.APPROVED if auto_approved else CommentStatus.PENDING,
+        status=initial_status,
+        spam_score=spam_score,
         parent_id=parent.id if parent else None,
     )
     session.add(comment)
@@ -187,3 +200,120 @@ async def count_article_comments(session: AsyncSession, article_id: int) -> int:
 def _is_admin_or_author(user: User) -> bool:
     role_names = {str(role.name or '').strip().lower() for role in user.roles}
     return 'admin' in role_names or 'author' in role_names
+
+
+async def check_comment_spam(
+    session: AsyncSession,
+    content: str,
+    guest_email: str | None = None,
+    guest_nickname: str | None = None,
+) -> float:
+    """检查评论垃圾评分。返回 0.0-1.0 的分数，越高越可能是垃圾。"""
+    score = 0.0
+
+    # 1. 检查黑名单关键词（简单实现）
+    spam_keywords = ['viagra', 'casino', 'poker', 'lottery', 'winner', 'congratulations',
+                     'click here', 'buy now', 'limited time', 'act now', 'free money']
+    content_lower = content.lower()
+    for keyword in spam_keywords:
+        if keyword in content_lower:
+            score += 0.3
+            break
+
+    # 2. 检查链接数量
+    link_count = len(re.findall(r'https?://', content))
+    if link_count > 3:
+        score += 0.3
+    elif link_count > 1:
+        score += 0.1
+
+    # 3. 检查内容长度（过短可能是垃圾）
+    if len(content.strip()) < 5:
+        score += 0.2
+
+    # 4. 检查全大写内容
+    if content.isupper() and len(content) > 10:
+        score += 0.2
+
+    # 5. 检查重复字符
+    if re.search(r'(.)\1{5,}', content):
+        score += 0.3
+
+    # 6. 检查评论者历史（如果有邮箱）
+    if guest_email:
+        history_score = await _get_commenter_spam_score(session, guest_email)
+        score += history_score * 0.2
+
+    return min(score, 1.0)
+
+
+async def _get_commenter_spam_score(session: AsyncSession, email: str) -> float:
+    """获取评论者历史垃圾评分。"""
+    # 统计该邮箱的评论数量
+    count_result = await session.execute(
+        select(func.count(Comment.id)).where(Comment.guest_email == email)
+    )
+    total_comments = count_result.scalar() or 0
+
+    # 统计被标记为垃圾的数量
+    spam_result = await session.execute(
+        select(func.count(Comment.id)).where(
+            Comment.guest_email == email,
+            Comment.status == CommentStatus.SPAM
+        )
+    )
+    spam_count = spam_result.scalar() or 0
+
+    if total_comments == 0:
+        return 0.0
+
+    # 计算垃圾比例
+    spam_ratio = spam_count / total_comments
+    return spam_ratio
+
+
+async def mark_as_spam(session: AsyncSession, comment_id: int) -> Comment:
+    """将评论标记为垃圾。"""
+    comment = await get_comment_or_404(session, comment_id)
+    comment.status = CommentStatus.SPAM
+    await session.commit()
+    await session.refresh(comment)
+    return comment
+
+
+async def mark_as_trash(session: AsyncSession, comment_id: int) -> Comment:
+    """将评论移入垃圾箱。"""
+    comment = await get_comment_or_404(session, comment_id)
+    comment.status = CommentStatus.TRASH
+    await session.commit()
+    await session.refresh(comment)
+    return comment
+
+
+async def restore_from_trash(session: AsyncSession, comment_id: int) -> Comment:
+    """从垃圾箱恢复评论。"""
+    comment = await get_comment_or_404(session, comment_id)
+    comment.status = CommentStatus.PENDING
+    await session.commit()
+    await session.refresh(comment)
+    return comment
+
+
+async def list_spam_comments(session: AsyncSession) -> list[Comment]:
+    """查询垃圾评论列表。"""
+    result = await session.execute(
+        select(Comment)
+        .where(Comment.status == CommentStatus.SPAM)
+        .order_by(Comment.created_at.desc())
+    )
+    return list(result.scalars().unique().all())
+
+
+async def list_trash_comments(session: AsyncSession) -> list[Comment]:
+    """查询垃圾箱评论列表。"""
+    result = await session.execute(
+        select(Comment)
+        .where(Comment.status == CommentStatus.TRASH)
+        .order_by(Comment.created_at.desc())
+    )
+    return list(result.scalars().unique().all())

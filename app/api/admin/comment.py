@@ -9,7 +9,17 @@ from app.models.auth import User
 from app.schemas.comment import CommentResponse
 from pydantic import BaseModel
 
-from app.services.comment import approve_comment, delete_comments, list_comments, reject_comment
+from app.services.comment import (
+    approve_comment,
+    delete_comments,
+    list_comments,
+    list_spam_comments,
+    list_trash_comments,
+    mark_as_spam,
+    mark_as_trash,
+    reject_comment,
+    restore_from_trash,
+)
 from app.utils.response import success_response
 
 router = APIRouter(prefix="/admin/comments", tags=["admin-comments"])
@@ -25,6 +35,24 @@ async def get_comments(
     _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     comments = await list_comments(session)
+    return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
+
+
+@router.get("/spam", summary="查询垃圾评论列表")
+async def get_spam_comments(
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    comments = await list_spam_comments(session)
+    return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
+
+
+@router.get("/trash", summary="查询垃圾箱评论列表")
+async def get_trash_comments(
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    comments = await list_trash_comments(session)
     return success_response([CommentResponse.model_validate(item).model_dump() for item in comments])
 
 
@@ -45,6 +73,36 @@ async def reject_comment_endpoint(
     _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     comment = await reject_comment(session, comment_id)
+    return success_response(CommentResponse.model_validate(comment).model_dump())
+
+
+@router.post("/{comment_id}/spam", summary="标记为垃圾评论")
+async def mark_as_spam_endpoint(
+    comment_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    comment = await mark_as_spam(session, comment_id)
+    return success_response(CommentResponse.model_validate(comment).model_dump())
+
+
+@router.post("/{comment_id}/trash", summary="移入垃圾箱")
+async def mark_as_trash_endpoint(
+    comment_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    comment = await mark_as_trash(session, comment_id)
+    return success_response(CommentResponse.model_validate(comment).model_dump())
+
+
+@router.post("/{comment_id}/restore", summary="从垃圾箱恢复")
+async def restore_from_trash_endpoint(
+    comment_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_any_role(["admin", "author"])),
+) -> dict[str, object]:
+    comment = await restore_from_trash(session, comment_id)
     return success_response(CommentResponse.model_validate(comment).model_dump())
 
 
