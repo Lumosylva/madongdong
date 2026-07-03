@@ -220,6 +220,18 @@ async def delete_category_meta_endpoint(
     return success_response({"deleted": True, "category_id": category_id, "meta_key": meta_key})
 
 
+@router.post("/categories/{category_id}/convert-to-tag", summary="将分类转换为标签")
+async def convert_category_to_tag_endpoint(
+    category_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_token_role("admin")),
+) -> dict[str, object]:
+    from app.services.article import convert_category_to_tag
+    
+    result = await convert_category_to_tag(session, category_id)
+    return success_response(result)
+
+
 @router.get("/tags", summary="查询标签列表")
 async def get_tags(
     session: AsyncSession = Depends(get_db_session),

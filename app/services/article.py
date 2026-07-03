@@ -996,3 +996,63 @@ async def delete_category_meta(session: AsyncSession, category_id: int, meta_key
     if meta:
         await session.delete(meta)
         await session.commit()
+
+
+async def convert_category_to_tag(
+    session: AsyncSession,
+    category_id: int,
+) -> dict:
+    """将分类转换为标签。"""
+    category = await get_category_or_404(session, category_id)
+    
+    # 检查是否有子分类
+    child_result = await session.execute(
+        select(Category).where(Category.parent_id == category_id)
+    )
+    children = list(child_result.scalars().all())
+    if children:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该分类下有子分类，无法转换为标签"
+        )
+    
+    # 检查是否有文章
+    article_result = await session.execute(
+        select(Article).where(Article.category_id == category_id).limit(1)
+    )
+    if article_result.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="该分类下有文章，请先将文章移至其他分类"
+        )
+    
+    # 创建同名标签
+    new_slug = await _ensure_tag_slug_unique(session, category.slug)
+    tag = Tag(name=category.name, slug=new_slug)
+    session.add(tag)
+    await session.flush()
+    
+    # 复制元数据
+    from app.models.article import TermMeta
+    meta_result = await session.execute(
+        select(TermMeta).where(TermMeta.term_id == category_id)
+    )
+    for meta in meta_result.scalars().all():
+        new_meta = TermMeta(
+            term_id=tag.id,
+            meta_key=meta.meta_key,
+            meta_value=meta.meta_value,
+        )
+        session.add(new_meta)
+    
+    # 删除原分类
+    await session.delete(category)
+    await session.commit()
+    await session.refresh(tag)
+    
+    return {
+        "id": tag.id,
+        "name": tag.name,
+        "slug": tag.slug,
+        "message": f"分类 '{category.name}' 已转换为标签",
+    }
