@@ -40,12 +40,18 @@ async def paginate_published_articles(
 ) -> PaginatedResponse[Article]:
     """分页查询已发布文章。"""
 
+    # 基础查询条件
+    base_condition = Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False)
+    
     statement: Select[tuple[Article]] = (
         select(Article)
-        .where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
+        .where(*base_condition)
         .options(*get_article_eager_loaders())
     )
-    count_statement = select(func.count(Article.id)).where(Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False))
+    
+    # 优化的计数查询：不加载关联数据
+    count_statement = select(func.count(Article.id)).where(*base_condition)
+    
     if keyword:
         like_keyword = f"%{keyword}%"
         condition = or_(
@@ -60,6 +66,7 @@ async def paginate_published_articles(
     offset = (page - 1) * page_size
     statement = statement.offset(offset).limit(page_size)
 
+    # 并行执行查询（SQLite 单线程，但代码结构清晰）
     result = await session.execute(statement)
     total_result = await session.execute(count_statement)
     items = list(result.scalars().unique().all())

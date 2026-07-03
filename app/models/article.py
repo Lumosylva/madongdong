@@ -90,8 +90,8 @@ class Article(TimestampMixin, Base):
         index=True,
     )
     review_comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     comment_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
