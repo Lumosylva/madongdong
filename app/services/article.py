@@ -41,6 +41,41 @@ async def _ensure_slug_unique(session: AsyncSession, slug: str, exclude_id: int 
         counter += 1
 
 
+async def save_slug_history(session: AsyncSession, article_id: int, old_slug: str) -> None:
+    """保存文章旧 slug 到历史记录。"""
+    from datetime import datetime, timezone
+    from app.models.article import ArticleSlugHistory
+    
+    # 检查是否已存在相同的旧 slug
+    existing = await session.execute(
+        select(ArticleSlugHistory).where(
+            ArticleSlugHistory.article_id == article_id,
+            ArticleSlugHistory.old_slug == old_slug
+        )
+    )
+    if existing.scalar_one_or_none():
+        return  # 已存在，不重复保存
+    
+    history = ArticleSlugHistory(
+        article_id=article_id,
+        old_slug=old_slug,
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(history)
+
+
+async def find_article_by_old_slug(session: AsyncSession, old_slug: str) -> int | None:
+    """通过旧 slug 查找文章 ID，用于 301 重定向。"""
+    from app.models.article import ArticleSlugHistory
+    
+    result = await session.execute(
+        select(ArticleSlugHistory.article_id)
+        .where(ArticleSlugHistory.old_slug == old_slug)
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_categories(session: AsyncSession) -> list[Category]:
     """查询分类列表。"""
 
@@ -268,9 +303,16 @@ async def update_article(
     tags = await _load_tags(session, tag_ids)
 
     old_title = article.title
+    old_slug = article.slug
+    
     article.title = title
     if title != old_title or not article.slug:
-        article.slug = await _ensure_slug_unique(session, generate_article_slug(title), exclude_id=article.id)
+        new_slug = await _ensure_slug_unique(session, generate_article_slug(title), exclude_id=article.id)
+        # 保存旧 slug 到历史记录
+        if old_slug and old_slug != new_slug:
+            await save_slug_history(session, article.id, old_slug)
+        article.slug = new_slug
+    
     article.summary = summary
     article.content_markdown = content_markdown
     article.content_html = ""

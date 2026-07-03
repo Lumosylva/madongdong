@@ -239,6 +239,24 @@ async def site_settings(
     return SiteSettingResponse.model_validate(setting)
 
 
+@router.get("/redirect/slug/{old_slug}", summary="通过旧 slug 重定向到文章")
+async def redirect_old_slug(
+    old_slug: str,
+    session: AsyncSession = Depends(get_db_session),
+):
+    """通过旧 slug 查找文章并重定向到新 URL。"""
+    from app.services.article import find_article_by_old_slug
+    from starlette.responses import RedirectResponse
+    
+    article_id = await find_article_by_old_slug(session, old_slug)
+    if article_id:
+        return RedirectResponse(
+            url=f"/article/details/{article_id}",
+            status_code=301,
+        )
+    raise HTTPException(status_code=404, detail="未找到对应的文章")
+
+
 @router.get("/archive", summary="获取归档数据")
 async def archive(
     session: AsyncSession = Depends(get_db_session),

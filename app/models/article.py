@@ -129,3 +129,17 @@ class ArticleViewLog(Base):
     article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
     client_ip: Mapped[str] = mapped_column(String(45), nullable=False)
     viewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ArticleSlugHistory(Base):
+    """文章旧 slug 历史记录，用于 301 重定向。"""
+
+    __tablename__ = "article_slug_history"
+    __table_args__ = (
+        Index("ix_slug_history_article_id", "article_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    old_slug: Mapped[str] = mapped_column(String(280), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

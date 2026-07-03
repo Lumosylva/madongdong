@@ -21,6 +21,7 @@ from app.core.rate_limit import RateLimitMiddleware
 from app.core.safe_static import SafeStaticFiles
 from app.core.security_headers import SecurityHeadersMiddleware
 from app.core.csrf import CSRFMiddleware
+from app.core.redirect import CanonicalRedirectMiddleware, WwwRedirectMiddleware
 
 
 @asynccontextmanager
@@ -73,6 +74,10 @@ app.add_middleware(
 )
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFMiddleware)
+if settings.enable_canonical_redirect:
+    app.add_middleware(CanonicalRedirectMiddleware)
+if settings.redirect_www_to_non_www is not None:
+    app.add_middleware(WwwRedirectMiddleware, redirect_www_to_non_www=settings.redirect_www_to_non_www)
 app.mount(settings.upload_url_prefix, SafeStaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(health_router)

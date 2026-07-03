@@ -31,6 +31,8 @@
 - 数学验证码（HMAC 签名，防止批量注册和暴力破解）
 - Cookie 隔离（admin / web 前端使用独立 Cookie 命名空间）
 - 数据库迁移自动处理（启动时自动添加新字段）
+- URL 301 重定向系统（尾部斜杠移除、小写路径规范化、www/non-www 重定向）
+- 旧 slug 重定向（文章标题变更时自动保存旧 slug，支持 301 重定向）
 
 ### 前台（web）
 
@@ -47,7 +49,7 @@
 - 评论区用户头像：已注册用户显示真实头像，匿名用户显示首字符头像
 - 友链申请表单（实时校验）
 - 静态资源地址统一解析（`assets/index.ts`）
-- **SEO 优化**：动态 og:title / og:description / og:image / twitter:card meta 标签、canonical URL、JSON-LD 结构化数据（Article schema）、article:published_time / article:modified_time / article:author / article:section / article:tag 标签
+- **SEO 优化**：智能文档标题生成系统、动态 og:title / og:description / og:image / twitter:card meta 标签、canonical URL、JSON-LD 结构化数据（Article schema）、article:published_time / article:modified_time / article:author / article:section / article:tag 标签、增强的 robots 指令系统（支持多种爬虫规则）、301 重定向系统（URL 规范化）、旧 slug 重定向（保持 SEO 权重）
 - 页面标题无闪烁（HTML 默认标题 + Vue 异步更新）
 - **首页 Hero 背景大图**：可配置背景大图，导航栏透明，滚动时自动隐藏/显示（半透明毛玻璃）
 - **首页背景音乐**：左下角浮动播放器，支持网易云音乐链接嵌入
@@ -156,6 +158,7 @@
 
 ```text
 app/          FastAPI 后端（api / core / models / schemas / services / utils）
+  core/       核心模块（config / database / security / redirect / csrf / rate_limit）
 web/          前台 Vue 应用（端口 5173，多语言：zh-CN / en / ja）
   src/
     views/    页面组件（13 个视图）
@@ -232,6 +235,10 @@ UPLOAD_MAX_SIZE=10485760
 
 # CORS 来源（JSON 数组格式）
 CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
+
+# URL 重定向配置
+REDIRECT_WWW_TO_NON_WWW=true  # www.example.com -> example.com
+ENABLE_CANONICAL_REDIRECT=true  # 启用 URL 规范化重定向
 ```
 
 #### `web/.env`
@@ -371,6 +378,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET | `/api/v1/web/rss` | RSS Feed |
 | GET | `/api/v1/web/sitemap.xml` | Sitemap |
 | GET | `/api/v1/web/robots.txt` | robots.txt |
+| GET | `/api/v1/web/redirect/slug/{old_slug}` | 通过旧 slug 重定向到文章（301） |
 | POST | `/api/v1/web/comments` | 提交评论 |
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
@@ -629,17 +637,23 @@ PORT=8080
 - RSS Feed 增强：添加 `atom:link rel="self"`、`<category>`、`<content:encoded>` 元素
 - RSS 文章 URL 同步修复为 `/article/details/{id}`
 - 新增 `robots.txt` 端点（`GET /api/v1/web/robots.txt`），包含 Sitemap 指令
+- 新增 301 重定向系统：URL 规范化中间件（尾部斜杠移除、小写路径、www/non-www 重定向）
+- 新增旧 slug 重定向系统：`article_slug_history` 表存储旧 slug，支持 301 重定向
 
 **前台（web）**
+- 新增智能文档标题生成系统：`generateDocumentTitle()` 函数支持 9 种页面类型
+- 新增增强的 robots 指令系统：`setRobotsMeta()` 函数支持多种指令组合
 - 新增 canonical URL 支持（所有页面自动添加 `<link rel="canonical">`）
 - 新增 JSON-LD 结构化数据（Article schema），提升搜索结果富摘要展示
 - 文章页新增 `og:type=article`、`article:published_time`、`article:modified_time`、`article:author`、`article:section`、`article:tag` meta 标签
 - 分类页和标签页新增 `og:description`、`twitter:description` meta 标签
+- 搜索页和 404 页新增 robots meta 标签（noindex）
 - 首页新增 `og:image` 支持（使用 Hero 背景大图或站点 Logo）
 - robots.txt 开发代理配置
 
 **配置**
 - URL 风险扫描白名单新增 XML 命名空间 URL（`http://www.w3.org/2005/Atom`、`http://purl.org/rss/1.0/modules/content/`）
+- 新增环境变量：`REDIRECT_WWW_TO_NON_WWW`、`ENABLE_CANONICAL_REDIRECT`
 
 ### 2026-07-01
 

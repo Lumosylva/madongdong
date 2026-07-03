@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     sql_echo: bool = False
     cookie_secure: bool = False
     trusted_proxy: bool = False
+    
+    # URL 重定向配置
+    redirect_www_to_non_www: bool = True  # True: www.example.com -> example.com
+    enable_canonical_redirect: bool = True  # 启用 URL 规范化重定向
 
     sqlite_file: str = "madongdong.db"
     database_url: str = "sqlite+aiosqlite:///./madongdong.db"
