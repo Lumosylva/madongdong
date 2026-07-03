@@ -10,6 +10,7 @@
 - 安装向导支持配置：站点域名（自动检测）、JWT 签名密钥（自动生成）、数据库连接（默认 SQLite）
 - 安装完成后自动写入 `.env` 配置文件，域名配置自动生成 4 个 CORS 变体（http/https × 域名/www.域名）
 - JWT 登录认证与角色鉴权（admin / author / reader）
+- 细粒度能力权限系统：15 个能力权限，支持 `require_capability()` 装饰器
 - CSRF 防护（双重提交 Cookie 模式，保护所有写请求）
 - 文章能力：创建 / 更新 / 审核通过 / 审核驳回 / 摘要自动生成 / 定时发布 / 修订历史
 - 文章 slug URL：`/article/{slug}`，自动生成，标题变更时重新生成
@@ -291,6 +292,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | POST | `/api/v1/admin/auth/revoke` | 登出（撤销令牌） |
 | GET | `/api/v1/admin/auth/me` | 获取当前用户 |
 | PUT | `/api/v1/admin/auth/me` | 更新个人资料 |
+| GET | `/api/v1/admin/auth/capabilities` | 获取当前用户的能力列表 |
 
 ### 后台用户管理
 
@@ -663,6 +665,7 @@ PORT=8080
 - 新增垃圾评论分类：`spam` / `trash` 状态 + 自动垃圾检测评分
 - 新增评论分页：后台评论列表支持分页查询
 - 新增应用密码：`application_passwords` 表支持 API 认证
+- 新增细粒度能力权限系统：15 个能力权限，支持 `require_capability()` 装饰器
 - 修复 SQLAlchemy 多外键歧义：明确指定 `foreign_keys` 参数
 - 修复数据库迁移：添加 `spam_score`、`locked_by`、`locked_at`、`scheduled_at` 字段
 - 修复评论服务：添加缺失的 `get_comment_or_404` 函数
@@ -680,6 +683,7 @@ PORT=8080
 - 新增垃圾评论 API：标记垃圾 / 移入垃圾箱 / 恢复
 - 新增评论分页：评论列表支持分页查询
 - 新增应用密码 API：创建 / 查询 / 删除应用密码
+- 新增能力查询 API：`GET /api/v1/admin/auth/capabilities` 返回用户能力列表
 - 修复评论管理前端：适配分页 API 响应格式
 
 ### 2026-07-02

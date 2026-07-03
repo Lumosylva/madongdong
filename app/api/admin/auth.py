@@ -305,6 +305,19 @@ async def batch_delete_admin_users(
     return success_response(None)
 
 
+@router.get("/capabilities", summary="获取当前用户的能力列表")
+async def get_capabilities(
+    current_user: User = Depends(get_current_user),
+) -> dict[str, object]:
+    from app.core.security import get_user_capabilities
+    
+    capabilities = list(get_user_capabilities(current_user))
+    return success_response({
+        "capabilities": capabilities,
+        "roles": [role.name for role in current_user.roles],
+    })
+
+
 @router.post("/users/batch/role", summary="批量变更角色")
 async def batch_change_role(
     payload: AdminUserBatchRoleRequest,

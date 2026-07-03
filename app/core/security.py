@@ -350,3 +350,31 @@ def require_any_role(role_names: list[str]) -> Callable:
         return current_user
 
     return checker
+
+
+def get_user_capabilities(user: User) -> set[str]:
+    """获取用户的所有能力。"""
+    capabilities = set()
+    for role in user.roles:
+        for permission in role.permissions:
+            capabilities.add(permission.code)
+    return capabilities
+
+
+def user_has_capability(user: User, capability: str) -> bool:
+    """检查用户是否拥有指定能力。"""
+    return capability in get_user_capabilities(user)
+
+
+def require_capability(capability: str) -> Callable:
+    """校验用户是否拥有指定能力。"""
+
+    async def checker(current_user: User = Depends(get_current_user)) -> User:
+        if not user_has_capability(current_user, capability):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="权限不足",
+            )
+        return current_user
+
+    return checker

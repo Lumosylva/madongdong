@@ -26,16 +26,25 @@ DEFAULT_ROLES = {
 
 DEFAULT_PERMISSIONS = {
     'article:create': '创建文章',
+    'article:edit': '编辑文章',
+    'article:delete': '删除文章',
+    'article:publish': '直接发布文章',
     'article:review': '审核文章',
+    'article:manage_schedule': '管理定时发布',
+    'article:manage_revisions': '管理文章修订',
     'media:manage': '管理媒体',
     'user:manage': '管理用户',
     'comment:review': '审核评论',
+    'comment:manage_spam': '管理垃圾评论',
+    'category:manage': '管理分类',
+    'tag:manage': '管理标签',
+    'friend_link:manage': '管理友情链接',
     'site:manage': '管理站点配置',
 }
 
 ROLE_PERMISSION_MAP = {
     'admin': list(DEFAULT_PERMISSIONS.keys()),
-    'author': ['article:create'],
+    'author': ['article:create', 'article:edit', 'article:delete', 'media:manage'],
     'reader': [],
 }
 
