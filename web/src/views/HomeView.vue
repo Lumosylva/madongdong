@@ -143,8 +143,8 @@ const handleScroll = () => {
   })
 }
 
-const applyHomeMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
-  applySiteMeta(siteTitle, siteSubtitle, siteLogo)
+const applyHomeMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null, heroImage?: string | null) => {
+  applySiteMeta(siteTitle, siteSubtitle, siteLogo, heroImage)
 
   const iconUrl = toAbsoluteAssetUrl(siteLogo)
   if (!iconUrl) return
@@ -162,7 +162,7 @@ const loadData = async () => {
   data.value = await webApi.getHome(page.value, homePageSize.value)
   friendLinks.value = await webApi.getFriendLinks()
   setSiteSetting(data.value.site)
-  applyHomeMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo)
+  applyHomeMeta(data.value.site.site_title, data.value.site.site_subtitle, data.value.site.site_logo, data.value.site.homepage_hero_image)
 }
 
 const hydrateWelcomeName = async () => {

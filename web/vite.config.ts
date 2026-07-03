@@ -11,6 +11,10 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
+      '/robots.txt': {
+        target: 'http://127.0.0.1:8000',
+        rewrite: () => '/api/v1/robots.txt',
+      },
     },
   },
 })

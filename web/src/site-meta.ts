@@ -51,7 +51,17 @@ function setMetaTag(name: string, content: string, property = false) {
   el.setAttribute('content', content)
 }
 
-export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null) => {
+const setCanonicalUrl = (url: string) => {
+  let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'canonical'
+    document.head.appendChild(link)
+  }
+  link.href = url
+}
+
+export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, siteLogo: string | null, heroImage?: string | null) => {
   const title = String(siteTitle || '').trim()
   const subtitle = String(siteSubtitle || '').trim()
   const fullTitle = title && subtitle ? `${title} - ${subtitle}` : (title || subtitle || getBaseTitle())
@@ -63,6 +73,15 @@ export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, si
   setMetaTag('og:url', window.location.href, true)
   setMetaTag('description', subtitle || 'MaDongDong 博客，提供文章阅读、友链浏览。')
   setMetaTag('twitter:title', fullTitle)
+  setCanonicalUrl(window.location.href)
+
+  const imageUrl = heroImage ? heroImage : (siteLogo || null)
+  if (imageUrl) {
+    const normalizedImage = normalizeFaviconUrl(imageUrl)
+    if (normalizedImage) {
+      setMetaTag('og:image', normalizedImage, true)
+    }
+  }
 
   const iconUrl = siteLogo ? String(siteLogo).trim() : ''
   if (!iconUrl) return
@@ -94,16 +113,52 @@ export const applySiteMeta = (siteTitle: string, siteSubtitle: string | null, si
   }
 }
 
-export const applyArticleMeta = (title: string, description: string, coverUrl?: string | null) => {
+export const applyArticleMeta = (
+  title: string,
+  description: string,
+  coverUrl?: string | null,
+  options?: {
+    id?: number
+    publishedAt?: string | null
+    updatedAt?: string | null
+    author?: string | null
+    category?: string | null
+    tags?: string[]
+  }
+) => {
   const fullTitle = buildPageTitle(title)
   document.title = fullTitle
 
+  setMetaTag('og:type', 'article', true)
   setMetaTag('og:title', fullTitle, true)
   setMetaTag('og:description', description || title, true)
   setMetaTag('og:url', window.location.href, true)
   setMetaTag('description', description || title)
   setMetaTag('twitter:title', fullTitle)
   setMetaTag('twitter:description', description || title)
+
+  if (options?.id) {
+    setCanonicalUrl(`${window.location.origin}/article/details/${options.id}`)
+  } else {
+    setCanonicalUrl(window.location.href)
+  }
+
+  if (options?.publishedAt) {
+    setMetaTag('article:published_time', options.publishedAt, true)
+  }
+  if (options?.updatedAt) {
+    setMetaTag('article:modified_time', options.updatedAt, true)
+  }
+  if (options?.author) {
+    setMetaTag('article:author', options.author, true)
+  }
+  if (options?.category) {
+    setMetaTag('article:section', options.category, true)
+  }
+  if (options?.tags?.length) {
+    document.querySelectorAll("meta[property='article:tag']").forEach(el => el.remove())
+    options.tags.forEach(tag => setMetaTag('article:tag', tag, true))
+  }
 
   if (coverUrl) {
     const normalizedCover = normalizeFaviconUrl(coverUrl)
@@ -142,4 +197,84 @@ function ensureRssLink() {
     document.head.appendChild(rssLink)
   }
   rssLink.href = '/api/v1/web/rss'
+}
+
+export const applyArticleJsonLd = (options: {
+  title: string
+  description: string
+  url: string
+  image?: string | null
+  publishedAt?: string | null
+  updatedAt?: string | null
+  author?: string | null
+  category?: string | null
+  tags?: string[]
+}) => {
+  document.querySelectorAll("script[type='application/ld+json']").forEach(el => el.remove())
+
+  const currentSiteSetting = getSiteSetting()
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: options.title,
+    description: options.description,
+    url: options.url,
+  }
+
+  if (options.image) {
+    jsonLd.image = options.image
+  }
+  if (options.publishedAt) {
+    jsonLd.datePublished = options.publishedAt
+  }
+  if (options.updatedAt) {
+    jsonLd.dateModified = options.updatedAt
+  }
+  if (options.author) {
+    jsonLd.author = { '@type': 'Person', name: options.author }
+  }
+  if (options.category) {
+    jsonLd.articleSection = options.category
+  }
+  if (options.tags?.length) {
+    jsonLd.keywords = options.tags.join(', ')
+  }
+
+  jsonLd.publisher = {
+    '@type': 'Organization',
+    name: currentSiteSetting?.site_title || 'MaDongDong Blog',
+  }
+
+  const script = document.createElement('script')
+  script.type = 'application/ld+json'
+  script.textContent = JSON.stringify(jsonLd)
+  document.head.appendChild(script)
+}
+
+export const applyCategoryMeta = (name: string, description: string | null, siteSubtitle: string | null) => {
+  const fullTitle = buildPageTitle(`${name} - 分类`)
+  document.title = fullTitle
+
+  setMetaTag('og:title', fullTitle, true)
+  setMetaTag('og:description', description || siteSubtitle || name, true)
+  setMetaTag('og:type', 'website', true)
+  setMetaTag('og:url', window.location.href, true)
+  setMetaTag('description', description || siteSubtitle || name)
+  setMetaTag('twitter:title', fullTitle)
+  setMetaTag('twitter:description', description || siteSubtitle || name)
+  setCanonicalUrl(window.location.href)
+}
+
+export const applyTagMeta = (name: string, siteSubtitle: string | null) => {
+  const fullTitle = buildPageTitle(`${name} - 标签`)
+  document.title = fullTitle
+
+  setMetaTag('og:title', fullTitle, true)
+  setMetaTag('og:description', siteSubtitle || name, true)
+  setMetaTag('og:type', 'website', true)
+  setMetaTag('og:url', window.location.href, true)
+  setMetaTag('description', siteSubtitle || name)
+  setMetaTag('twitter:title', fullTitle)
+  setMetaTag('twitter:description', siteSubtitle || name)
+  setCanonicalUrl(window.location.href)
 }

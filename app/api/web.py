@@ -42,6 +42,8 @@ from app.services.web import (
     get_search_page_data,
     get_tag_page_data,
     list_approved_comments_by_article,
+    list_public_categories,
+    list_public_tags,
     list_rss_articles,
 )
 from app.utils.ip import get_client_ip
@@ -75,23 +77,33 @@ async def rss_feed(request: Request, session: AsyncSession = Depends(get_db_sess
     site_subtitle = site.site_subtitle or ""
 
     rss = Element("rss", version="2.0")
+    rss.set("xmlns:atom", "http://www.w3.org/2005/Atom")
+    rss.set("xmlns:content", "http://purl.org/rss/1.0/modules/content/")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = site_title
     SubElement(channel, "link").text = base_url
     SubElement(channel, "description").text = site_subtitle
     SubElement(channel, "language").text = "zh-CN"
     SubElement(channel, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    atom_link = SubElement(channel, "{http://www.w3.org/2005/Atom}link")
+    atom_link.set("href", f"{base_url}/api/v1/web/rss")
+    atom_link.set("rel", "self")
+    atom_link.set("type", "application/rss+xml")
 
     for article in articles:
         item = SubElement(channel, "item")
         SubElement(item, "title").text = article.title
-        SubElement(item, "link").text = f"{base_url}/article/{article.slug}"
-        SubElement(item, "guid").text = f"{base_url}/article/{article.slug}"
+        SubElement(item, "link").text = f"{base_url}/article/details/{article.id}"
+        SubElement(item, "guid").text = f"{base_url}/article/details/{article.id}"
         SubElement(item, "description").text = article.summary
         if article.published_at:
             SubElement(item, "pubDate").text = article.published_at.strftime("%a, %d %b %Y %H:%M:%S +0000")
         if article.author:
             SubElement(item, "author").text = article.author.nickname
+        if article.category:
+            SubElement(item, "category").text = article.category.name
+        if article.content_html:
+            SubElement(item, "{http://purl.org/rss/1.0/modules/content/}encoded").text = article.content_html[:10000]
 
     xml_bytes = tostring(rss, encoding="unicode", xml_declaration=False)
     xml_output = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_bytes
@@ -121,9 +133,10 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
 
     for article in articles:
         url = SubElement(urlset, "url")
-        SubElement(url, "loc").text = f"{base_url}/article/{article.slug}"
-        if article.published_at:
-            SubElement(url, "lastmod").text = article.published_at.strftime("%Y-%m-%d")
+        SubElement(url, "loc").text = f"{base_url}/article/details/{article.id}"
+        lastmod_date = article.updated_at or article.published_at
+        if lastmod_date:
+            SubElement(url, "lastmod").text = lastmod_date.strftime("%Y-%m-%d")
         SubElement(url, "changefreq").text = "monthly"
         SubElement(url, "priority").text = "0.8"
 
@@ -135,6 +148,22 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
         SubElement(url, "changefreq").text = "monthly"
         SubElement(url, "priority").text = "0.6"
 
+    categories = await list_public_categories(session)
+    for cat in categories:
+        url = SubElement(urlset, "url")
+        SubElement(url, "loc").text = f"{base_url}/category/{cat.slug}"
+        SubElement(url, "lastmod").text = now
+        SubElement(url, "changefreq").text = "monthly"
+        SubElement(url, "priority").text = "0.5"
+
+    tags = await list_public_tags(session)
+    for tag in tags:
+        url = SubElement(urlset, "url")
+        SubElement(url, "loc").text = f"{base_url}/tag/{tag.slug}"
+        SubElement(url, "lastmod").text = now
+        SubElement(url, "changefreq").text = "monthly"
+        SubElement(url, "priority").text = "0.4"
+
     xml_bytes = tostring(urlset, encoding="unicode", xml_declaration=False)
     xml_output = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_bytes
 
@@ -142,6 +171,23 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
         content=xml_output,
         media_type="application/xml; charset=utf-8",
         headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@router.get("/robots.txt", summary="获取 robots.txt")
+async def robots_txt(request: Request) -> Response:
+    base_url = str(request.base_url).rstrip("/")
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "Disallow: /admin/\n"
+        f"\nSitemap: {base_url}/api/v1/web/sitemap.xml\n"
+    )
+    return Response(
+        content=content,
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=86400"},
     )
 
 

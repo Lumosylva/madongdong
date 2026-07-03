@@ -246,7 +246,7 @@ import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { useTheme } from '../composables/useTheme'
-import { applyArticleMeta, applySiteMetaFromSetting, setSiteSetting } from '../site-meta'
+import { applyArticleJsonLd, applyArticleMeta, applySiteMetaFromSetting, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import { truncateText } from '../utils/text'
 import type { ArticlePageResponse, Comment } from '../types'
@@ -369,7 +369,25 @@ const loadData = async () => {
   data.value = await webApi.getArticle(articleId)
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
-  applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url)
+  applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url, {
+    id: data.value.article.id,
+    publishedAt: data.value.article.published_at,
+    updatedAt: data.value.article.updated_at || data.value.article.created_at,
+    author: data.value.article.author?.nickname,
+    category: data.value.article.category?.name,
+    tags: data.value.article.tags?.map(t => t.name),
+  })
+  applyArticleJsonLd({
+    title: data.value.article.title,
+    description: data.value.article.summary || data.value.article.title,
+    url: window.location.href,
+    image: data.value.article.cover_url ? toAbsoluteAssetUrl(data.value.article.cover_url) : undefined,
+    publishedAt: data.value.article.published_at || undefined,
+    updatedAt: data.value.article.updated_at || data.value.article.created_at || undefined,
+    author: data.value.article.author?.nickname || undefined,
+    category: data.value.article.category?.name || undefined,
+    tags: data.value.article.tags?.map(t => t.name),
+  })
 }
 
 const hydrateCurrentUser = async () => {

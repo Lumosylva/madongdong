@@ -24,7 +24,7 @@
 - 用户管理（创建/编辑/删除/批量角色变更）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
-- RSS Feed（`/api/v1/web/rss`）和 Sitemap（`/api/v1/web/sitemap.xml`）
+- RSS Feed（`/api/v1/web/rss`）、Sitemap（`/api/v1/web/sitemap.xml`）和 robots.txt（`/api/v1/web/robots.txt`）
 - 浏览量去重（同一 IP 24 小时内同一文章只计 1 次）
 - 速率限制（按端点配置，防止暴力破解）
 - 登录失败锁定（数据库持久化，6 次失败锁定 15 分钟，启动时自动清理过期记录）
@@ -47,7 +47,7 @@
 - 评论区用户头像：已注册用户显示真实头像，匿名用户显示首字符头像
 - 友链申请表单（实时校验）
 - 静态资源地址统一解析（`assets/index.ts`）
-- SEO 优化：动态 og:title / og:description / og:image / twitter:card meta 标签
+- **SEO 优化**：动态 og:title / og:description / og:image / twitter:card meta 标签、canonical URL、JSON-LD 结构化数据（Article schema）、article:published_time / article:modified_time / article:author / article:section / article:tag 标签
 - 页面标题无闪烁（HTML 默认标题 + Vue 异步更新）
 - **首页 Hero 背景大图**：可配置背景大图，导航栏透明，滚动时自动隐藏/显示（半透明毛玻璃）
 - **首页背景音乐**：左下角浮动播放器，支持网易云音乐链接嵌入
@@ -370,6 +370,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET | `/api/v1/web/tags/{slug}/articles` | 标签文章 |
 | GET | `/api/v1/web/rss` | RSS Feed |
 | GET | `/api/v1/web/sitemap.xml` | Sitemap |
+| GET | `/api/v1/web/robots.txt` | robots.txt |
 | POST | `/api/v1/web/comments` | 提交评论 |
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
@@ -618,6 +619,27 @@ PORT=8080
 ---
 
 ## 更新日志
+
+### 2026-07-02
+
+**后端**
+- 修复 Sitemap 文章 URL：`/article/{slug}` → `/article/details/{id}`（与前端路由一致）
+- 修复 Sitemap lastmod：使用 `updated_at` 替代 `published_at`（更准确的修改时间）
+- Sitemap 新增分类和标签页面（优先级 0.5/0.4）
+- RSS Feed 增强：添加 `atom:link rel="self"`、`<category>`、`<content:encoded>` 元素
+- RSS 文章 URL 同步修复为 `/article/details/{id}`
+- 新增 `robots.txt` 端点（`GET /api/v1/web/robots.txt`），包含 Sitemap 指令
+
+**前台（web）**
+- 新增 canonical URL 支持（所有页面自动添加 `<link rel="canonical">`）
+- 新增 JSON-LD 结构化数据（Article schema），提升搜索结果富摘要展示
+- 文章页新增 `og:type=article`、`article:published_time`、`article:modified_time`、`article:author`、`article:section`、`article:tag` meta 标签
+- 分类页和标签页新增 `og:description`、`twitter:description` meta 标签
+- 首页新增 `og:image` 支持（使用 Hero 背景大图或站点 Logo）
+- robots.txt 开发代理配置
+
+**配置**
+- URL 风险扫描白名单新增 XML 命名空间 URL（`http://www.w3.org/2005/Atom`、`http://purl.org/rss/1.0/modules/content/`）
 
 ### 2026-07-01
 

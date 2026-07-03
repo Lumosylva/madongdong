@@ -75,7 +75,7 @@ import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl, webApi } from '../api'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
-import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
+import { applySiteMetaFromSetting, applyTagMeta, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime } from '../utils/time'
 import type { TagArticlesResponse } from '../types'
 import { useTheme } from '../composables/useTheme'
@@ -117,7 +117,7 @@ const loadData = async () => {
   keyword.value = data.value.tag.name
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
-  document.title = buildPageTitle(`${data.value.tag.name} - ${route.meta?.title as string | undefined}`)
+  applyTagMeta(data.value.tag.name, data.value.site.site_subtitle)
 }
 
 watch(() => route.params.slug, async () => {

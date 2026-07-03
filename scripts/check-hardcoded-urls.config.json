@@ -24,6 +24,8 @@
       "https://connect.qq.com/widget/shareqq/index.html",
       "www.w3.org/2000/svg",
       "http://www.sitemaps.org/schemas/sitemap/0.9",
+      "http://www.w3.org/2005/Atom",
+      "http://purl.org/rss/1.0/modules/content/",
       "text.startswith('http://') or text.startswith('https://')"
     ],
     "deny": [
