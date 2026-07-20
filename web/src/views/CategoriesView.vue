@@ -45,37 +45,33 @@
     <template v-else>
       <div class="categories-tree">
         <template v-for="cat in rootCategories" :key="cat.id">
-          <button
-            type="button"
-            class="category-card category-card-root"
-            :class="{ 'is-selected': selectedSlug === cat.slug }"
-            @click="selectCategory(cat)"
-          >
-            <div class="category-card-top">
+          <div class="category-col">
+            <button
+              type="button"
+              class="category-card category-card-root"
+              :class="{ 'is-selected': selectedSlug === cat.slug }"
+              @click="selectCategory(cat)"
+            >
               <div class="category-card-icon">{{ cat.name.slice(0, 1) }}</div>
               <h2 class="category-card-name">{{ cat.name }}</h2>
               <span class="category-card-count">{{ t('categories.articleCount', { n: cat.article_count }) }}</span>
-            </div>
-            <p class="category-card-desc">{{ cat.description || t('common.noDescription') }}</p>
-            <span class="category-card-arrow" aria-hidden="true">▾</span>
-          </button>
-          <div v-if="getChildCategories(cat.id).length" class="category-children">
-            <button
-              v-for="child in getChildCategories(cat.id)"
-              :key="child.id"
-              type="button"
-              class="category-card category-card-child"
-              :class="{ 'is-selected': selectedSlug === child.slug }"
-              @click="selectCategory(child)"
-            >
-              <div class="category-card-top">
+              <span class="category-card-arrow" aria-hidden="true">›</span>
+            </button>
+            <div v-if="getChildCategories(cat.id).length" class="category-children">
+              <button
+                v-for="child in getChildCategories(cat.id)"
+                :key="child.id"
+                type="button"
+                class="category-card category-card-child"
+                :class="{ 'is-selected': selectedSlug === child.slug }"
+                @click="selectCategory(child)"
+              >
                 <div class="category-card-icon">{{ child.name.slice(0, 1) }}</div>
                 <h2 class="category-card-name">{{ child.name }}</h2>
                 <span class="category-card-count">{{ t('categories.articleCount', { n: child.article_count }) }}</span>
-              </div>
-              <p class="category-card-desc">{{ child.description || t('common.noDescription') }}</p>
-              <span class="category-card-arrow" aria-hidden="true">▾</span>
-            </button>
+                <span class="category-card-arrow" aria-hidden="true">›</span>
+              </button>
+            </div>
           </div>
         </template>
       </div>
@@ -85,6 +81,7 @@
           <div class="cat-articles-head">
             <div class="cat-articles-head-left">
               <span class="cat-articles-name">{{ selectedCatName }}</span>
+              <p v-if="selectedCatDesc" class="cat-articles-desc">{{ selectedCatDesc }}</p>
               <span v-if="!catLoading" class="cat-articles-total">{{ t('categories.articleCount', { n: catTotal }) }}</span>
             </div>
             <button type="button" class="cat-articles-close-btn" @click="closeArticles">{{ t('categories.collapse') }}</button>
@@ -172,6 +169,7 @@ const getChildCategories = (parentId: number) => data.value?.categories.filter((
 
 const selectedSlug = ref<string | null>(null)
 const selectedCatName = ref('')
+const selectedCatDesc = ref('')
 const catArticles = ref<Article[]>([])
 const catLoading = ref(false)
 const catLoadingMore = ref(false)
@@ -200,6 +198,7 @@ const selectCategory = async (cat: CategoryWithCount) => {
 
   selectedSlug.value = cat.slug
   selectedCatName.value = cat.name
+  selectedCatDesc.value = cat.description || ''
   catArticles.value = []
   catPage.value = 1
   catTotalPages.value = 1
@@ -239,6 +238,7 @@ const loadMoreArticles = async () => {
 const closeArticles = () => {
   selectedSlug.value = null
   selectedCatName.value = ''
+  selectedCatDesc.value = ''
   catArticles.value = []
   catPage.value = 1
   catTotalPages.value = 1
@@ -382,7 +382,7 @@ onMounted(() => {
   padding: 10px 14px;
   border-radius: 12px;
   background: rgba(14, 165, 164, 0.07);
-  border: none;
+  border: 1px solid rgba(14, 165, 164, 0.14);
 }
 
 .categories-metric-card strong {
@@ -403,45 +403,37 @@ onMounted(() => {
 
 .categories-tree {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 10px;
   margin-bottom: 18px;
 }
 
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 18px;
+.category-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .category-children {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-left: 32px;
-  padding-left: 20px;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-left: 20px;
+  padding-left: 14px;
   border-left: 2px solid rgba(14, 165, 164, 0.15);
-}
-
-.category-card-child {
-  background: var(--bg-panel);
-  opacity: 0.92;
-}
-
-.category-card-child:hover {
-  opacity: 1;
 }
 
 .category-card {
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px 12px;
-  border-radius: 0;
-  border: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
   background: var(--bg-panel);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   overflow: hidden;
   color: var(--text);
   cursor: pointer;
@@ -470,6 +462,7 @@ onMounted(() => {
 
 .category-card.is-selected {
   background: linear-gradient(160deg, rgba(14, 165, 164, 0.06), rgba(14, 165, 164, 0.03));
+  border-color: rgba(14, 165, 164, 0.3);
 }
 
 :global([data-theme='dark']) .category-card.is-selected {
@@ -486,19 +479,13 @@ onMounted(() => {
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
 }
 
-.category-card-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .category-card-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text);
   background: linear-gradient(135deg, rgba(14, 165, 164, 0.6), rgba(56, 189, 248, 0.6));
@@ -529,43 +516,37 @@ onMounted(() => {
   min-width: 0;
 }
 
-.category-card-desc {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-soft);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  flex: 1;
-}
-
-:global([data-theme='dark']) .category-card-desc {
-  color: var(--text);
-}
-
 :global([data-theme='dark']) .category-children {
   border-left-color: rgba(56, 189, 248, 0.15);
 }
 
 .category-card-arrow {
   display: inline-block;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--accent);
   line-height: 1;
-  opacity: 0;
-  transition: opacity 0.18s ease, transform 0.22s ease;
-  align-self: flex-end;
+  opacity: 0.45;
+  transition: opacity 0.18s ease;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .category-card:hover .category-card-arrow {
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .category-card.is-selected .category-card-arrow {
   opacity: 1;
-  transform: rotate(180deg);
+}
+
+.category-card-child {
+  background: var(--bg-panel);
+  opacity: 0.92;
+  padding: 10px 12px;
+}
+
+.category-card-child:hover {
+  opacity: 1;
 }
 
 /* ── Article panel ────────────────────────────── */
@@ -590,9 +571,17 @@ onMounted(() => {
 
 .cat-articles-head-left {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   min-width: 0;
+}
+
+.cat-articles-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.5;
 }
 
 .cat-articles-name {
@@ -845,8 +834,12 @@ onMounted(() => {
     gap: 10px;
   }
 
+  .categories-tree {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .category-children {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     margin-left: 20px;
     padding-left: 14px;
   }
@@ -858,6 +851,10 @@ onMounted(() => {
 
 @media (max-width: 560px) {
   .categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .categories-tree {
     grid-template-columns: 1fr;
   }
 
