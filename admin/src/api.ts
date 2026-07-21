@@ -187,8 +187,41 @@ export const adminApi = {
       body: JSON.stringify(payload),
     })
   },
-  getMedia(): Promise<WrappedResponse<any[]>> {
-    return request<WrappedResponse<any[]>>('/admin/media')
+  getMedia(options?: { folderId?: number; unorganized?: boolean }): Promise<WrappedResponse<any[]>> {
+    const params = new URLSearchParams()
+    if (options?.unorganized) {
+      params.set('unorganized', 'true')
+    } else if (options?.folderId !== undefined && options?.folderId !== null) {
+      params.set('folder_id', String(options.folderId))
+    }
+    const qs = params.toString()
+    return request<WrappedResponse<any[]>>(`/admin/media${qs ? `?${qs}` : ''}`)
+  },
+  getFolders(): Promise<WrappedResponse<any[]>> {
+    return request<WrappedResponse<any[]>>('/admin/media/folders')
+  },
+  createFolder(name: string, parentId: number | null, sortOrder = 0): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/media/folders', {
+      method: 'POST',
+      body: JSON.stringify({ name, parent_id: parentId, sort_order: sortOrder }),
+    })
+  },
+  updateFolder(id: number, name: string, parentId: number | null, sortOrder = 0): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/media/folders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, parent_id: parentId, sort_order: sortOrder }),
+    })
+  },
+  deleteFolder(id: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/media/folders/${id}`, {
+      method: 'DELETE',
+    })
+  },
+  moveMediaFiles(mediaIds: number[], targetFolderId: number | null): Promise<WrappedResponse<any[]>> {
+    return request<WrappedResponse<any[]>>('/admin/media/move', {
+      method: 'POST',
+      body: JSON.stringify({ media_ids: mediaIds, target_folder_id: targetFolderId }),
+    })
   },
   deleteMediaFiles(mediaIds: number[]): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>('/admin/media/delete', {

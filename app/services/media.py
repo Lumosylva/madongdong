@@ -19,6 +19,9 @@ IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 AUDIO_MIME_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg"}
 VIDEO_MIME_TYPES = {"video/mp4", "video/webm", "video/ogg"}
 
+# 哨兵值：区分"未传 folder_id"（返回全部）和"显式传 None"（返回未分类）
+_UNSET = object()
+
 
 async def list_media_folders(session: AsyncSession) -> list[MediaFolder]:
     """查询媒体目录列表。"""
@@ -66,12 +69,19 @@ async def update_media_folder(
     return folder
 
 
-async def list_media_files(session: AsyncSession, current_user: User) -> list[MediaFile]:
-    """查询媒体文件列表。"""
+async def list_media_files(session: AsyncSession, current_user: User, folder_id: object = _UNSET) -> list[MediaFile]:
+    """查询媒体文件列表。
+
+    folder_id=_UNSET  → 返回全部文件（不过滤）
+    folder_id=None    → 返回未分类文件（folder_id IS NULL）
+    folder_id=<int>   → 返回指定文件夹的文件
+    """
 
     statement = select(MediaFile).order_by(MediaFile.created_at.desc())
     if not _is_admin(current_user):
         statement = statement.where(MediaFile.uploaded_by == current_user.id)
+    if folder_id is not _UNSET:
+        statement = statement.where(MediaFile.folder_id == folder_id)
     result = await session.execute(statement)
     return list(result.scalars().unique().all())
 
@@ -170,6 +180,14 @@ async def move_media_files(
     for media in files:
         await session.refresh(media)
     return files
+
+
+async def delete_media_folder(session: AsyncSession, folder_id: int) -> None:
+    """删除媒体目录。子目录级联删除，目录内文件 folder_id 置 NULL。"""
+
+    folder = await get_media_folder_or_404(session, folder_id)
+    await session.delete(folder)
+    await session.commit()
 
 
 async def delete_media_files(session: AsyncSession, current_user: User, media_ids: list[int]) -> None:

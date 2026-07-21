@@ -128,6 +128,8 @@ const articles = ref<any[]>([])
 const deletedArticles = ref<any[]>([])
 const categories = ref<any[]>([])
 const media = ref<any[]>([])
+const folders = ref<any[]>([])
+const currentFolderId = ref<number | null | undefined>(undefined)
 const comments = ref<any[]>([])
 const friendLinks = ref<FriendLinkItem[]>([])
 const users = ref<any[]>([])
@@ -365,6 +367,7 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'media':
       return {
         media: media.value,
+        folders: folders.value,
         uploading: mediaUploading.value,
         toastMessage: mediaToastMessage.value,
         toastStatus: mediaToastStatus.value,
@@ -457,6 +460,11 @@ const activePanelListeners = computed(() => {
         upload: uploadMedia,
         'delete-media': deleteMedia,
         'delete-media-batch': deleteMediaBatch,
+        'select-folder': selectMediaFolder,
+        'create-folder': createMediaFolder,
+        'rename-folder': renameMediaFolder,
+        'delete-folder': deleteMediaFolder,
+        'move-media': moveMedia,
       }
     case 'comments':
       return {
@@ -671,11 +679,12 @@ const loadAll = async () => {
   try {
     const meRes = await adminApi.getMe()
     currentUser.value = meRes.data
-    const [articleRes, deletedRes, categoryRes, mediaRes, commentRes, linkRes, siteRes, userRes, serverCfgRes] = await Promise.all([
+    const [articleRes, deletedRes, categoryRes, mediaRes, folderRes, commentRes, linkRes, siteRes, userRes, serverCfgRes] = await Promise.all([
       adminApi.getArticles(),
       adminApi.getDeletedArticles(),
       adminApi.getCategories(),
-      adminApi.getMedia(),
+      adminApi.getMedia(currentFolderId.value !== undefined ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null } : undefined),
+      adminApi.getFolders(),
       adminApi.getComments(),
       adminApi.getFriendLinks(),
       adminApi.getSiteSettings(),
@@ -686,6 +695,7 @@ const loadAll = async () => {
     deletedArticles.value = deletedRes.data
     categories.value = categoryRes.data
     media.value = mediaRes.data
+    folders.value = folderRes.data
     comments.value = commentRes.data.items || commentRes.data
     friendLinks.value = linkRes.data || []
     users.value = userRes.data || []
@@ -896,17 +906,22 @@ const batchChangeUsersRole = async (ids: number[], role: string) => {
   await loadAll()
 }
 
-const uploadMedia = async (file: File) => {
+const uploadMedia = async (file: File, folderId?: number | null) => {
   if (mediaUploading.value) return
   mediaUploading.value = true
   mediaToastStatus.value = ''
   mediaToastMessage.value = ''
 
   try {
-    await adminApi.uploadMediaFile(file)
+    await adminApi.uploadMediaFile(file, folderId)
     mediaToastStatus.value = 'success'
     mediaToastMessage.value = t('toast.mediaUploaded')
-    await loadAll()
+    const mediaRes = await adminApi.getMedia(
+      currentFolderId.value !== undefined
+        ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null }
+        : undefined,
+    )
+    media.value = mediaRes.data
   } catch (error) {
     mediaToastStatus.value = 'error'
     mediaToastMessage.value = error instanceof Error ? error.message : t('toast.mediaUploadFailed')
@@ -929,11 +944,72 @@ const deleteMediaBatch = async (mediaIds: number[]) => {
     await adminApi.deleteMediaFiles(mediaIds)
     mediaToastStatus.value = 'success'
     mediaToastMessage.value = mediaIds.length > 1 ? t('toast.mediaDeletedCount', { n: mediaIds.length }) : t('toast.mediaDeleted')
-    await loadAll()
+    const mediaRes = await adminApi.getMedia(
+      currentFolderId.value !== undefined
+        ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null }
+        : undefined,
+    )
+    media.value = mediaRes.data
   } catch (error) {
     mediaToastStatus.value = 'error'
     mediaToastMessage.value = error instanceof Error ? error.message : t('toast.mediaDeleteFailed')
   }
+}
+
+const selectMediaFolder = async (folderId: number | null | undefined) => {
+  currentFolderId.value = folderId
+  const opts =
+    folderId === undefined
+      ? undefined
+      : folderId === null
+        ? { unorganized: true }
+        : { folderId }
+  const mediaRes = await adminApi.getMedia(opts)
+  media.value = mediaRes.data
+}
+
+const createMediaFolder = async (name: string, parentId: number | null) => {
+  await adminApi.createFolder(name, parentId)
+  const folderRes = await adminApi.getFolders()
+  folders.value = folderRes.data
+}
+
+const renameMediaFolder = async (id: number, name: string) => {
+  const target = (function findFolder(list: any[]): any {
+    for (const f of list) {
+      if (f.id === id) return f
+      const found = findFolder(f.children || [])
+      if (found) return found
+    }
+    return null
+  })(folders.value)
+  await adminApi.updateFolder(id, name, target?.parent_id ?? null, target?.sort_order ?? 0)
+  const folderRes = await adminApi.getFolders()
+  folders.value = folderRes.data
+}
+
+const deleteMediaFolder = async (id: number) => {
+  await adminApi.deleteFolder(id)
+  const [folderRes, mediaRes] = await Promise.all([
+    adminApi.getFolders(),
+    adminApi.getMedia(
+      currentFolderId.value !== undefined
+        ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null }
+        : undefined,
+    ),
+  ])
+  folders.value = folderRes.data
+  media.value = mediaRes.data
+}
+
+const moveMedia = async (mediaIds: number[], targetFolderId: number | null) => {
+  await adminApi.moveMediaFiles(mediaIds, targetFolderId)
+  const mediaRes = await adminApi.getMedia(
+    currentFolderId.value !== undefined
+      ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null }
+      : undefined,
+  )
+  media.value = mediaRes.data
 }
 
 const cropImageTo64 = async (file: File): Promise<File> => {

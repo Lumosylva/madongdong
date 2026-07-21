@@ -1,6 +1,6 @@
 """后台媒体库接口。"""
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
@@ -19,11 +19,13 @@ from app.services.media import (
     build_folder_tree,
     create_media_folder,
     delete_media_files,
+    delete_media_folder,
     list_media_files,
     list_media_folders,
     move_media_files,
     update_media_folder,
     upload_media_file,
+    _UNSET,
 )
 from app.utils.response import success_response
 
@@ -63,11 +65,28 @@ async def update_media_folder_endpoint(
 
 @router.get("", summary="查询媒体文件列表")
 async def get_media_files(
+    folder_id: int | None = Query(default=None),
+    unorganized: bool = Query(default=False),
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
-    files = await list_media_files(session, current_user)
+    if unorganized:
+        files = await list_media_files(session, current_user, folder_id=None)
+    elif folder_id is not None:
+        files = await list_media_files(session, current_user, folder_id=folder_id)
+    else:
+        files = await list_media_files(session, current_user)
     return success_response([MediaResponse.model_validate(item).model_dump() for item in files])
+
+
+@router.delete("/folders/{folder_id}", summary="删除媒体目录")
+async def delete_media_folder_endpoint(
+    folder_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(get_current_user),
+) -> dict[str, object]:
+    await delete_media_folder(session, folder_id)
+    return success_response({"deleted_id": folder_id})
 
 
 @router.post("/upload", summary="上传媒体文件")
