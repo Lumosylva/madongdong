@@ -108,7 +108,7 @@
             <!-- Grid View -->
             <div v-if="viewMode === 'grid' && grouped.image.length" class="media-grid">
               <button
-                v-for="item in grouped.image"
+                v-for="item in pagedImage"
                 :key="item.id"
                 type="button"
                 class="media-card media-card-image"
@@ -144,7 +144,7 @@
                 <span class="media-list-col media-list-col-actions"></span>
               </div>
               <button
-                v-for="item in grouped.image"
+                v-for="item in pagedImage"
                 :key="item.id"
                 type="button"
                 class="media-list-row"
@@ -164,6 +164,20 @@
                 </span>
               </button>
             </div>
+            <div class="media-pagination" v-if="imageTotalPages > 1 || grouped.image.length > pageSizeOptions[0]">
+              <div class="media-page-size">
+                <span>{{ t('common.perPage') }}</span>
+                <select :value="pageSize" @change="onPageSizeChange(+($event.target as HTMLSelectElement).value)">
+                  <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>
+                </select>
+                <span>{{ t('common.items') }}</span>
+              </div>
+              <div class="media-page-nav">
+                <button type="button" :disabled="imageCurrentPage <= 1" @click="goToPage('image', imageCurrentPage - 1)">{{ t('common.previous') }}</button>
+                <span>{{ t('articleManage.pageInfo', { current: imageCurrentPage, total: imageTotalPages }) }}</span>
+                <button type="button" :disabled="imageCurrentPage >= imageTotalPages" @click="goToPage('image', imageCurrentPage + 1)">{{ t('common.next') }}</button>
+              </div>
+            </div>
             <p v-else class="tips media-empty">{{ t('media.noImages') }}</p>
           </div>
 
@@ -176,7 +190,7 @@
               </div>
             </div>
             <div v-if="grouped.audio.length" class="media-grid">
-              <article v-for="item in grouped.audio" :key="item.id" class="media-card media-card-file" :class="{ selected: selectedIds.has(item.id) }">
+              <article v-for="item in pagedAudio" :key="item.id" class="media-card media-card-file" :class="{ selected: selectedIds.has(item.id) }">
                 <input class="media-card-checkbox" type="checkbox" :checked="selectedIds.has(item.id)" @click.stop="toggleSelected(item.id)" />
                 <div class="media-card-body">
                   <p class="media-card-title">{{ item.original_name }}</p>
@@ -187,6 +201,20 @@
                   </div>
                 </div>
               </article>
+            </div>
+            <div class="media-pagination" v-if="audioTotalPages > 1 || grouped.audio.length > pageSizeOptions[0]">
+              <div class="media-page-size">
+                <span>{{ t('common.perPage') }}</span>
+                <select :value="pageSize" @change="onPageSizeChange(+($event.target as HTMLSelectElement).value)">
+                  <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>
+                </select>
+                <span>{{ t('common.items') }}</span>
+              </div>
+              <div class="media-page-nav">
+                <button type="button" :disabled="audioCurrentPage <= 1" @click="goToPage('audio', audioCurrentPage - 1)">{{ t('common.previous') }}</button>
+                <span>{{ t('articleManage.pageInfo', { current: audioCurrentPage, total: audioTotalPages }) }}</span>
+                <button type="button" :disabled="audioCurrentPage >= audioTotalPages" @click="goToPage('audio', audioCurrentPage + 1)">{{ t('common.next') }}</button>
+              </div>
             </div>
             <p v-else class="tips media-empty">{{ t('media.noAudio') }}</p>
           </div>
@@ -200,7 +228,7 @@
               </div>
             </div>
             <div v-if="grouped.video.length" class="media-grid">
-              <article v-for="item in grouped.video" :key="item.id" class="media-card media-card-file" :class="{ selected: selectedIds.has(item.id) }">
+              <article v-for="item in pagedVideo" :key="item.id" class="media-card media-card-file" :class="{ selected: selectedIds.has(item.id) }">
                 <input class="media-card-checkbox" type="checkbox" :checked="selectedIds.has(item.id)" @click.stop="toggleSelected(item.id)" />
                 <div class="media-card-body">
                   <p class="media-card-title">{{ item.original_name }}</p>
@@ -211,6 +239,20 @@
                   </div>
                 </div>
               </article>
+            </div>
+            <div class="media-pagination" v-if="videoTotalPages > 1 || grouped.video.length > pageSizeOptions[0]">
+              <div class="media-page-size">
+                <span>{{ t('common.perPage') }}</span>
+                <select :value="pageSize" @change="onPageSizeChange(+($event.target as HTMLSelectElement).value)">
+                  <option v-for="n in pageSizeOptions" :key="n" :value="n">{{ n }}</option>
+                </select>
+                <span>{{ t('common.items') }}</span>
+              </div>
+              <div class="media-page-nav">
+                <button type="button" :disabled="videoCurrentPage <= 1" @click="goToPage('video', videoCurrentPage - 1)">{{ t('common.previous') }}</button>
+                <span>{{ t('articleManage.pageInfo', { current: videoCurrentPage, total: videoTotalPages }) }}</span>
+                <button type="button" :disabled="videoCurrentPage >= videoTotalPages" @click="goToPage('video', videoCurrentPage + 1)">{{ t('common.next') }}</button>
+              </div>
             </div>
             <p v-else class="tips media-empty">{{ t('media.noVideo') }}</p>
           </div>
@@ -373,7 +415,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, h, ref, type VNode } from 'vue'
+import { computed, defineComponent, h, ref, watch, type VNode } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toAbsoluteAssetUrl } from '../api'
 
@@ -418,6 +460,13 @@ const deleteTargetNames = ref<string[]>([])
 const activeTab = ref('image')
 const viewMode = ref<'grid' | 'list'>('grid')
 
+// 分页状态
+const pageSizeOptions = [20, 40, 80]
+const pageSize = ref(20)
+const imageCurrentPage = ref(1)
+const audioCurrentPage = ref(1)
+const videoCurrentPage = ref(1)
+
 // 文件夹侧边栏状态
 const activeFolderId = ref<number | null | undefined>(undefined)
 const expandedFolderIds = ref<Set<number>>(new Set())
@@ -451,6 +500,49 @@ const grouped = computed(() => {
   const video = props.media.filter((item) => String(item.media_type || '').toUpperCase() === 'VIDEO')
   return { image, audio, video }
 })
+
+watch(
+  () => props.media,
+  () => {
+    imageCurrentPage.value = 1
+    audioCurrentPage.value = 1
+    videoCurrentPage.value = 1
+  }
+)
+
+const pagedImage = computed(() => {
+  const start = (imageCurrentPage.value - 1) * pageSize.value
+  return grouped.value.image.slice(start, start + pageSize.value)
+})
+const pagedAudio = computed(() => {
+  const start = (audioCurrentPage.value - 1) * pageSize.value
+  return grouped.value.audio.slice(start, start + pageSize.value)
+})
+const pagedVideo = computed(() => {
+  const start = (videoCurrentPage.value - 1) * pageSize.value
+  return grouped.value.video.slice(start, start + pageSize.value)
+})
+
+const imageTotalPages = computed(() => Math.max(1, Math.ceil(grouped.value.image.length / pageSize.value)))
+const audioTotalPages = computed(() => Math.max(1, Math.ceil(grouped.value.audio.length / pageSize.value)))
+const videoTotalPages = computed(() => Math.max(1, Math.ceil(grouped.value.video.length / pageSize.value)))
+
+const goToPage = (tab: 'image' | 'audio' | 'video', page: number) => {
+  const total = tab === 'image' ? imageTotalPages.value
+              : tab === 'audio' ? audioTotalPages.value
+              : videoTotalPages.value
+  const clamped = Math.min(Math.max(1, page), total)
+  if (tab === 'image') imageCurrentPage.value = clamped
+  else if (tab === 'audio') audioCurrentPage.value = clamped
+  else videoCurrentPage.value = clamped
+}
+
+const onPageSizeChange = (newSize: number) => {
+  pageSize.value = newSize
+  imageCurrentPage.value = 1
+  audioCurrentPage.value = 1
+  videoCurrentPage.value = 1
+}
 
 const tabs = computed(() => [
   { key: 'image', label: t('media.tabImages'), icon: tabIcons.image, count: grouped.value.image.length },
@@ -977,5 +1069,62 @@ const MediaMoveFolderItem = defineComponent({
   border-color: var(--accent);
   color: var(--accent);
   background: rgba(14, 165, 164, 0.08);
+}
+
+.media-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px 4px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.media-page-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.media-page-size select {
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.media-page-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.media-page-nav button {
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.media-page-nav button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(14, 165, 164, 0.08);
+}
+
+.media-page-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>
