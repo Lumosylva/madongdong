@@ -3,15 +3,19 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import i18n from './i18n'
-import { adminApi } from './api'
+import { adminApi, isLoggedIn } from './api'
 import { router } from './router'
 import { setSiteSetting, buildPageTitle } from './site-meta'
 import './styles.css'
 
 const bootstrap = async () => {
   try {
-    const siteSettings = await adminApi.getSiteSettings()
-    setSiteSetting(siteSettings.data || null)
+    if (isLoggedIn()) {
+      const siteSettings = await adminApi.getSiteSettings()
+      setSiteSetting(siteSettings.data || null)
+    } else {
+      setSiteSetting(null)
+    }
   } catch {
     setSiteSetting(null)
   }
