@@ -66,7 +66,7 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 - Dashboard shell with sidebar navigation (single-page, no full reloads)
 - Article management: rich Markdown editor (Vditor), publish / draft / scheduled publish / revision history / lock status
 - Category & tag management
-- Media library: upload, folder management, bulk operations
+- Media library: upload, folder management (create/rename/delete), pagination, bulk operations
 - Comment moderation: approve / reject / spam / trash
 - User management: create / edit / delete / bulk role change
 - Friend link management: review / edit / delete
@@ -277,12 +277,14 @@ All API endpoints are prefixed with `/api/v1`. Responses follow a unified envelo
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/admin/media` | List media files |
+| GET | `/admin/media` | List media files (paginated) |
 | POST | `/admin/media/upload` | Upload file |
-| DELETE | `/admin/media/{id}` | Delete file |
-| POST | `/admin/media/bulk-move` | Bulk move to folder |
-| POST | `/admin/media/bulk-delete` | Bulk delete |
-| GET/POST/DELETE | `/admin/media/folders` | Folder management |
+| POST | `/admin/media/delete` | Batch delete files |
+| POST | `/admin/media/move` | Batch move to folder |
+| GET | `/admin/media/folders` | List folder tree |
+| POST | `/admin/media/folders` | Create folder |
+| PUT | `/admin/media/folders/{id}` | Update folder |
+| DELETE | `/admin/media/folders/{id}` | Delete folder |
 
 ### Comments
 
@@ -490,6 +492,16 @@ The scanner detects `http://`, `ws://`, `localhost:`, `127.0.0.1:`, and absolute
 </table>
 
 ## Changelog
+
+### 2026-07-21
+- Admin: add media folder management (create/rename/delete folders, organize files by folders)
+- Admin: add media file pagination for better performance with large libraries
+- Admin: conditionally load site settings based on login status to avoid unnecessary requests
+- Admin: fix article draft persistence issue during editing
+
+### 2026-07-20
+- Documentation: add bilingual README with English version (README.en.md) and tech badges
+- Web frontend: compact category cards to horizontal row layout for less scrolling
 
 ### 2026-07-03
 - Web frontend: add article QR code sharing and social share buttons (Weibo, copy link)
