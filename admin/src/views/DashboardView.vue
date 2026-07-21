@@ -641,6 +641,7 @@ const logout = async () => {
 }
 
 const persistArticleDraft = () => {
+  if (editingArticleId.value !== null) return
   if (!title.value && !coverUrl.value && !contentMarkdown.value && !tagIdsText.value) {
     localStorage.removeItem(articleDraftStorageKey)
     articleDraftSavedAt.value = null
