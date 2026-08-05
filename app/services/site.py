@@ -72,12 +72,18 @@ async def update_site_setting(
     return setting
 
 
-async def list_nav_items(session: AsyncSession, visible_only: bool = False) -> list[NavItem]:
+async def list_nav_items(
+    session: AsyncSession,
+    visible_only: bool = False,
+    location: str | None = None,
+) -> list[NavItem]:
     """查询导航项。"""
 
     statement = select(NavItem).order_by(NavItem.sort_order.asc(), NavItem.id.asc())
     if visible_only:
         statement = statement.where(NavItem.is_visible.is_(True))
+    if location:
+        statement = statement.where(NavItem.location == location)
     result = await session.execute(statement)
     items = list(result.scalars().all())
     return [item for item in items if str(item.title or '').strip() != '搜索']
@@ -91,6 +97,7 @@ async def create_nav_item(
     is_visible: bool,
     target: str | None,
     description: str | None,
+    location: str = 'header',
 ) -> NavItem:
     """创建导航项。"""
 
@@ -101,6 +108,7 @@ async def create_nav_item(
         is_visible=is_visible,
         target=target,
         description=description,
+        location=location,
     )
     session.add(item)
     await session.commit()
@@ -117,6 +125,7 @@ async def update_nav_item(
     is_visible: bool,
     target: str | None,
     description: str | None,
+    location: str = 'header',
 ) -> NavItem:
     """更新导航项。"""
 
@@ -127,6 +136,7 @@ async def update_nav_item(
     item.is_visible = is_visible
     item.target = target
     item.description = description
+    item.location = location
     await session.commit()
     await session.refresh(item)
     return item
@@ -140,3 +150,11 @@ async def get_nav_item_or_404(session: AsyncSession, nav_id: int) -> NavItem:
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="导航项不存在")
     return item
+
+
+async def delete_nav_item(session: AsyncSession, nav_id: int) -> None:
+    """删除导航项。"""
+
+    item = await get_nav_item_or_404(session, nav_id)
+    await session.delete(item)
+    await session.commit()
