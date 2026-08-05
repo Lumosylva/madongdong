@@ -37,3 +37,4 @@ class NavItem(TimestampMixin, Base):
     is_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     target: Mapped[str | None] = mapped_column(String(20), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    location: Mapped[str] = mapped_column(String(16), default='header', nullable=False, index=True)

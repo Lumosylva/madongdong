@@ -1,6 +1,7 @@
 """站点配置相关数据结构。"""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -49,6 +50,7 @@ class NavItemBase(BaseModel):
     is_visible: bool = True
     target: str | None = Field(default=None, max_length=20)
     description: str | None = None
+    location: Literal['header', 'footer'] = 'header'
 
 
 class NavItemCreate(NavItemBase):

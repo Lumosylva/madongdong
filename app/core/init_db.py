@@ -26,6 +26,7 @@ async def init_db() -> None:
         await _migrate_lock_columns(session)
         await _migrate_comment_spam_score(session)
         await _migrate_application_passwords(session)
+        await _migrate_nav_item_location(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -240,4 +241,24 @@ async def _migrate_application_passwords(session: AsyncSession) -> None:
         )
     """))
     await session.execute(text("CREATE INDEX ix_application_passwords_user_id ON application_passwords (user_id)"))
+    await session.commit()
+
+
+async def _migrate_nav_item_location(session: AsyncSession) -> None:
+    """为 nav_items 表添加 location 列（如果不存在）。"""
+
+    try:
+        result = await session.execute(text("PRAGMA table_info(nav_items)"))
+        columns = [row[1] for row in result.fetchall()]
+        if "location" in columns:
+            return
+    except Exception:
+        return
+
+    await session.execute(
+        text("ALTER TABLE nav_items ADD COLUMN location VARCHAR(16) NOT NULL DEFAULT 'header'")
+    )
+    await session.execute(
+        text("CREATE INDEX IF NOT EXISTS ix_nav_items_location ON nav_items (location)")
+    )
     await session.commit()
