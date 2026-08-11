@@ -280,6 +280,27 @@ export const adminApi = {
       method: 'DELETE',
     })
   },
+  getNavItems(location?: 'header' | 'footer'): Promise<WrappedResponse<any[]>> {
+    const qs = location ? `?location=${location}` : ''
+    return request<WrappedResponse<any[]>>(`/admin/site/nav-items${qs}`)
+  },
+  createNavItem(payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>('/admin/site/nav-items', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+  updateNavItem(id: number, payload: Record<string, unknown>): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/site/nav-items/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    })
+  },
+  deleteNavItem(id: number): Promise<WrappedResponse<any>> {
+    return request<WrappedResponse<any>>(`/admin/site/nav-items/${id}`, {
+      method: 'DELETE',
+    })
+  },
   async uploadMediaFile(file: File, folderId?: number | null): Promise<WrappedResponse<any>> {
     const formData = new FormData()
     formData.append('file', file)
