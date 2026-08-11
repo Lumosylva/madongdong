@@ -111,6 +111,11 @@
         </div>
       </div>
 
+      <!-- Tab: Footer Menu -->
+      <div v-show="activeTab === 'footerMenu'" class="settings-card">
+        <FooterMenuPanel />
+      </div>
+
       <!-- Tab 3: Server -->
       <div v-show="activeTab === 'server'" class="settings-card">
         <div class="settings-card-head">
@@ -221,6 +226,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FooterMenuPanel from './FooterMenuPanel.vue'
 
 const { t } = useI18n()
 
@@ -234,6 +240,7 @@ const activeTab = ref('brand')
 const tabIcons = {
   brand: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
   footer: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>',
+  footerMenu: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
   server: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>',
   homepage: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
 }
@@ -241,6 +248,7 @@ const tabIcons = {
 const tabs = computed(() => [
   { key: 'brand', label: t('siteSettings.tabBrand'), icon: tabIcons.brand },
   { key: 'footer', label: t('siteSettings.tabFooter'), icon: tabIcons.footer },
+  { key: 'footerMenu', label: t('siteSettings.tabFooterMenu'), icon: tabIcons.footerMenu },
   { key: 'server', label: t('siteSettings.tabServer'), icon: tabIcons.server },
   { key: 'homepage', label: t('siteSettings.tabHomepage'), icon: tabIcons.homepage },
 ])
