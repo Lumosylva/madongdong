@@ -146,6 +146,16 @@ export const webApi = {
       body: JSON.stringify({ ...payload, url: normalizedUrl }),
     })
   },
+  getFooterNav(): Promise<Array<{
+    id: number
+    title: string
+    path: string
+    target: string | null
+    is_visible: boolean
+    sort_order: number
+  }>> {
+    return request('/web/footer-nav')
+  },
   async getCurrentWebUser() {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
