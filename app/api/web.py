@@ -54,7 +54,7 @@ router = APIRouter(prefix="/web", tags=["web"])
 async def _get_site_and_nav(session: AsyncSession) -> tuple[SiteSettingResponse, list[NavItemResponse]]:
     """获取站点配置和导航项（复用，避免加载首页文章列表）。"""
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
     return SiteSettingResponse.model_validate(site), [NavItemResponse.model_validate(item) for item in nav_items]
 
 
@@ -381,6 +381,14 @@ async def get_friend_links(session: AsyncSession = Depends(get_db_session)) -> l
         .order_by(FriendLink.id.desc())
     )
     return [FriendLinkPublicResponse.model_validate(item) for item in result.scalars().all()]
+
+
+@router.get("/footer-nav", summary="获取页脚菜单")
+async def footer_nav(
+    session: AsyncSession = Depends(get_db_session),
+) -> list[NavItemResponse]:
+    items = await list_nav_items(session, visible_only=True, location='footer')
+    return [NavItemResponse.model_validate(item) for item in items]
 
 
 @router.post("/friend-links", summary="提交友情链接申请")

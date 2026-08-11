@@ -21,7 +21,7 @@ async def get_homepage_data(session: AsyncSession, page: int) -> dict:
     """获取首页聚合数据。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
     hot_articles = await list_hot_articles(session, limit=5)
     latest_articles = await paginate_published_articles(session, page=page, page_size=site.homepage_page_size)
     return {
@@ -244,7 +244,7 @@ async def get_search_page_data(session: AsyncSession, keyword: str, page: int) -
     """获取搜索页数据。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
     categories = await list_public_categories(session)
     tags = await list_public_tags(session)
     articles = await paginate_published_articles(session, page=page, page_size=site.homepage_page_size, keyword=keyword)
@@ -262,7 +262,7 @@ async def get_category_page_data(session: AsyncSession, slug: str, page: int, pa
     """获取分类页数据。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
     category_result = await session.execute(select(Category).where(Category.slug == slug))
     category = category_result.scalar_one_or_none()
     if category is None:
@@ -311,7 +311,7 @@ async def get_tag_page_data(session: AsyncSession, slug: str, page: int, page_si
     """获取标签页数据。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
     tag_result = await session.execute(select(Tag).where(Tag.slug == slug))
     tag = tag_result.scalar_one_or_none()
     if tag is None:
@@ -366,7 +366,7 @@ async def get_categories_page_data(session: AsyncSession) -> dict:
     """获取分类索引页数据，含各分类已发布文章数量。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
 
     cats_result = await session.execute(select(Category).order_by(Category.name.asc()))
     categories = list(cats_result.scalars().all())
@@ -402,7 +402,7 @@ async def get_archive_data(session: AsyncSession) -> dict:
     """获取归档数据，按年份、月份分组。"""
 
     site = await get_or_create_site_setting(session)
-    nav_items = await list_nav_items(session, visible_only=True)
+    nav_items = await list_nav_items(session, visible_only=True, location='header')
 
     statement = (
         select(
