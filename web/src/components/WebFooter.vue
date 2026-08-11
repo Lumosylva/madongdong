@@ -73,22 +73,26 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   width: 100vw;
   padding: 0;
   border-top: 1px solid var(--line);
-  background: var(--bg-panel);
-  backdrop-filter: blur(12px);
+  background: rgba(14, 165, 164, 0.04);
+  backdrop-filter: blur(16px);
+}
+
+:root[data-theme='dark'] .footer {
+  background: rgba(94, 234, 212, 0.06);
 }
 
 .footer-inner {
   max-width: min(1500px, 100%);
   margin: 0 auto;
-  padding: 24px 20px 28px;
+  padding: 16px 20px 18px;
   display: grid;
   gap: 0;
 }
 
 .footer-divider {
-  width: 40px;
+  width: 32px;
   height: 1px;
-  margin: 16px auto;
+  margin: 10px auto;
   background: var(--line);
 }
 
@@ -96,16 +100,16 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   justify-self: center;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
 .footer-friend-links-link,
 .footer-rss-link {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text);
-  padding: 6px 2px;
+  padding: 4px 2px;
   position: relative;
   text-decoration: none;
   display: inline-flex;
@@ -135,8 +139,8 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 }
 
 .footer-rss-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   fill: currentColor;
   display: block;
 }
@@ -145,17 +149,17 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   justify-self: center;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .footer-menu-link {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--text);
-  padding: 6px 2px;
+  padding: 4px 2px;
   position: relative;
   text-decoration: none;
 }
@@ -180,16 +184,16 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 }
 
 .footer-copy-section {
-  margin-top: 16px;
-  padding-top: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
   text-align: center;
   color: var(--text-soft);
-  font-size: 12px;
+  font-size: 11px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px 16px;
+  gap: 2px 12px;
 }
 
 .footer-copyright,
@@ -200,12 +204,12 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 
 @media (max-width: 640px) {
   .footer-inner {
-    padding: 18px 16px 22px;
+    padding: 14px 14px 16px;
   }
 
   .footer-copy-section {
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
 }
 </style>
