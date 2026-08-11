@@ -18,6 +18,8 @@
         </template>
       </nav>
 
+      <div v-if="footerNav.length" class="footer-divider"></div>
+
       <div class="footer-links-row">
         <RouterLink to="/friend-links" class="footer-friend-links-link">{{ t('footer.friendLinks') }}</RouterLink>
         <a :href="rssUrl" class="footer-rss-link" target="_blank" rel="noopener noreferrer">
@@ -65,13 +67,26 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 
 <style scoped>
 .footer {
-  margin-top: 28px;
-  padding: 24px 0 30px;
+  margin-top: 32px;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg-panel);
+  backdrop-filter: blur(12px);
 }
 
 .footer-inner {
+  max-width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 24px 20px 28px;
   display: grid;
-  gap: 12px;
+  gap: 0;
+}
+
+.footer-divider {
+  width: 40px;
+  height: 1px;
+  margin: 16px auto;
+  background: var(--line);
 }
 
 .footer-links-row {
@@ -87,7 +102,7 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--text);
-  padding: 8px 2px;
+  padding: 6px 2px;
   position: relative;
   text-decoration: none;
   display: inline-flex;
@@ -137,7 +152,7 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--text);
-  padding: 8px 2px;
+  padding: 6px 2px;
   position: relative;
   text-decoration: none;
 }
@@ -162,9 +177,12 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 }
 
 .footer-copy-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
   text-align: center;
   color: var(--text-soft);
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -178,8 +196,8 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 }
 
 @media (max-width: 640px) {
-  .footer {
-    padding: 18px 0 24px;
+  .footer-inner {
+    padding: 18px 16px 22px;
   }
 
   .footer-copy-section {
