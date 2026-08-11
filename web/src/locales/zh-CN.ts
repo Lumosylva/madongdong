@@ -73,6 +73,7 @@ export default {
   footer: {
     friendLinks: '友情链接',
     footerPending: '页脚信息待配置',
+    footerMenuLabel: '页脚菜单',
   },
   floating: {
     label: '页面辅助工具',

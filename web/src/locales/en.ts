@@ -73,6 +73,7 @@ export default {
   footer: {
     friendLinks: 'Friend Links',
     footerPending: 'Footer info pending',
+    footerMenuLabel: 'Footer menu',
   },
   floating: {
     label: 'Page tools',

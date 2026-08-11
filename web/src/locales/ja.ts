@@ -73,6 +73,7 @@ export default {
   footer: {
     friendLinks: '相互リンク',
     footerPending: 'フッター情報未設定',
+    footerMenuLabel: 'フッターメニュー',
   },
   floating: {
     label: 'ページツール',

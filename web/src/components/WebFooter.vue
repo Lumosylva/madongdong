@@ -1,6 +1,23 @@
 <template>
   <footer class="footer">
     <div class="footer-inner">
+      <nav v-if="footerNav.length" class="footer-menu-row" :aria-label="t('footer.footerMenuLabel')">
+        <template v-for="item in footerNav" :key="item.id">
+          <a
+            v-if="isExternal(item.path)"
+            :href="item.path"
+            class="footer-menu-link"
+            :target="item.target || '_blank'"
+            rel="noopener noreferrer"
+          >{{ item.title }}</a>
+          <RouterLink
+            v-else
+            :to="item.path"
+            class="footer-menu-link"
+          >{{ item.title }}</RouterLink>
+        </template>
+      </nav>
+
       <div class="footer-links-row">
         <RouterLink to="/friend-links" class="footer-friend-links-link">{{ t('footer.friendLinks') }}</RouterLink>
         <a :href="rssUrl" class="footer-rss-link" target="_blank" rel="noopener noreferrer">
@@ -23,6 +40,7 @@
 import DOMPurify from 'dompurify'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useFooterNav } from '../composables/useFooterNav'
 
 const { t } = useI18n()
 
@@ -40,6 +58,9 @@ const sanitize = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { ht
 const sanitizedCopyright = computed(() => sanitize(props.copyrightText || ''))
 const sanitizedIcp = computed(() => sanitize(props.icpBeian || t('footer.footerPending')))
 const sanitizedPolice = computed(() => sanitize(props.policeBeian || ''))
+
+const footerNav = useFooterNav()
+const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 </script>
 
 <style scoped>
@@ -100,6 +121,44 @@ const sanitizedPolice = computed(() => sanitize(props.policeBeian || ''))
   height: 16px;
   fill: currentColor;
   display: block;
+}
+
+.footer-menu-row {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.footer-menu-link {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  padding: 8px 2px;
+  position: relative;
+  text-decoration: none;
+}
+
+.footer-menu-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 1px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  transform: scaleX(0.7);
+  transform-origin: center;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  opacity: 0.8;
+}
+
+.footer-menu-link:hover::after {
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .footer-copy-section {
