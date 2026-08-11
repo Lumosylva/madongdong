@@ -28,7 +28,6 @@ madongdong.db-wal
 npm_build_admin.bat
 npm_build_web.bat
 run_admin_web_server.bat
-run_backupend_server.bat
 run_web_server.bat
 CLAUDE.md
 AGENTS.md
@@ -44,3 +43,5 @@ compress.bat
 docs/OPTIMIZATION_REPORT.md
 docs/SECURITY_AUDIT.md
 /docs/博客付费设计.md
+/run_backupend_server.bat
+/.mimocode/.cron-lock
