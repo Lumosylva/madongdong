@@ -223,6 +223,7 @@ onMounted(() => {
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 .fm-card {
