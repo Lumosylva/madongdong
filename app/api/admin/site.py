@@ -13,6 +13,7 @@ from app.models.auth import User
 from app.schemas.site import NavItemCreate, NavItemResponse, NavItemUpdate, SiteSettingResponse, SiteSettingUpdate
 from app.services.site import (
     create_nav_item,
+    delete_nav_item,
     get_or_create_site_setting,
     list_nav_items,
     update_nav_item,
@@ -58,10 +59,11 @@ async def update_site_setting_endpoint(
 
 @router.get("/nav-items", summary="查询导航项")
 async def get_nav_items_endpoint(
+    location: str | None = None,
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
-    items = await list_nav_items(session)
+    items = await list_nav_items(session, location=location)
     return success_response([NavItemResponse.model_validate(item).model_dump() for item in items])
 
 
@@ -79,6 +81,7 @@ async def create_nav_item_endpoint(
         is_visible=payload.is_visible,
         target=payload.target,
         description=payload.description,
+        location=payload.location,
     )
     return success_response(NavItemResponse.model_validate(item).model_dump())
 
@@ -99,8 +102,19 @@ async def update_nav_item_endpoint(
         is_visible=payload.is_visible,
         target=payload.target,
         description=payload.description,
+        location=payload.location,
     )
     return success_response(NavItemResponse.model_validate(item).model_dump())
+
+
+@router.delete("/nav-items/{nav_id}", summary="删除导航项")
+async def delete_nav_item_endpoint(
+    nav_id: int,
+    session: AsyncSession = Depends(get_db_session),
+    _: User = Depends(require_token_role("admin")),
+) -> dict[str, object]:
+    await delete_nav_item(session, nav_id)
+    return success_response(None)
 
 
 # ---------- 服务器级配置（.env） ----------
