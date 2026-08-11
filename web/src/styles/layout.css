@@ -410,15 +410,6 @@
   box-shadow: 0 4px 12px rgba(14, 165, 164, 0.15);
 }
 
-.footer {
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  text-align: center;
-  gap: 14px;
-  padding: 18px 6px 0;
-}
-
 .list-page-header,
 .search-header {
   display: flex;

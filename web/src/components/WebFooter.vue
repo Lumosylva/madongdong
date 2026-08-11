@@ -67,7 +67,10 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
 
 <style scoped>
 .footer {
-  margin-top: 32px;
+  margin-top: auto;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  width: 100vw;
   padding: 0;
   border-top: 1px solid var(--line);
   background: var(--bg-panel);
