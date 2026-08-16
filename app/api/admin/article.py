@@ -51,7 +51,11 @@ async def get_articles(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     articles = await list_articles(session, current_user)
-    data = [ArticleSummaryResponse.model_validate(article).model_dump() for article in articles]
+    data = []
+    for article in articles:
+        d = ArticleSummaryResponse.model_validate(article).model_dump()
+        d["like_count"] = article.like_count
+        data.append(d)
     return success_response(data)
 
 
@@ -61,7 +65,11 @@ async def get_deleted_articles(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     articles = await list_deleted_articles(session, current_user)
-    data = [ArticleSummaryResponse.model_validate(article).model_dump() for article in articles]
+    data = []
+    for article in articles:
+        d = ArticleSummaryResponse.model_validate(article).model_dump()
+        d["like_count"] = article.like_count
+        data.append(d)
     return success_response(data)
 
 
@@ -75,7 +83,9 @@ async def get_article_detail(
     token_roles = getattr(current_user, "_token_roles", [])
     if "admin" not in token_roles and article.author_id != current_user.id:
         return success_response({})
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.post("/articles", summary="创建文章")
@@ -95,7 +105,9 @@ async def create_article_endpoint(
         tag_ids=payload.tag_ids,
         action=payload.action,
     )
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.put("/articles/{article_id}", summary="更新文章")
@@ -117,7 +129,9 @@ async def update_article_endpoint(
         tag_ids=payload.tag_ids,
         action=payload.action,
     )
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.post("/articles/{article_id}/approve", summary="审核通过文章")
@@ -128,7 +142,9 @@ async def approve_article_endpoint(
     current_user: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     article = await approve_article(session, article_id, current_user, payload.comment)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.post("/articles/{article_id}/reject", summary="拒绝文章")
@@ -139,7 +155,9 @@ async def reject_article_endpoint(
     current_user: User = Depends(require_token_role("admin")),
 ) -> dict[str, object]:
     article = await reject_article(session, article_id, current_user, payload.comment)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.get("/categories", summary="查询分类列表")
@@ -279,7 +297,9 @@ async def restore_article_endpoint(
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
     article = await restore_article(session, article_id, current_user)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.delete("/articles/{article_id}/permanent", summary="彻底删除垃圾箱文章")
@@ -338,7 +358,9 @@ async def restore_article_revision_endpoint(
     if not article:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="修订版本不存在")
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.post("/articles/{article_id}/schedule", summary="设置文章定时发布")
@@ -351,7 +373,9 @@ async def schedule_article_endpoint(
     from app.services.article import schedule_article
     
     article = await schedule_article(session, article_id, scheduled_at, current_user)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.post("/articles/{article_id}/cancel-schedule", summary="取消文章定时发布")
@@ -363,7 +387,9 @@ async def cancel_schedule_article_endpoint(
     from app.services.article import cancel_scheduled_article
     
     article = await cancel_scheduled_article(session, article_id, current_user)
-    return success_response(ArticleDetailResponse.model_validate(article).model_dump())
+    d = ArticleDetailResponse.model_validate(article).model_dump()
+    d["like_count"] = article.like_count
+    return success_response(d)
 
 
 @router.get("/articles/scheduled", summary="获取定时发布中的文章列表")
@@ -376,7 +402,11 @@ async def get_scheduled_articles_endpoint(
     from app.services.article import get_scheduled_articles
     
     result = await get_scheduled_articles(session, page, page_size)
-    articles = [ArticleSummaryResponse.model_validate(a).model_dump() for a in result["items"]]
+    articles = []
+    for a in result["items"]:
+        d = ArticleSummaryResponse.model_validate(a).model_dump()
+        d["like_count"] = a.like_count
+        articles.append(d)
     return success_response({
         "items": articles,
         "total": result["total"],

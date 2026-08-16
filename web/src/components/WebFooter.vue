@@ -21,7 +21,10 @@
       <div v-if="footerNav.length" class="footer-divider"></div>
 
       <div class="footer-links-row">
-        <RouterLink to="/friend-links" class="footer-friend-links-link">{{ t('footer.friendLinks') }}</RouterLink>
+        <RouterLink to="/friend-links" class="footer-friend-links-link">
+          <svg class="footer-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.828 10.172a4 4 0 0 0-5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0-5.656-5.656l-1.1 1.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {{ t('footer.friendLinks') }}
+        </RouterLink>
         <a :href="rssUrl" class="footer-rss-link" target="_blank" rel="noopener noreferrer">
           <svg class="footer-rss-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.34 17a10.018 10.018 0 0 1-.43-2.8c0-5.89 4.81-10.7 10.7-10.7A10.745 10.745 0 0 1 21.32 13h-2.02A8.72 8.72 0 0 0 10.6 4.3c-4.82 0-8.73 3.91-8.73 8.73 0 3.1 1.64 5.84 4.12 7.42l.56-1.45Zm6.14 3.09a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" fill="currentColor"/></svg>
           RSS
@@ -138,11 +141,19 @@ const isExternal = (p: string) => /^https?:\/\//i.test(String(p || ''))
   opacity: 1;
 }
 
+.footer-link-icon,
 .footer-rss-icon {
   width: 14px;
   height: 14px;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
   display: block;
+  flex-shrink: 0;
+}
+
+.footer-rss-icon {
+  fill: currentColor;
+  stroke: none;
 }
 
 .footer-menu-row {

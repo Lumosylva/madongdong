@@ -473,3 +473,36 @@ async def list_public_tags(session: AsyncSession) -> list[Tag]:
 
     result = await session.execute(select(Tag).order_by(Tag.name.asc()))
     return list(result.scalars().all())
+
+
+async def like_article(session: AsyncSession, article_id: int, client_ip: str) -> dict:
+    """点赞文章（仅允许一次）。返回 { liked: bool, like_count: int }。"""
+
+    from app.models.article import ArticleLike
+
+    existing = await session.execute(
+        select(ArticleLike).where(
+            ArticleLike.article_id == article_id,
+            ArticleLike.client_ip == client_ip,
+        )
+    )
+    record = existing.scalar_one_or_none()
+
+    if record:
+        result = await session.execute(select(Article.like_count).where(Article.id == article_id))
+        count = result.scalar_one()
+        return {"liked": True, "like_count": count or 0}
+
+    session.add(ArticleLike(
+        article_id=article_id,
+        client_ip=client_ip,
+        created_at=datetime.now(timezone.utc),
+    ))
+    await session.execute(
+        text("UPDATE articles SET like_count = like_count + 1 WHERE id = :aid"),
+        {"aid": article_id},
+    )
+    await session.commit()
+    result = await session.execute(select(Article.like_count).where(Article.id == article_id))
+    count = result.scalar_one()
+    return {"liked": True, "like_count": count or 0}

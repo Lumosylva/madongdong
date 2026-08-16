@@ -544,8 +544,8 @@ select:focus-visible {
   border: none;
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.28);
-  box-shadow: none;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
 }
 
 .auth-hero {
@@ -553,6 +553,10 @@ select:focus-visible {
   display: grid;
   gap: 14px;
   max-width: 620px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
 .auth-eyebrow {
@@ -579,14 +583,14 @@ select:focus-visible {
 }
 
 .auth-card {
-  padding: 30px;
+  padding: 28px 30px 30px;
   display: grid;
-  gap: 18px;
+  gap: 16px;
   position: relative;
+  border: 1px solid var(--line);
 }
 
-.auth-card::before,
-.auth-hero::before {
+.auth-card::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -626,17 +630,17 @@ select:focus-visible {
   align-items: center;
   gap: 10px;
   width: 100%;
-  border-radius: 16px;
-  border: 1px solid var(--line);
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
   background: var(--bg-soft);
-  padding: 0 14px;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  padding: 0 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
 }
 
 .auth-input-shell:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.12);
+  background: var(--bg-panel);
 }
 
 .auth-input-icon {
@@ -705,18 +709,33 @@ select:focus-visible {
 .auth-submit-btn {
   border: none;
   border-radius: 14px;
-  padding: 12px 16px;
+  padding: 13px 16px;
   cursor: pointer;
   background: linear-gradient(135deg, var(--accent), #38bdf8);
   color: #02131f;
   font-weight: 800;
-  box-shadow: 0 14px 28px rgba(14, 165, 164, 0.22);
+  box-shadow: 0 8px 24px rgba(14, 165, 164, 0.28);
   transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 50%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.auth-submit-btn:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 34px rgba(14, 165, 164, 0.26);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(14, 165, 164, 0.34);
 }
 
 .auth-submit-btn:disabled {
@@ -741,10 +760,13 @@ select:focus-visible {
 }
 
 .auth-message {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: 12px;
   background: rgba(14, 165, 164, 0.08);
   border: 1px solid rgba(14, 165, 164, 0.16);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 .error-message {
@@ -763,9 +785,9 @@ select:focus-visible {
     radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.08), transparent 30%);
 }
 
-:root[data-theme='dark'] .auth-hero,
 :root[data-theme='dark'] .auth-card {
   background: rgba(10, 24, 44, 0.66);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .sr-only {

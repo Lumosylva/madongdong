@@ -60,27 +60,36 @@
         </transition>
       </div>
       <div class="account-menu" ref="accountMenuRef">
-        <button
-          type="button"
+        <RouterLink
+          v-if="!isLoggedIn"
+          :to="loginLink"
           class="auth-entry icon-entry"
-          :aria-label="accountEntryLabel"
-          :title="accountEntryTitle"
-          @click="toggleAccountMenu"
+          :aria-label="t('common.login')"
+          :title="t('common.login')"
         >
           <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 12c-4.418 0-8 2.91-8 6.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5C20 16.91 16.418 14 12 14Z" fill="currentColor" />
           </svg>
-        </button>
-        <transition name="menu-pop">
-          <div v-if="accountMenuOpen" class="account-dropdown">
-            <RouterLink v-if="!isLoggedIn" to="/login" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.login') }}</RouterLink>
-            <RouterLink v-if="!isLoggedIn" to="/register" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.register') }}</RouterLink>
-            <template v-else>
+        </RouterLink>
+        <template v-else>
+          <button
+            type="button"
+            class="auth-entry icon-entry"
+            :aria-label="accountEntryLabel"
+            :title="accountEntryTitle"
+            @click="toggleAccountMenu"
+          >
+            <svg class="auth-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 12c-4.418 0-8 2.91-8 6.5A1.5 1.5 0 0 0 5.5 22h13a1.5 1.5 0 0 0 1.5-1.5C20 16.91 16.418 14 12 14Z" fill="currentColor" />
+            </svg>
+          </button>
+          <transition name="menu-pop">
+            <div v-if="accountMenuOpen" class="account-dropdown">
               <RouterLink to="/profile" class="dropdown-item" @click="accountMenuOpen = false">{{ t('common.profile') }}</RouterLink>
               <button type="button" class="dropdown-item danger" @click="logout">{{ t('common.logout') }}</button>
-            </template>
-          </div>
-        </transition>
+            </div>
+          </transition>
+        </template>
       </div>
 
       <button v-if="!isMobile && collapsibleSearch" type="button" class="search-launch-btn" :aria-label="t('common.search')" :title="t('common.search')" @click="openSearchPanel">
@@ -238,12 +247,17 @@ const accountMenuOpen = ref(false)
 const accountMenuRef = ref<HTMLElement | null>(null)
 const isMobile = ref(false)
 
-const isLoggedIn = computed(() => {
-  return document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
-})
+const isLoggedIn = ref(document.cookie.split('; ').some(c => c.startsWith('web_logged_in=')))
 const accountName = computed(() => localStorage.getItem('md-reader-nickname') || t('topbar.loggedInUser'))
 const accountEntryLabel = computed(() => (isLoggedIn.value ? t('topbar.accountLabel', { name: accountName.value }) : t('topbar.loginRegister')))
 const accountEntryTitle = computed(() => (isLoggedIn.value ? accountName.value : t('topbar.loginRegister')))
+
+const loginLink = computed(() => {
+  const current = window.location.pathname
+  if (current === '/login' || current === '/register' || current === '/') return '/login'
+  localStorage.setItem('md-login-return', current)
+  return '/login'
+})
 
 const searchPanelResults = computed(() => searchPanelArticles.value)
 const searchPanelCanLoadMore = computed(() => searchPanelPage.value < searchPanelTotalPages.value)
@@ -419,7 +433,9 @@ const logout = async () => {
   document.cookie = 'web_refresh_token=; path=/; max-age=0'
   localStorage.removeItem('md-reader-nickname')
   localStorage.removeItem('md-reader-email')
+  isLoggedIn.value = false
   accountMenuOpen.value = false
+  window.dispatchEvent(new Event('web-logout'))
 }
 
 const handleDocumentClick = (event: MouseEvent) => {

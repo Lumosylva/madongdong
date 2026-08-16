@@ -1,6 +1,7 @@
 """数据模型包。"""
 
 from app.models.article import Article  # noqa: F401
+from app.models.article import ArticleLike  # noqa: F401
 from app.models.article import ArticleTag  # noqa: F401
 from app.models.article import ArticleViewLog  # noqa: F401
 from app.models.article import Category  # noqa: F401

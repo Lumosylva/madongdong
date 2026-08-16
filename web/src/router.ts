@@ -45,13 +45,13 @@ export const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: () => import('./views/RegisterView.vue'),
+      component: () => import('./views/AuthView.vue'),
       meta: { title: 'register.title' },
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('./views/LoginView.vue'),
+      component: () => import('./views/AuthView.vue'),
       meta: { title: 'login.title' },
     },
     {
@@ -117,6 +117,7 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth) {
     const loggedIn = document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
     if (!loggedIn) {
+      localStorage.setItem('md-login-return', to.fullPath)
       return { name: 'login' }
     }
   }

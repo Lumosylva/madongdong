@@ -117,6 +117,8 @@ export default {
     copyLink: 'リンクをコピー',
     copied: 'コピーしました',
     scanToShare: 'QRコードをスキャンして共有',
+    toc: '目次',
+    like: 'いいね',
   },
   categories: {
     title: 'カテゴリ',

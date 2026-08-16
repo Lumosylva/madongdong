@@ -50,6 +50,11 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 - Responsive layout, dark mode toggle
 - Homepage hero image, background music player (BGM), hot articles sidebar
 - Article detail page: Markdown rendering, table of contents, view count, tag list, prev/next navigation
+- **Article TOC sidebar**: desktop fixed sidebar + mobile bottom sheet, auto-extracts h2-h6 headings, scroll-spy highlighting
+- **Article like**: one-way like (IP dedup), like count displayed on button, large number formatting (k/w)
+- **Combined login/register page**: tab switching between login and register, URL syncs with active tab
+- **Post-login redirect**: returns to the page user was on before login (stored in localStorage)
+- **Smart logout**: stays on current page after logout, no forced redirect to homepage
 - Comment system: supports anonymous and logged-in submissions, Markdown preview, review status display
 - Search: real-time overlay search with keyboard navigation
 - Archive page: collapsible year/month grouping
@@ -492,6 +497,27 @@ The scanner detects `http://`, `ws://`, `localhost:`, `127.0.0.1:`, and absolute
 </table>
 
 ## Changelog
+
+### 2026-08-16
+
+**Web Frontend**
+- **Article TOC sidebar**: fixed sidebar on desktop, bottom sheet with FAB on mobile, auto-extracts h2-h6 headings, IntersectionObserver scroll highlighting
+- **Article like**: one-way like (IP dedup), like button with count display, large number formatting
+- **Combined auth page**: LoginView + RegisterView merged into AuthView with tab switching
+- **Post-login redirect**: returns to original page after login/register via localStorage
+- **Improved logout**: stays on current page, updates UI state without page reload
+- **Simplified topbar login**: unauth users get direct link to login (no dropdown)
+- **Footer friend link icon**: chain-link SVG icon before friend link text
+- **Auth page beautification**: capsule tabs, input focus effects, submit button gloss, hero blends into background
+
+**Backend**
+- Added article like feature: `article_likes` table (IP dedup), `articles.like_count` field
+- Added like API: `POST /api/v1/web/articles/{id}/like`
+
+**Fixes**
+- Fixed register auto-login failure (missing captcha fields)
+- Fixed like count not updating (session commit + direct query)
+- Fixed logout state not reflecting in UI (ref-based isLoggedIn + web-logout event)
 
 ### 2026-07-21
 - Admin: add media folder management (create/rename/delete folders, organize files by folders)

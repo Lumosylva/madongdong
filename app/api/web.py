@@ -278,7 +278,7 @@ async def article_detail(
     article_id: int,
     request: Request,
     session: AsyncSession = Depends(get_db_session),
-) -> ArticlePageResponse:
+):
     client_ip = get_client_ip(request)
     article = await get_published_article_detail(session, article_id, client_ip)
     if article is None:
@@ -286,7 +286,7 @@ async def article_detail(
     site, nav_items = await _get_site_and_nav(session)
     comments = await list_approved_comments_by_article(session, article_id)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
-    return ArticlePageResponse(
+    resp = ArticlePageResponse(
         site=site,
         nav_items=nav_items,
         article=ArticleDetailResponse.model_validate(article),
@@ -294,6 +294,9 @@ async def article_detail(
         next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
         comments=[CommentResponse.model_validate(item) for item in comments],
     )
+    data = resp.model_dump()
+    data["article"]["like_count"] = article.like_count
+    return data
 
 
 @router.get("/articles/{article_id}/comments", summary="获取文章评论（分页）")
@@ -371,6 +374,23 @@ async def submit_comment(
         client_user_agent=request.headers.get('user-agent'),
     )
     return CommentResponse.model_validate(comment)
+
+
+@router.post("/articles/{article_id}/like", summary="点赞/取消点赞文章")
+async def like_article(
+    article_id: int,
+    request: Request,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    from app.models.article import Article as ArticleModel
+    from app.services.web import like_article
+
+    article = await session.get(ArticleModel, article_id)
+    if not article or article.is_deleted:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    client_ip = get_client_ip(request)
+    return await like_article(session, article_id, client_ip)
 
 
 @router.get("/friend-links", summary="获取友情链接")

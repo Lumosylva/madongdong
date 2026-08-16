@@ -113,6 +113,9 @@ export const webApi = {
       body: JSON.stringify(payload),
     })
   },
+  likeArticle(articleId: number): Promise<{ liked: boolean; like_count: number }> {
+    return request(`/web/articles/${articleId}/like`, { method: 'POST' })
+  },
   registerReader(payload: { username: string; password: string; nickname: string; email: string; captcha_token: string; captcha_answer: string }) {
     return request('/web/auth/register', {
       method: 'POST',

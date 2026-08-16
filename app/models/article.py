@@ -94,6 +94,7 @@ class Article(TimestampMixin, Base):
     scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     comment_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    like_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -181,3 +182,17 @@ class TermMeta(Base):
     term_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"), index=True)
     meta_key: Mapped[str] = mapped_column(String(255), nullable=False)
     meta_value: Mapped[str] = mapped_column(Text, default="", nullable=False)
+
+
+class ArticleLike(Base):
+    """文章点赞记录，按 IP 去重。"""
+
+    __tablename__ = "article_likes"
+    __table_args__ = (
+        Index("ix_article_likes_article_ip", "article_id", "client_ip", unique=True),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    article_id: Mapped[int] = mapped_column(ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    client_ip: Mapped[str] = mapped_column(String(45), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

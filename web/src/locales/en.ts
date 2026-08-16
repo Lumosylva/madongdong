@@ -117,6 +117,8 @@ export default {
     copyLink: 'Copy link',
     copied: 'Copied',
     scanToShare: 'Scan the QR code to share',
+    toc: 'TOC',
+    like: 'Like',
   },
   categories: {
     title: 'Categories',

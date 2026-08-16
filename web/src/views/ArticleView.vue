@@ -1,5 +1,6 @@
 <template>
   <div class="article-page" v-if="data" ref="articlePageRef">
+    <ArticleToc :content="data.article.content_markdown || ''" />
     <WebTopbar
       :title="data.site.site_title"
       :subtitle="data.site.site_subtitle || ''"
@@ -46,6 +47,7 @@
           <span>{{ t('article.readingTime', { n: estimatedReadingTime }) }}</span>
           <span>{{ data.article.view_count }} {{ t('common.views') }}</span>
           <span>{{ data.article.comment_count }} {{ t('common.comments') }}</span>
+          <span>{{ likeCount }} {{ t('article.like') }}</span>
         </div>
         <div class="article-share-row">
           <button type="button" class="share-btn" @click="showSharePanel" :aria-label="t('article.qrShareTitle')">
@@ -146,6 +148,23 @@
       </section>
     </article>
 
+    <div class="article-like-row">
+      <button
+        type="button"
+        class="like-btn"
+        :class="{ liked: isLiked }"
+        @click="toggleLike"
+        :disabled="isLiked || likeLoading"
+        :aria-label="t('article.like')"
+      >
+        <svg class="like-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path v-if="!isLiked" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path v-else d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+        </svg>
+        <span class="like-count">{{ formatLikeCount(likeCount) }}</span>
+      </button>
+    </div>
+
     <section class="comment-panel" id="comment-section">
       <div class="comment-head">
         <h2>{{ t('article.comments') }}</h2>
@@ -243,6 +262,7 @@ import QRCode from 'qrcode'
 import { useI18n } from 'vue-i18n'
 
 import { toAbsoluteAssetUrl, webApi } from '../api'
+import ArticleToc from '../components/ArticleToc.vue'
 import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { useTheme } from '../composables/useTheme'
@@ -270,6 +290,45 @@ const { theme, toggleTheme, initTheme, listenThemeChange, destroyTheme } = useTh
 const isLoggedIn = ref(false)
 const showAllTags = ref(false)
 const articleEditorId = 'web-article-preview'
+const isLiked = ref(false)
+const likeCount = ref(0)
+const likeLoading = ref(false)
+
+const LIKE_STORAGE_KEY = 'md-liked-articles'
+
+const loadLikeState = () => {
+  if (!data.value) return
+  const liked = JSON.parse(localStorage.getItem(LIKE_STORAGE_KEY) || '{}')
+  isLiked.value = !!liked[data.value.article.id]
+  likeCount.value = data.value.article.like_count
+}
+
+const formatLikeCount = (n: number) => {
+  if (n >= 10000) return `${(n / 10000).toFixed(1)}w`
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+  return String(n)
+}
+
+const toggleLike = async () => {
+  if (!data.value || likeLoading.value) return
+  likeLoading.value = true
+  try {
+    const res = await webApi.likeArticle(data.value.article.id)
+    isLiked.value = res.liked
+    likeCount.value = res.like_count
+    const liked = JSON.parse(localStorage.getItem(LIKE_STORAGE_KEY) || '{}')
+    if (res.liked) {
+      liked[data.value.article.id] = true
+    } else {
+      delete liked[data.value.article.id]
+    }
+    localStorage.setItem(LIKE_STORAGE_KEY, JSON.stringify(liked))
+  } catch {
+    // ignore
+  } finally {
+    likeLoading.value = false
+  }
+}
 
 const sanitizeMarkdownHtml = (html: string) => DOMPurify.sanitize(html, {
   USE_PROFILES: { html: true },
@@ -367,6 +426,7 @@ const loadData = async () => {
   const articleId = Number(route.params.id)
   if (!articleId) return
   data.value = await webApi.getArticle(articleId)
+  loadLikeState()
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
   applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url, {
@@ -651,5 +711,58 @@ onBeforeUnmount(() => {
 .qr-modal-fade-enter-from,
 .qr-modal-fade-leave-to {
   opacity: 0;
+}
+
+.article-like-row {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 8px;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-soft);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.like-btn:hover:not(:disabled) {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.06);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.like-btn.liked {
+  color: var(--text-soft);
+  border-color: var(--line);
+  background: var(--bg-soft);
+  cursor: default;
+}
+
+.like-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.like-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.like-count {
+  min-width: 1.2em;
+  text-align: center;
 }
 </style>

@@ -27,8 +27,8 @@
         <h3>{{ t('profile.notLoggedIn') }}</h3>
         <p>{{ t('profile.notLoggedInDesc') }}</p>
         <div class="profile-auth-actions">
-          <RouterLink to="/login" class="profile-btn primary">{{ t('profile.goToLogin') }}</RouterLink>
-          <RouterLink to="/register" class="profile-btn ghost">{{ t('profile.registerNew') }}</RouterLink>
+          <RouterLink to="/login" class="profile-btn primary" @click="saveReturnUrl">{{ t('profile.goToLogin') }}</RouterLink>
+          <RouterLink to="/register" class="profile-btn ghost" @click="saveReturnUrl">{{ t('profile.registerNew') }}</RouterLink>
         </div>
       </section>
 
@@ -250,9 +250,22 @@ watch(
   { immediate: true },
 )
 
+const saveReturnUrl = () => {
+  localStorage.setItem('md-login-return', '/profile')
+}
+
+const checkLogin = () => {
+  const hasCookie = document.cookie.split('; ').some(c => c.startsWith('web_logged_in='))
+  if (!hasCookie) {
+    isLoggedIn.value = false
+    user.value = null
+  }
+}
+
 onMounted(async () => {
   initTheme()
   listenThemeChange()
+  window.addEventListener('web-logout', checkLogin)
 
   try {
     const homeRes = await webApi.getHome(1, 1)
@@ -283,6 +296,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('web-logout', checkLogin)
   destroyTheme()
 })
 </script>

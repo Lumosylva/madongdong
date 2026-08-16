@@ -117,6 +117,8 @@ export default {
     copyLink: '复制链接',
     copied: '已复制',
     scanToShare: '打开手机扫描二维码分享',
+    toc: '目录',
+    like: '点赞',
   },
   categories: {
     title: '分类',

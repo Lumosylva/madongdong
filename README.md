@@ -34,7 +34,7 @@
 - 用户管理（创建/编辑/删除/批量角色变更）
 - 应用密码（API 认证增强，支持创建/删除/查询应用密码）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
-- 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签
+- 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签 / 文章点赞
 - RSS Feed（`/api/v1/web/rss`）、Sitemap（`/api/v1/web/sitemap.xml`）和 robots.txt（`/api/v1/web/robots.txt`）
 - 浏览量去重（同一 IP 24 小时内同一文章只计 1 次）
 - 速率限制（按端点配置，防止暴力破解）
@@ -50,6 +50,10 @@
 - **多语言支持**：中文 / English / 日本語，语言切换器持久化
 - 首页、文章详情页（slug URL）、搜索页、归档页、分类页、标签页、友链页、关于页
 - **用户系统**：注册 / 登录 / 个人中心（头像上传、昵称、邮箱、密码修改）
+- **登录/注册合并页面**：Tab 切换登录与注册，减少页面跳转
+- **登录后跳转回原页面**：从文章页/分类页等登录后自动返回原页面
+- **文章目录（TOC）**：桌面端左侧固定侧边栏，移动端底部抽屉面板，自动提取 h2-h6 标题层级，滚动高亮当前章节
+- **文章点赞**：单向点赞（同一 IP 不可重复），按钮显示点赞数量，支持大数字格式化（k/w）
 - 全站白天/黑夜主题切换（持久化）
 - 页面辅助工具（右下角浮动按钮）：主题切换、返回顶部、到达底部
 - 顶部导航与底部页脚组件化复用
@@ -59,6 +63,7 @@
 - **搜索页优化**：加载状态、空结果提示、关键词高亮、结果计数、卡片悬停动效、元信息 SVG 图标、移动端适配
 - 评论区用户头像：已注册用户显示真实头像，匿名用户显示首字符头像
 - 友链申请表单（实时校验）
+- 友链链接图标（页脚友链前显示链环 SVG 图标）
 - 静态资源地址统一解析（`assets/index.ts`）
 - **SEO 优化**：智能文档标题生成系统、动态 og:title / og:description / og:image / twitter:card meta 标签、canonical URL、JSON-LD 结构化数据（Article schema）、article:published_time / article:modified_time / article:author / article:section / article:tag 标签、增强的 robots 指令系统（支持多种爬虫规则）、301 重定向系统（URL 规范化）、旧 slug 重定向（保持 SEO 权重）
 - 页面标题无闪烁（HTML 默认标题 + Vue 异步更新）
@@ -415,6 +420,7 @@ VITE_WEB_BASE_URL=http://localhost:5173
 | GET | `/api/v1/web/robots.txt` | robots.txt |
 | GET | `/api/v1/web/redirect/slug/{old_slug}` | 通过旧 slug 重定向到文章（301） |
 | POST | `/api/v1/web/comments` | 提交评论 |
+| POST | `/api/v1/web/articles/{id}/like` | 点赞文章（单向，同一 IP 不可重复） |
 | GET | `/api/v1/web/friend-links` | 友链列表 |
 | POST | `/api/v1/web/friend-links` | 申请友链 |
 | GET | `/api/v1/web/captcha` | 获取验证码 |
@@ -662,6 +668,29 @@ PORT=8080
 ---
 
 ## 更新日志
+
+### 2026-08-16
+
+**前台（web）**
+- **文章目录（TOC）**：新增文章详情页左侧固定侧边栏目录，自动提取 h2-h6 标题层级，IntersectionObserver 滚动高亮当前章节，点击跳转并自动偏移 topbar 高度
+- **移动端 TOC 适配**：右下角浮动按钮 + 底部抽屉面板，支持下拉关闭、当前章节自动滚动定位
+- **文章点赞**：新增单向点赞功能（同一 IP 不可重复），文章详情页评论区上方显示点赞按钮，按钮直接显示点赞数量，支持大数字格式化（k/w）
+- **登录/注册合并页面**：LoginView + RegisterView 合并为 AuthView，Tab 切换登录与注册，URL 同步更新
+- **登录后跳转回原页面**：登录/注册成功后返回登录前所在页面（通过 localStorage 记录返回路径）
+- **退出登录优化**：退出后留在当前页面（状态变为未登录），不再强制跳转首页
+- **Topbar 登录入口简化**：未登录时头像图标直接跳转登录页（无下拉框），已登录时保持下拉菜单（个人中心/退出）
+- **页脚友链图标**：友链链接前增加链环 SVG 图标
+- **登录/注册页样式美化**：胶囊式 Tab 切换、输入框 focus 优化、提交按钮光泽效果、左侧文字区域融入背景
+
+**后端**
+- 新增文章点赞功能：`article_likes` 表（IP 去重，唯一索引），`articles.like_count` 字段
+- 新增点赞 API：`POST /api/v1/web/articles/{id}/like`（单向点赞，不支持取消）
+- 修复 admin 文章列表 `like_count` 字段缺失导致的 500 错误（`_LIST_COLUMNS` 补充 `Article.like_count`）
+
+**修复**
+- 修复注册后自动登录失败（缺少 `captcha_token` / `captcha_answer` 字段）
+- 修复点赞后数量不更新（`session.flush()` 改为 `session.commit()`，查询改用 `select` 绕过 ORM 缓存）
+- 修复退出登录后页面状态未更新（WebTopbar `isLoggedIn` 从 `computed` 改为 `ref`，ProfileView 监听 `web-logout` 事件）
 
 ### 2026-07-21
 
