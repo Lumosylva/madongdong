@@ -509,10 +509,12 @@ The scanner detects `http://`, `ws://`, `localhost:`, `127.0.0.1:`, and absolute
 - **Simplified topbar login**: unauth users get direct link to login (no dropdown)
 - **Footer friend link icon**: chain-link SVG icon before friend link text
 - **Auth page beautification**: capsule tabs, input focus effects, submit button gloss, hero blends into background
+- **Page transition animation**: top gradient progress bar + page fade transition, eliminates white screen flash
 
 **Backend**
 - Added article like feature: `article_likes` table (IP dedup), `articles.like_count` field
 - Added like API: `POST /api/v1/web/articles/{id}/like`
+- Relaxed rate limits: default 300/60s, login 10/60s, friend-links 60/60s, comments 20/60s
 
 **Fixes**
 - Fixed register auto-login failure (missing captcha fields)

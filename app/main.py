@@ -72,16 +72,16 @@ app.add_middleware(
 app.add_middleware(
     RateLimitMiddleware,
     rules={
-        f"{settings.api_v1_prefix}/admin/auth/login": (5, 60),
-        f"{settings.api_v1_prefix}/web/auth/login": (5, 60),
-        f"{settings.api_v1_prefix}/web/auth/register": (3, 300),
-        f"{settings.api_v1_prefix}/web/comments": (10, 60),
-        f"{settings.api_v1_prefix}/web/friend-links": (5, 300),
-        f"{settings.api_v1_prefix}/install/status": (30, 60),
-        f"{settings.api_v1_prefix}/install": (3, 600),
-        f"{settings.api_v1_prefix}/admin/media/upload": (20, 60),
+        f"{settings.api_v1_prefix}/admin/auth/login": (10, 60),
+        f"{settings.api_v1_prefix}/web/auth/login": (10, 60),
+        f"{settings.api_v1_prefix}/web/auth/register": (5, 300),
+        f"{settings.api_v1_prefix}/web/comments": (20, 60),
+        f"{settings.api_v1_prefix}/web/friend-links": (60, 60),
+        f"{settings.api_v1_prefix}/install/status": (60, 60),
+        f"{settings.api_v1_prefix}/install": (5, 600),
+        f"{settings.api_v1_prefix}/admin/media/upload": (30, 60),
     },
-    default=(120, 60),
+    default=(300, 60),
 )
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(CSRFMiddleware)
