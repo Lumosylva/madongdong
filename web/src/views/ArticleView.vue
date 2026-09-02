@@ -86,7 +86,23 @@
           </transition>
         </teleport>
       </div>
-      <img v-if="data.article.cover_url" :src="data.article.cover_url" class="cover" alt="cover" decoding="async" />
+      <div v-if="articleCoverUrl" class="cover-wrap">
+        <img
+          v-if="!coverError"
+          :src="articleCoverUrl"
+          class="cover cover-full"
+          :class="{ loaded: coverLoaded }"
+          :alt="data.article.title"
+          decoding="async"
+          loading="eager"
+          @load="onCoverLoad"
+          @error="onCoverError"
+        />
+        <div v-if="!coverError" class="cover-blur" :class="{ loaded: coverLoaded }" :style="{ backgroundImage: `url(${articleCoverUrl})` }"></div>
+        <div v-else class="cover-fallback" role="img" :aria-label="t('article.coverLoadFailed')">
+          {{ t('article.coverLoadFailed') }}
+        </div>
+      </div>
       <div class="article-content-wrap">
         <div class="article-body article-body-md">
           <MdPreview
@@ -131,7 +147,7 @@
         <div class="article-nav-links">
           <div class="nav-row">
             <span class="meta-label">{{ t('article.prevArticle') }}</span>
-            <RouterLink v-if="data.previous_article" :to="`/article/details/${data.previous_article.id}`" class="adjacent-link">
+            <RouterLink v-if="data.previous_article" :to="articlePath(data.previous_article)" class="adjacent-link">
               {{ truncateText(data.previous_article.title, 50) }}
             </RouterLink>
             <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
@@ -139,7 +155,7 @@
 
           <div class="nav-row">
             <span class="meta-label">{{ t('article.nextArticle') }}</span>
-            <RouterLink v-if="data.next_article" :to="`/article/details/${data.next_article.id}`" class="adjacent-link">
+            <RouterLink v-if="data.next_article" :to="articlePath(data.next_article)" class="adjacent-link">
               {{ truncateText(data.next_article.title, 50) }}
             </RouterLink>
             <span v-else class="adjacent-empty">{{ t('article.noMore') }}</span>
@@ -154,7 +170,7 @@
         class="like-btn"
         :class="{ liked: isLiked }"
         @click="toggleLike"
-        :disabled="isLiked || likeLoading"
+        :disabled="likeLoading"
         :aria-label="t('article.like')"
       >
         <svg class="like-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -218,7 +234,7 @@
           :data-comment-id="comment.id"
         >
           <div class="comment-avatar">
-            <img v-if="comment.user?.avatar" :src="comment.user.avatar" :alt="comment.user?.nickname" class="comment-avatar-img" loading="lazy" decoding="async" />
+            <img v-if="comment.user?.avatar" :src="assetUrl(comment.user.avatar)" :alt="comment.user?.nickname" class="comment-avatar-img" loading="lazy" decoding="async" />
             <div v-else class="comment-avatar-fallback" :style="{ background: avatarColor(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }">
               {{ avatarLetter(comment.user?.nickname || comment.guest_nickname || t('article.anonymousShort')) }}
             </div>
@@ -267,6 +283,7 @@ import WebFooter from '../components/WebFooter.vue'
 import WebTopbar from '../components/WebTopbar.vue'
 import { useTheme } from '../composables/useTheme'
 import { applyArticleJsonLd, applyArticleMeta, applySiteMetaFromSetting, setSiteSetting } from '../site-meta'
+import { articlePath } from '../utils/articleLink'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import { truncateText } from '../utils/text'
 import type { ArticlePageResponse, Comment } from '../types'
@@ -293,6 +310,68 @@ const articleEditorId = 'web-article-preview'
 const isLiked = ref(false)
 const likeCount = ref(0)
 const likeLoading = ref(false)
+const coverLoaded = ref(false)
+const coverError = ref(false)
+const articleCoverUrl = computed(() => toAbsoluteAssetUrl(data.value?.article.cover_url))
+
+const onCoverLoad = () => { coverLoaded.value = true }
+const onCoverError = () => {
+  coverLoaded.value = false
+  coverError.value = true
+}
+
+const assetUrl = (url: string | null | undefined) => toAbsoluteAssetUrl(url)
+
+let imageObserver: MutationObserver | null = null
+
+const observeArticleImages = () => {
+  imageObserver?.disconnect()
+  const body = document.querySelector('.article-body-md')
+  if (!body) return
+
+  const addLazyAttrs = (img: HTMLImageElement) => {
+    if (img.hasAttribute('data-optimized')) return
+    img.setAttribute('data-optimized', '1')
+    img.loading = 'lazy'
+    img.decoding = 'async'
+
+    const src = img.getAttribute('src') || ''
+    if (!src || src.startsWith('data:')) return
+
+    img.classList.add('article-img-loading')
+    const onLoad = () => {
+      img.classList.remove('article-img-loading')
+      img.classList.add('article-img-loaded')
+      img.removeEventListener('load', onLoad)
+      img.removeEventListener('error', onError)
+    }
+    const onError = () => {
+      img.classList.remove('article-img-loading')
+      img.classList.add('article-img-failed')
+      img.removeEventListener('load', onLoad)
+      img.removeEventListener('error', onError)
+    }
+    if (img.complete) {
+      if (img.naturalWidth > 0) onLoad()
+      else onError()
+    } else {
+      img.addEventListener('load', onLoad)
+      img.addEventListener('error', onError)
+    }
+  }
+
+  body.querySelectorAll('img').forEach(addLazyAttrs)
+
+  imageObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node instanceof HTMLImageElement) addLazyAttrs(node)
+        if (node instanceof HTMLElement) node.querySelectorAll('img').forEach(addLazyAttrs)
+      }
+    }
+  })
+  imageObserver.observe(body, { childList: true, subtree: true })
+}
 
 const LIKE_STORAGE_KEY = 'md-liked-articles'
 
@@ -424,13 +503,25 @@ const goSearch = () => {
 
 const loadData = async () => {
   const articleId = Number(route.params.id)
-  if (!articleId) return
-  data.value = await webApi.getArticle(articleId)
+  const articleSlug = String(route.params.slug || '').trim()
+  if (!articleId && !articleSlug) return
+  coverLoaded.value = false
+  coverError.value = false
+  data.value = articleSlug
+    ? await webApi.getArticleBySlug(articleSlug)
+    : await webApi.getArticle(articleId)
+  if (!articleSlug) {
+    const canonicalPath = articlePath(data.value.article)
+    if (canonicalPath !== route.fullPath) {
+      await router.replace(canonicalPath)
+    }
+  }
   loadLikeState()
   setSiteSetting(data.value.site)
   applySiteMetaFromSetting(data.value.site)
   applyArticleMeta(data.value.article.title, data.value.article.summary, data.value.article.cover_url, {
     id: data.value.article.id,
+    slug: data.value.article.slug,
     publishedAt: data.value.article.published_at,
     updatedAt: data.value.article.updated_at || data.value.article.created_at,
     author: data.value.article.author?.nickname,
@@ -536,7 +627,7 @@ const avatarLetter = (name: string) => {
 
 const avatarColor = (name: string) => AVATAR_COLORS[hashCode(String(name || '')) % AVATAR_COLORS.length]
 
-watch(() => route.params.id, () => {
+watch(() => [route.params.id, route.params.slug], () => {
   loadData()
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
@@ -556,6 +647,7 @@ onMounted(async () => {
 
   await hydrateCurrentUser()
   await loadData()
+  nextTick(observeArticleImages)
   syncTopbarOffset()
   topbarResizeObserver.value = new ResizeObserver(() => syncTopbarOffset())
   const topbar = document.querySelector('.topbar')
@@ -563,6 +655,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  imageObserver?.disconnect()
   topbarResizeObserver.value?.disconnect()
   destroyTheme()
 })
@@ -746,7 +839,6 @@ onBeforeUnmount(() => {
   color: var(--text-soft);
   border-color: var(--line);
   background: var(--bg-soft);
-  cursor: default;
 }
 
 .like-btn:disabled {

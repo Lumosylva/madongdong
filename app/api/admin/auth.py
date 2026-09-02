@@ -154,12 +154,17 @@ async def revoke_token(
         clear_auth_cookies(response, source="admin")
         return success_response(None)
 
-    if data.get("sub") != current_user.username:
+    if data.get("sub") != str(current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权撤销他人的令牌")
 
     jti = data.get("jti")
     if jti:
-        result = await session.execute(_select(RefreshToken).where(RefreshToken.jti == jti))
+        result = await session.execute(
+            _select(RefreshToken).where(
+                RefreshToken.jti == jti,
+                RefreshToken.user_id == current_user.id,
+            )
+        )
         rt = result.scalar_one_or_none()
         if rt:
             rt.revoked = True

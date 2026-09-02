@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     sql_echo: bool = False
     cookie_secure: bool = False
     trusted_proxy: bool = False
+    public_base_url: str | None = None
     
     # URL 重定向配置
     redirect_www_to_non_www: bool = True  # True: www.example.com -> example.com
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
 
     sqlite_file: str = "madongdong.db"
     database_url: str = "sqlite+aiosqlite:///./madongdong.db"
+    redis_url: str | None = None
 
     secret_key: str = ""
     algorithm: str = "HS256"
@@ -33,6 +35,8 @@ class Settings(BaseSettings):
     upload_dir: str = "app/static/uploads"
     upload_url_prefix: str = "/uploads"
     upload_max_size: int = 10 * 1024 * 1024  # 10 MB
+    upload_max_image_dimension: int = 10000
+    upload_max_image_pixels: int = 40_000_000
     upload_allowed_extensions: set[str] = Field(
         default_factory=lambda: {
             ".jpg", ".jpeg", ".png", ".gif", ".webp",

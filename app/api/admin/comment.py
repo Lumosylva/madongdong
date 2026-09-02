@@ -1,6 +1,6 @@
 """后台评论管理接口。"""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
@@ -12,7 +12,6 @@ from pydantic import BaseModel
 from app.services.comment import (
     approve_comment,
     delete_comments,
-    list_comments,
     list_spam_comments,
     list_trash_comments,
     mark_as_spam,
@@ -31,14 +30,17 @@ class CommentDeletePayload(BaseModel):
 
 @router.get("", summary="查询评论列表")
 async def get_comments(
-    page: int = 1,
-    page_size: int = 20,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    keyword: str | None = Query(default=None, max_length=100),
+    status: str | None = Query(default=None, max_length=20),
+    sort: str = Query(default="newest", pattern="^(newest|oldest)$"),
     session: AsyncSession = Depends(get_db_session),
     _: User = Depends(require_any_role(["admin", "author"])),
 ) -> dict[str, object]:
     from app.services.comment import list_comments_paginated
     
-    result = await list_comments_paginated(session, page, page_size)
+    result = await list_comments_paginated(session, page, page_size, keyword, status, sort)
     comments = [CommentResponse.model_validate(item).model_dump() for item in result["items"]]
     return success_response({
         "items": comments,

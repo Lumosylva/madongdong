@@ -57,7 +57,7 @@
               <span>{{ user?.email }}</span>
             </div>
             <div class="profile-avatar-actions">
-              <input ref="avatarInputRef" class="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" @change="onAvatarSelect" />
+              <input ref="avatarInputRef" class="profile-file-input" type="file" accept="image/png,image/jpeg,image/webp" @change="onAvatarSelect" />
               <button type="button" class="profile-btn secondary sm" @click="avatarInputRef?.click()">{{ t('profile.changeAvatar') }}</button>
               <button v-if="avatarPreview" type="button" class="profile-btn ghost sm" @click="clearAvatar">{{ t('profile.clear') }}</button>
             </div>
@@ -172,7 +172,7 @@ const loadImage = (file: File) =>
   })
 
 const compressAvatar = async (file: File) => {
-  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+  if (!file.type.startsWith('image/')) {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
     reader.onerror = () => reject(new Error(t('profile.readFailed')))

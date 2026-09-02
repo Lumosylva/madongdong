@@ -25,12 +25,82 @@
   background: #f2f2f2;
 }
 
+.cover-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  max-height: 420px;
+  border-radius: 16px;
+  margin: 14px 0 20px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
 .cover {
   width: 100%;
   max-height: 420px;
   object-fit: cover;
-  border-radius: 16px;
-  margin: 14px 0 20px;
+  display: block;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.cover.cover-full {
+  margin: 0;
+  border-radius: 0;
+}
+
+.cover-blur {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px);
+  transform: scale(1.1);
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+}
+
+.cover-blur.loaded {
+  opacity: 0;
+}
+
+.cover-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--text-soft);
+  background: var(--bg-soft);
+  text-align: center;
+}
+
+.cover-full.loaded {
+  opacity: 1;
+}
+
+/* ── Article body image optimization ── */
+
+.article-img-loading {
+  opacity: 0.4;
+  filter: blur(4px);
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+
+.article-img-loaded {
+  opacity: 1;
+  filter: none;
+}
+
+.article-img-failed {
+  min-height: 48px;
+  opacity: 0.72;
+  filter: grayscale(1);
+  background: var(--bg-soft);
 }
 
 .article-head {

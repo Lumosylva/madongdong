@@ -6,14 +6,12 @@ import re
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.article import Article
-from app.models.article import Article
+from app.models.article import Article, ArticleStatus
 from app.models.auth import User
 from app.models.comment import Comment, CommentStatus
-from app.services.article import get_article_or_404
 
 
 _BROWSER_PATTERNS = [
@@ -84,6 +82,22 @@ async def get_comment_or_404(session: AsyncSession, comment_id: int) -> Comment:
     return comment
 
 
+async def _get_public_article_or_404(session: AsyncSession, article_id: int) -> Article:
+    """获取允许公开互动的文章。"""
+
+    result = await session.execute(
+        select(Article).where(
+            Article.id == article_id,
+            Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
+        )
+    )
+    article = result.scalar_one_or_none()
+    if article is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
+    return article
+
+
 async def create_comment(
     session: AsyncSession,
     article_id: int,
@@ -96,12 +110,14 @@ async def create_comment(
 ) -> Comment:
     """创建评论。"""
 
-    article = await get_article_or_404(session, article_id)
+    article = await _get_public_article_or_404(session, article_id)
     parent = None
     if parent_id is not None:
         parent = await get_comment_or_404(session, parent_id)
         if parent.article_id != article_id:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="回复评论必须属于同一篇文章")
+        if parent.status != CommentStatus.APPROVED:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="只能回复已通过的评论")
 
     if current_user is None:
         if not guest_nickname or not guest_email:
@@ -139,7 +155,7 @@ async def create_comment(
     session.add(comment)
     await session.flush()
 
-    article.comment_count = await count_article_comments(session, article.id)
+    await _sync_article_comment_count(session, article.id, article)
     await session.commit()
     await session.refresh(comment)
     return comment
@@ -156,16 +172,49 @@ async def list_comments_paginated(
     session: AsyncSession,
     page: int = 1,
     page_size: int = 20,
+    keyword: str | None = None,
+    status_filter: str | None = None,
+    sort_order: str = "newest",
 ) -> dict:
-    """分页查询评论列表。"""
+    """分页查询评论列表，支持后端搜索、状态筛选和排序。"""
+
+    conditions = []
+    normalized_keyword = (keyword or "").strip()
+    if normalized_keyword:
+        like_keyword = f"%{normalized_keyword}%"
+        conditions.append(or_(
+            Comment.content.ilike(like_keyword),
+            Comment.guest_nickname.ilike(like_keyword),
+            Comment.guest_email.ilike(like_keyword),
+            Article.title.ilike(like_keyword),
+        ))
+
+    normalized_status = (status_filter or "").strip().lower()
+    if normalized_status:
+        try:
+            conditions.append(Comment.status == CommentStatus(normalized_status))
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="评论状态无效") from exc
+
+    base_query = select(Comment).join(Article, Comment.article_id == Article.id, isouter=True)
+    if conditions:
+        base_query = base_query.where(*conditions)
+
     # 计算总数
-    count_result = await session.execute(select(func.count(Comment.id)))
+    count_result = await session.execute(
+        select(func.count(Comment.id))
+        .select_from(Comment)
+        .join(Article, Comment.article_id == Article.id, isouter=True)
+        .where(*conditions)
+    )
     total = count_result.scalar() or 0
+
+    order_by = Comment.created_at.asc() if sort_order == "oldest" else Comment.created_at.desc()
 
     # 查询评论列表
     result = await session.execute(
-        select(Comment)
-        .order_by(Comment.created_at.desc())
+        base_query
+        .order_by(order_by, Comment.id.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
@@ -176,7 +225,7 @@ async def list_comments_paginated(
         "total": total,
         "page": page,
         "page_size": page_size,
-        "total_pages": (total + page_size - 1) // page_size,
+        "total_pages": max(1, (total + page_size - 1) // page_size),
     }
 
 
@@ -188,6 +237,9 @@ async def list_article_comments_paginated(
     include_pending: bool = False,
 ) -> dict:
     """分页查询文章评论。"""
+    if not include_pending:
+        await _get_public_article_or_404(session, article_id)
+
     # 构建查询条件
     query = select(Comment).where(Comment.article_id == article_id)
     
@@ -223,6 +275,7 @@ async def approve_comment(session: AsyncSession, comment_id: int) -> Comment:
 
     comment = await get_comment_or_404(session, comment_id)
     comment.status = CommentStatus.APPROVED
+    await _sync_article_comment_count(session, comment.article_id)
     await session.commit()
     await session.refresh(comment)
     return comment
@@ -233,6 +286,7 @@ async def reject_comment(session: AsyncSession, comment_id: int) -> Comment:
 
     comment = await get_comment_or_404(session, comment_id)
     comment.status = CommentStatus.REJECTED
+    await _sync_article_comment_count(session, comment.article_id)
     await session.commit()
     await session.refresh(comment)
     return comment
@@ -254,23 +308,37 @@ async def delete_comments(session: AsyncSession, comment_ids: list[int]) -> int:
         await session.delete(comment)
 
     for article_id in article_ids:
-        count = await count_article_comments(session, article_id)
-        article_result = await session.execute(select(Article).where(Article.id == article_id))
-        article = article_result.scalar_one_or_none()
-        if article is not None:
-            article.comment_count = count
+        await _sync_article_comment_count(session, article_id)
 
     await session.commit()
     return len(comments)
 
 
 async def count_article_comments(session: AsyncSession, article_id: int) -> int:
-    """统计文章评论数。"""
+    """统计文章已通过评论数。"""
 
-    statement: Select[tuple[int]] = select(func.count(Comment.id)).where(Comment.article_id == article_id)
+    statement: Select[tuple[int]] = select(func.count(Comment.id)).where(
+        Comment.article_id == article_id,
+        Comment.status == CommentStatus.APPROVED,
+    )
     result = await session.execute(statement)
     count = result.scalar_one()
     return int(count)
+
+
+async def _sync_article_comment_count(
+    session: AsyncSession,
+    article_id: int,
+    article: Article | None = None,
+) -> None:
+    """同步文章公开评论数。"""
+
+    count = await count_article_comments(session, article_id)
+    if article is None:
+        article_result = await session.execute(select(Article).where(Article.id == article_id))
+        article = article_result.scalar_one_or_none()
+    if article is not None:
+        article.comment_count = count
 
 
 def _is_admin_or_author(user: User) -> bool:
@@ -352,6 +420,7 @@ async def mark_as_spam(session: AsyncSession, comment_id: int) -> Comment:
     """将评论标记为垃圾。"""
     comment = await get_comment_or_404(session, comment_id)
     comment.status = CommentStatus.SPAM
+    await _sync_article_comment_count(session, comment.article_id)
     await session.commit()
     await session.refresh(comment)
     return comment
@@ -361,6 +430,7 @@ async def mark_as_trash(session: AsyncSession, comment_id: int) -> Comment:
     """将评论移入垃圾箱。"""
     comment = await get_comment_or_404(session, comment_id)
     comment.status = CommentStatus.TRASH
+    await _sync_article_comment_count(session, comment.article_id)
     await session.commit()
     await session.refresh(comment)
     return comment
@@ -370,6 +440,7 @@ async def restore_from_trash(session: AsyncSession, comment_id: int) -> Comment:
     """从垃圾箱恢复评论。"""
     comment = await get_comment_or_404(session, comment_id)
     comment.status = CommentStatus.PENDING
+    await _sync_article_comment_count(session, comment.article_id)
     await session.commit()
     await session.refresh(comment)
     return comment

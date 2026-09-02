@@ -4,12 +4,23 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
+import logging
+import secrets
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 
 _MAX_KEYS = 10_000
 _PURGE_AGE = 120.0
+_REDIS_SCRIPT = """
+local now = tonumber(ARGV[1])
+local cutoff = now - tonumber(ARGV[2])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', cutoff)
+redis.call('ZADD', KEYS[1], now, ARGV[3])
+redis.call('EXPIRE', KEYS[1], tonumber(ARGV[2]) + 1)
+return redis.call('ZCARD', KEYS[1])
+"""
+logger = logging.getLogger(__name__)
 
 
 class _SlidingWindowCounter:
@@ -73,6 +84,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         rules: dict[str, tuple[int, int]] | None = None,
         default: tuple[int, int] = (60, 60),
         cleanup_interval: int = 60,
+        redis_url: str | None = None,
     ) -> None:
         super().__init__(app)
         self._rules = rules or {}
@@ -80,6 +92,34 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._counter = _SlidingWindowCounter()
         self._last_cleanup = time.monotonic()
         self._cleanup_interval = cleanup_interval
+        self._redis = None
+        self._redis_warning_logged = False
+        if redis_url:
+            try:
+                from redis.asyncio import Redis
+                self._redis = Redis.from_url(redis_url, decode_responses=True)
+            except ImportError:
+                logger.warning("已配置 REDIS_URL，但未安装 redis 包，将使用进程内限流")
+
+    async def _hit(self, key: str, window: int) -> int:
+        if self._redis is not None:
+            try:
+                return int(
+                    await self._redis.eval(
+                        _REDIS_SCRIPT,
+                        1,
+                        f"rate-limit:{key}",
+                        str(time.time()),
+                        str(window),
+                        secrets.token_urlsafe(12),
+                    )
+                )
+            except Exception:
+                if not self._redis_warning_logged:
+                    logger.warning("Redis 限流不可用，将回退到进程内限流", exc_info=True)
+                    self._redis_warning_logged = True
+                self._redis = None
+        return self._counter.hit(key, window)
 
     def _get_client_ip(self, request: Request) -> str:
         from app.utils.ip import get_client_ip
@@ -102,7 +142,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         path = request.url.path
         max_requests, window = self._match_rule(path)
         key = f"{client_ip}:{path}"
-        count = self._counter.hit(key, window)
+        count = await self._hit(key, window)
 
         if count > max_requests:
             return Response(

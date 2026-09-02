@@ -10,6 +10,15 @@ from app.models.auth import Role, User
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
+def _validate_avatar(value: str | None) -> str | None:
+    """拒绝可执行的 SVG Data URL，避免头像内容成为脚本载体。"""
+
+    text = str(value or '').strip()
+    if text.lower().startswith('data:image/svg+xml'):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="头像不支持 SVG 格式")
+    return value
+
+
 async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
     """按用户名查询用户。"""
 
@@ -51,7 +60,7 @@ async def update_current_user_profile(
 
     user.nickname = nickname
     user.email = email
-    user.avatar = avatar
+    user.avatar = _validate_avatar(avatar)
     if password:
         user.password_hash = pwd_context.hash(password)
         # 密码已变更，撤销该用户所有已签发的 refresh token，
@@ -92,7 +101,7 @@ async def create_user(
         username=username,
         nickname=nickname,
         email=email,
-        avatar=avatar,
+        avatar=_validate_avatar(avatar),
         password_hash=pwd_context.hash(password),
         is_active=True,
         roles=[role],
@@ -123,7 +132,7 @@ async def update_user(
 
     user.nickname = nickname
     user.email = email
-    user.avatar = avatar
+    user.avatar = _validate_avatar(avatar)
     user.roles = [role]
     if password:
         user.password_hash = pwd_context.hash(password)

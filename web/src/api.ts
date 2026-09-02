@@ -2,7 +2,7 @@ import type { ArchiveResponse, ArticlePageResponse, CategoriesResponse, Category
 import { resolveAssetUrl } from '../../assets'
 import i18n from './i18n'
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
+export const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const API_ORIGIN = new URL(API_BASE, window.location.origin).origin
 const DEFAULT_TIMEOUT = 15_000
 
@@ -71,6 +71,9 @@ export const webApi = {
   },
   getArticle(id: number): Promise<ArticlePageResponse> {
     return request<ArticlePageResponse>(`/web/articles/${id}`)
+  },
+  getArticleBySlug(slug: string): Promise<ArticlePageResponse> {
+    return request<ArticlePageResponse>(`/web/articles/slug/${encodeURIComponent(slug)}`)
   },
   search(keyword: string, page = 1, pageSize = 20): Promise<SearchResponse> {
     return request<SearchResponse>(`/web/search?keyword=${encodeURIComponent(keyword)}&page=${page}&page_size=${pageSize}`)

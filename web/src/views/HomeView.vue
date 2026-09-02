@@ -27,7 +27,7 @@
     <main class="layout">
       <section class="content-panel">
         <article v-for="article in data.latest_articles.items" :key="article.id" class="article-card">
-          <RouterLink :to="`/article/details/${article.id}`" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
+          <RouterLink :to="articlePath(article)" class="card-title">{{ truncateText(article.title, 50) }}</RouterLink>
           <p class="card-summary">{{ truncateText(article.summary, 120) }}</p>
           <div class="card-meta">
             <span>{{ article.category?.name || t('common.untitled') }}</span>
@@ -59,7 +59,7 @@
         <div class="sidebar-card">
           <h3>{{ t('home.hotArticles') }}</h3>
           <div class="hot-list">
-            <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="`/article/details/${item.id}`" class="hot-link">
+            <RouterLink v-for="item in data.hot_articles" :key="item.id" :to="articlePath(item)" class="hot-link">
               <strong>{{ item.title }}</strong>
               <div class="hot-stats">
                 <span class="hot-meta">{{ formatRelativeTime(item.published_at || item.created_at) }}</span>
@@ -104,6 +104,7 @@ import { useTheme } from '../composables/useTheme'
 import { applySiteMeta, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime, getArticleUpdatedAt } from '../utils/time'
 import { truncateText } from '../utils/text'
+import { articlePath } from '../utils/articleLink'
 import type { HomeResponse } from '../types'
 
 const { t } = useI18n()

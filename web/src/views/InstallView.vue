@@ -215,7 +215,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { webApi } from '../api'
+import { API_BASE, webApi } from '../api'
 import { buildPageTitle } from '../site-meta'
 
 const currentStep = ref(1)
@@ -257,7 +257,7 @@ const autoDetectDomain = () => {
 
 const generateSecretKey = async () => {
   try {
-    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/install/secret-key`)
+    const res = await fetch(`${API_BASE}/install/secret-key`)
     const data = await res.json() as { secret_key: string }
     form.secret_key = data.secret_key
     showSecretKey.value = true

@@ -44,4 +44,4 @@ docs/OPTIMIZATION_REPORT.md
 docs/SECURITY_AUDIT.md
 /docs/博客付费设计.md
 /run_backupend_server.bat
-/.mimocode/.cron-lock
+.agents

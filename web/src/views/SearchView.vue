@@ -50,8 +50,18 @@
 
       <template v-else>
         <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
-          <RouterLink :to="`/article/details/${article.id}`" class="search-title" v-html="highlightKeyword(article.title)"></RouterLink>
-          <p class="search-card-summary" v-html="highlightKeyword(article.summary)"></p>
+          <RouterLink :to="articlePath(article)" class="search-title">
+            <template v-for="(part, index) in highlightKeyword(article.title)" :key="`${article.id}-title-${index}`">
+              <mark v-if="part.highlighted" class="search-highlight">{{ part.text }}</mark>
+              <template v-else>{{ part.text }}</template>
+            </template>
+          </RouterLink>
+          <p class="search-card-summary">
+            <template v-for="(part, index) in highlightKeyword(article.summary)" :key="`${article.id}-summary-${index}`">
+              <mark v-if="part.highlighted" class="search-highlight">{{ part.text }}</mark>
+              <template v-else>{{ part.text }}</template>
+            </template>
+          </p>
           <div class="search-meta unified-list-meta">
             <span class="search-meta-item search-meta-category" v-if="article.category?.name">
               <svg class="search-meta-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4.5A1.5 1.5 0 013.5 3H6.5l1.5 2H12.5A1.5 1.5 0 0114 6.5v5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 012 11.5v-7z" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -111,6 +121,7 @@ import { applySearchMeta, setSiteSetting } from '../site-meta'
 import { useFormatRelativeTime } from '../utils/time'
 import type { SearchResponse } from '../types'
 import { useTheme } from '../composables/useTheme'
+import { articlePath } from '../utils/articleLink'
 
 const { t } = useI18n()
 const { formatRelativeTime } = useFormatRelativeTime()
@@ -145,12 +156,33 @@ const changePageSize = async () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const highlightKeyword = (text: string | null | undefined): string => {
+type HighlightPart = {
+  text: string
+  highlighted: boolean
+}
+
+const highlightKeyword = (text: string | null | undefined): HighlightPart[] => {
   const raw = String(text || '').trim()
   const kw = keyword.value.trim()
-  if (!raw || !kw) return raw
+  if (!raw || !kw) return raw ? [{ text: raw, highlighted: false }] : []
   const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return raw.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="search-highlight">$1</mark>')
+  const matcher = new RegExp(escaped, 'gi')
+  const parts: HighlightPart[] = []
+  let cursor = 0
+
+  for (const match of raw.matchAll(matcher)) {
+    const index = match.index ?? 0
+    if (index > cursor) {
+      parts.push({ text: raw.slice(cursor, index), highlighted: false })
+    }
+    parts.push({ text: match[0], highlighted: true })
+    cursor = index + match[0].length
+  }
+
+  if (cursor < raw.length) {
+    parts.push({ text: raw.slice(cursor), highlighted: false })
+  }
+  return parts.length ? parts : [{ text: raw, highlighted: false }]
 }
 
 const loadData = async () => {

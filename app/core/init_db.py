@@ -27,6 +27,9 @@ async def init_db() -> None:
         await _migrate_comment_spam_score(session)
         await _migrate_application_passwords(session)
         await _migrate_nav_item_location(session)
+        await _migrate_article_search_index(session)
+        await _rebuild_article_comment_counts(session)
+        await _normalize_local_upload_urls(session)
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
@@ -262,3 +265,118 @@ async def _migrate_nav_item_location(session: AsyncSession) -> None:
         text("CREATE INDEX IF NOT EXISTS ix_nav_items_location ON nav_items (location)")
     )
     await session.commit()
+
+
+async def _migrate_article_search_index(session: AsyncSession) -> None:
+    """创建并回填文章全文搜索索引。"""
+
+    try:
+        result = await session.execute(text("""
+            SELECT sql FROM sqlite_master
+            WHERE type = 'table' AND name = 'article_search'
+        """))
+        existing_sql = (result.scalar_one_or_none() or "").lower()
+        if existing_sql and "tokenize='trigram'" not in existing_sql:
+            await session.execute(text("DROP TRIGGER IF EXISTS articles_search_ai"))
+            await session.execute(text("DROP TRIGGER IF EXISTS articles_search_au"))
+            await session.execute(text("DROP TRIGGER IF EXISTS articles_search_ad"))
+            await session.execute(text("DROP TABLE IF EXISTS article_search"))
+
+        await session.execute(text("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS article_search USING fts5(
+                title,
+                summary,
+                content_markdown,
+                tokenize='trigram'
+            )
+        """))
+        await session.execute(text("""
+            CREATE TRIGGER IF NOT EXISTS articles_search_ai
+            AFTER INSERT ON articles
+            BEGIN
+                INSERT INTO article_search(rowid, title, summary, content_markdown)
+                VALUES (
+                    new.id,
+                    coalesce(new.title, ''),
+                    coalesce(new.summary, ''),
+                    coalesce(new.content_markdown, '')
+                );
+            END
+        """))
+        await session.execute(text("""
+            CREATE TRIGGER IF NOT EXISTS articles_search_au
+            AFTER UPDATE OF title, summary, content_markdown ON articles
+            BEGIN
+                INSERT OR REPLACE INTO article_search(rowid, title, summary, content_markdown)
+                VALUES (
+                    new.id,
+                    coalesce(new.title, ''),
+                    coalesce(new.summary, ''),
+                    coalesce(new.content_markdown, '')
+                );
+            END
+        """))
+        await session.execute(text("""
+            CREATE TRIGGER IF NOT EXISTS articles_search_ad
+            AFTER DELETE ON articles
+            BEGIN
+                DELETE FROM article_search WHERE rowid = old.id;
+            END
+        """))
+        await session.execute(text("DELETE FROM article_search"))
+        await session.execute(text("""
+            INSERT INTO article_search(rowid, title, summary, content_markdown)
+            SELECT id, coalesce(title, ''), coalesce(summary, ''), coalesce(content_markdown, '')
+            FROM articles
+        """))
+        await session.commit()
+    except Exception:
+        await session.rollback()
+
+
+async def _rebuild_article_comment_counts(session: AsyncSession) -> None:
+    """回填文章公开评论数。"""
+
+    try:
+        await session.execute(text("""
+            UPDATE articles
+            SET comment_count = (
+                SELECT count(comments.id)
+                FROM comments
+                WHERE comments.article_id = articles.id
+                  AND comments.status = 'approved'
+            )
+        """))
+        await session.commit()
+    except Exception:
+        await session.rollback()
+
+
+async def _normalize_local_upload_urls(session: AsyncSession) -> None:
+    """将开发环境本地域名上传地址回填为相对路径。"""
+
+    local_hosts = ("localhost", "127.0.0.1")
+    schemes = ("http", "https")
+    patterns = {
+        f"pattern_{index}": f"{scheme}://{host}:%/uploads/%"
+        for index, (scheme, host) in enumerate(
+            (scheme, host) for scheme in schemes for host in local_hosts
+        )
+    }
+    def normalize_sql(table_name: str, column_name: str) -> str:
+        like_conditions = " OR ".join(
+            f"{column_name} LIKE :{name}" for name in patterns
+        )
+        return f"""
+            UPDATE {table_name}
+            SET {column_name} = substr({column_name}, instr({column_name}, '/uploads/'))
+            WHERE {like_conditions}
+        """
+
+    try:
+        await session.execute(text(normalize_sql("articles", "cover_url")), patterns)
+        await session.execute(text(normalize_sql("site_settings", "site_logo")), patterns)
+        await session.execute(text(normalize_sql("site_settings", "homepage_hero_image")), patterns)
+        await session.commit()
+    except Exception:
+        await session.rollback()

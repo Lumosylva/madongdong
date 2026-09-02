@@ -131,6 +131,13 @@ const media = ref<any[]>([])
 const folders = ref<any[]>([])
 const currentFolderId = ref<number | null | undefined>(undefined)
 const comments = ref<any[]>([])
+const commentsTotal = ref(0)
+const commentsPage = ref(1)
+const commentsPageSize = ref(10)
+const commentsTotalPages = ref(1)
+const commentsKeyword = ref('')
+const commentsStatus = ref('all')
+const commentsSort = ref<'newest' | 'oldest'>('newest')
 const friendLinks = ref<FriendLinkItem[]>([])
 const users = ref<any[]>([])
 const siteTitle = ref('')
@@ -375,6 +382,10 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
     case 'comments':
       return {
         comments: comments.value,
+        commentsTotal: commentsTotal.value,
+        commentsPage: commentsPage.value,
+        commentsPageSize: commentsPageSize.value,
+        commentsTotalPages: commentsTotalPages.value,
         formatCommentStatus,
       }
     case 'friend-links':
@@ -474,6 +485,7 @@ const activePanelListeners = computed(() => {
         'bulk-approve': bulkApproveComments,
         'bulk-reject': bulkRejectComments,
         'bulk-delete': bulkDeleteComments,
+        'query-change': updateCommentsQuery,
         refresh: refreshComments,
       }
     case 'friend-links':
@@ -566,6 +578,24 @@ const normalizeAssetUrl = (url: string | null | undefined) => {
   if (!value) return ''
   if (/^https?:\/\//i.test(value)) return value
   return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
+}
+
+const normalizeStoredUploadUrl = (url: string | null | undefined) => {
+  const value = String(url || '').trim()
+  if (!value) return ''
+  try {
+    const parsed = new URL(value)
+    const isLocalAssetOrigin =
+      parsed.origin === API_ORIGIN ||
+      parsed.origin === window.location.origin ||
+      ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname)
+    if (isLocalAssetOrigin && parsed.pathname.startsWith('/uploads/')) {
+      return parsed.pathname
+    }
+  } catch {
+    // Keep relative paths and external URLs unchanged.
+  }
+  return value
 }
 
 const applyAdminMeta = () => {
@@ -686,7 +716,13 @@ const loadAll = async () => {
       adminApi.getCategories(),
       adminApi.getMedia(currentFolderId.value !== undefined ? { folderId: currentFolderId.value ?? undefined, unorganized: currentFolderId.value === null } : undefined),
       adminApi.getFolders(),
-      adminApi.getComments(),
+      adminApi.getComments({
+        page: commentsPage.value,
+        pageSize: commentsPageSize.value,
+        keyword: commentsKeyword.value,
+        status: commentsStatus.value,
+        sort: commentsSort.value,
+      }),
       adminApi.getFriendLinks(),
       adminApi.getSiteSettings(),
       isAdmin.value ? adminApi.getUsers() : Promise.resolve({ data: [] }),
@@ -697,7 +733,7 @@ const loadAll = async () => {
     categories.value = categoryRes.data
     media.value = mediaRes.data
     folders.value = folderRes.data
-    comments.value = commentRes.data.items || commentRes.data
+    setCommentsResult(commentRes.data)
     friendLinks.value = linkRes.data || []
     users.value = userRes.data || []
     siteTitle.value = siteRes.data.site_title
@@ -748,7 +784,7 @@ const approveComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'APPROVED') return
   await adminApi.approveComment(commentId)
-  await loadAll()
+  await refreshComments()
 }
 
 const friendLinksRefreshing = ref(false)
@@ -798,20 +834,20 @@ const bulkApproveComments = async (commentIds: number[]) => {
   })
   if (!targets.length) return
   await Promise.all(targets.map((commentId) => adminApi.approveComment(commentId)))
-  await loadAll()
+  await refreshComments()
 }
 
 const rejectComment = async (commentId: number) => {
   const target = comments.value.find((item) => item.id === commentId)
   if (!target || String(target.status).toUpperCase() === 'REJECTED') return
   await adminApi.rejectComment(commentId)
-  await loadAll()
+  await refreshComments()
 }
 
 const deleteComment = async (commentId: number) => {
   if (!confirm(t('confirm.deleteComment'))) return
   await adminApi.deleteComments([commentId])
-  await loadAll()
+  await refreshComments()
 }
 
 const bulkRejectComments = async (commentIds: number[]) => {
@@ -821,7 +857,7 @@ const bulkRejectComments = async (commentIds: number[]) => {
   })
   if (!targets.length) return
   await Promise.all(targets.map((commentId) => adminApi.rejectComment(commentId)))
-  await loadAll()
+  await refreshComments()
 }
 
 const bulkDeleteComments = async (commentIds: number[]) => {
@@ -831,16 +867,50 @@ const bulkDeleteComments = async (commentIds: number[]) => {
   })
   if (!targets.length) return
   await adminApi.deleteComments(targets)
-  await loadAll()
+  await refreshComments()
 }
 
 const refreshComments = async () => {
   try {
-    const res = await adminApi.getComments()
-    comments.value = res.data.items || res.data
+    const res = await adminApi.getComments({
+      page: commentsPage.value,
+      pageSize: commentsPageSize.value,
+      keyword: commentsKeyword.value,
+      status: commentsStatus.value,
+      sort: commentsSort.value,
+    })
+    setCommentsResult(res.data)
+    if (commentsPage.value > commentsTotalPages.value && commentsPage.value > 1) {
+      commentsPage.value = commentsTotalPages.value
+      const retryRes = await adminApi.getComments({
+        page: commentsPage.value,
+        pageSize: commentsPageSize.value,
+        keyword: commentsKeyword.value,
+        status: commentsStatus.value,
+        sort: commentsSort.value,
+      })
+      setCommentsResult(retryRes.data)
+    }
   } catch {
     // ignore
   }
+}
+
+const setCommentsResult = (data: any) => {
+  comments.value = data.items || data || []
+  commentsTotal.value = Number(data.total || comments.value.length || 0)
+  commentsPage.value = Number(data.page || commentsPage.value || 1)
+  commentsPageSize.value = Number(data.page_size || commentsPageSize.value || 10)
+  commentsTotalPages.value = Math.max(1, Number(data.total_pages || 1))
+}
+
+const updateCommentsQuery = async (query: { page: number; pageSize: number; keyword: string; status: string; sort: 'newest' | 'oldest' }) => {
+  commentsPage.value = query.page
+  commentsPageSize.value = query.pageSize
+  commentsKeyword.value = query.keyword
+  commentsStatus.value = query.status
+  commentsSort.value = query.sort
+  await refreshComments()
 }
 
 const createCategory = async (payload: { name: string; slug: string; description: string | null; parent_id: number | null }) => {
@@ -1050,7 +1120,7 @@ const cropImageTo64 = async (file: File): Promise<File> => {
 }
 
 const handleSiteLogoSelect = async (file: File) => {
-  const supported = ['image/png', 'image/jpeg', 'image/svg+xml']
+  const supported = ['image/png', 'image/jpeg']
   if (!supported.includes(file.type)) {
     logoUploadStatus.value = 'error'
     logoUploadMessage.value = t('toast.imageFormatError')
@@ -1065,10 +1135,8 @@ const handleSiteLogoSelect = async (file: File) => {
 
   try {
     let uploadFile = file
-    if (file.type !== 'image/svg+xml') {
-      uploadFile = await cropImageTo64(file)
-      logoCropApplied.value = true
-    }
+    uploadFile = await cropImageTo64(file)
+    logoCropApplied.value = true
 
     const uploaded = await adminApi.uploadMediaFile(uploadFile)
     siteLogo.value = normalizeAssetUrl(String(uploaded.data?.url || ''))
@@ -1114,7 +1182,7 @@ const saveSite = async () => {
   try {
     await adminApi.updateSiteSettings({
       site_title: siteTitle.value,
-      site_logo: siteLogo.value || null,
+      site_logo: normalizeStoredUploadUrl(siteLogo.value) || null,
       site_subtitle: siteSubtitle.value,
       icp_beian: icpBeian.value,
       police_beian: policeBeian.value,
@@ -1122,7 +1190,7 @@ const saveSite = async () => {
       homepage_page_size: 10,
       comment_requires_review: true,
       homepage_bgm_url: homepageBgmUrl.value || null,
-      homepage_hero_image: homepageHeroImage.value || null,
+      homepage_hero_image: normalizeStoredUploadUrl(homepageHeroImage.value) || null,
     })
     await loadAll()
     showSiteToast(t('toast.settingsSaved'), 'success')
@@ -1336,7 +1404,7 @@ const createArticle = async () => {
       title: trimmedTitle,
       summary: autoSummary || t('toast.noSummary'),
       content_markdown: contentMarkdown.value,
-      cover_url: coverUrl.value || null,
+      cover_url: normalizeStoredUploadUrl(coverUrl.value) || null,
       category_id: categoryId.value,
       tag_ids: resolvedTagIds,
       action: finalAction,

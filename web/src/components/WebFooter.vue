@@ -46,6 +46,7 @@ import DOMPurify from 'dompurify'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useFooterNav } from '../composables/useFooterNav'
+import { API_BASE } from '../api'
 
 const { t } = useI18n()
 
@@ -55,7 +56,6 @@ const props = defineProps<{
   copyrightText?: string | null
 }>()
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.trim() || '/api/v1'
 const rssUrl = `${API_BASE}/web/rss`
 
 const sanitize = (html: string) => DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })

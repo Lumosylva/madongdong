@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.site import NavItem, SiteSetting
 
 
-def normalize_site_logo_url(value: str | None) -> str | None:
-    """将站点 Logo URL 规范为站内相对路径，避免 HTTPS 混合内容。"""
+def normalize_site_asset_url(value: str | None) -> str | None:
+    """将站点图片 URL 规范为站内相对路径，避免环境地址进入数据库。"""
 
     text = str(value or '').strip()
     if not text:
@@ -19,6 +19,8 @@ def normalize_site_logo_url(value: str | None) -> str | None:
         return text
     if text.startswith('http://') or text.startswith('https://'):
         parsed = urlparse(text)
+        if not parsed.path.startswith('/uploads/'):
+            return text
         path = parsed.path or ''
         if parsed.query:
             path = f'{path}?{parsed.query}'
@@ -26,6 +28,12 @@ def normalize_site_logo_url(value: str | None) -> str | None:
             path = f'{path}#{parsed.fragment}'
         return path or '/'
     return text
+
+
+def normalize_site_logo_url(value: str | None) -> str | None:
+    """兼容旧调用，仅将本站上传地址规范为相对路径。"""
+
+    return normalize_site_asset_url(value)
 
 
 async def get_or_create_site_setting(session: AsyncSession) -> SiteSetting:
@@ -66,7 +74,7 @@ async def update_site_setting(
     setting.homepage_page_size = homepage_page_size
     setting.comment_requires_review = comment_requires_review
     setting.homepage_bgm_url = homepage_bgm_url
-    setting.homepage_hero_image = homepage_hero_image
+    setting.homepage_hero_image = normalize_site_asset_url(homepage_hero_image)
     await session.commit()
     await session.refresh(setting)
     return setting

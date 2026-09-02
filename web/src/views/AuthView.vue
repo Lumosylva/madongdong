@@ -109,7 +109,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
-import { toAbsoluteAssetUrl, webApi } from '../api'
+import { API_BASE, toAbsoluteAssetUrl, webApi } from '../api'
 import WebTopbar from '../components/WebTopbar.vue'
 import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../site-meta'
 import type { NavItem } from '../types'
@@ -158,7 +158,7 @@ watch(() => route.name, (name) => {
 
 const loadCaptcha = async () => {
   try {
-    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
+    const res = await fetch(`${API_BASE}/web/captcha`, { credentials: 'include' })
     const data = await res.json() as { question: string; token: string }
     captchaQuestion.value = data.question
     captchaToken.value = data.token

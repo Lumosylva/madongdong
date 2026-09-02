@@ -98,7 +98,7 @@
               <div v-else class="avatarPreviewFallback">{{ avatarLetter(form.nickname || form.username) }}</div>
             </div>
             <div class="avatarPanelActions">
-              <input ref="avatarFileInputRef" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="avatarFileInput" @change="onAvatarSelect" />
+              <input ref="avatarFileInputRef" type="file" accept="image/png,image/jpeg,image/webp" class="avatarFileInput" @change="onAvatarSelect" />
               <button type="button" class="button buttonSecondary" @click="avatarFileInputRef?.click()">{{ t('userManage.changeAvatar') }}</button>
               <button type="button" class="button buttonSecondary" @click="clearAvatar">{{ t('userManage.clearAvatar') }}</button>
             </div>
@@ -246,7 +246,7 @@ const onAvatarSelect = async (event: Event) => {
   if (!file) return
   try {
     const result = await readFileAsDataUrl(file)
-    const cropped = file.type === 'image/svg+xml' ? result : await cropToSquare(result)
+    const cropped = await cropToSquare(result)
     avatarPreview.value = cropped
     form.avatar = cropped
   } catch {

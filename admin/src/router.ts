@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import { adminApi, clearAdminAuthCookies, isLoggedIn } from './api'
+import { adminApi, ApiRequestError, clearAdminAuthCookies, isLoggedIn } from './api'
 
 const routerBase = (import.meta.env.BASE_URL || '/admin').replace(/\/$/, '') || '/admin'
 
@@ -20,8 +20,10 @@ router.beforeEach(async (to) => {
       try {
         await adminApi.getMe()
         return '/'
-      } catch {
-        clearAdminAuthCookies()
+      } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 401) {
+          clearAdminAuthCookies()
+        }
       }
     }
     return true
@@ -34,8 +36,12 @@ router.beforeEach(async (to) => {
   try {
     await adminApi.getMe()
     return true
-  } catch {
-    clearAdminAuthCookies()
-    return '/login'
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 401) {
+      clearAdminAuthCookies()
+      return '/login'
+    }
+    // 网络或服务端临时异常不等同于登录失效，保留当前页面。
+    return true
   }
 })

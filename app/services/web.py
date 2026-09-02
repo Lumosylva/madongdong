@@ -5,25 +5,31 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from math import ceil
 
+from fastapi import HTTPException, status
 from sqlalchemy import Select, func, or_, select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.article import Article, ArticleStatus, ArticleViewLog, Category, Tag, get_article_eager_loaders
+from app.models.article import Article, ArticleStatus, Category, Tag, get_article_eager_loaders
 from app.models.comment import Comment, CommentStatus
 from app.schemas.web import PaginatedResponse
+from app.core.view_counter import enqueue_article_view
 from app.services.site import get_or_create_site_setting, list_nav_items
-from app.utils.ip import get_client_ip
 
 _VIEW_DEDUP_HOURS = 24  # 24 小时内同一 IP 不重复计数
 
 
-async def get_homepage_data(session: AsyncSession, page: int) -> dict:
+async def get_homepage_data(session: AsyncSession, page: int, page_size: int | None = None) -> dict:
     """获取首页聚合数据。"""
 
     site = await get_or_create_site_setting(session)
     nav_items = await list_nav_items(session, visible_only=True, location='header')
     hot_articles = await list_hot_articles(session, limit=5)
-    latest_articles = await paginate_published_articles(session, page=page, page_size=site.homepage_page_size)
+    latest_articles = await paginate_published_articles(
+        session,
+        page=page,
+        page_size=page_size or site.homepage_page_size,
+    )
     return {
         "site": site,
         "nav_items": nav_items,
@@ -40,18 +46,32 @@ async def paginate_published_articles(
 ) -> PaginatedResponse[Article]:
     """分页查询已发布文章。"""
 
+    if keyword:
+        return await _paginate_published_articles_by_keyword(session, page, page_size, keyword)
+
+    return await _paginate_published_articles_by_like(session, page, page_size, None)
+
+
+async def _paginate_published_articles_by_like(
+    session: AsyncSession,
+    page: int,
+    page_size: int,
+    keyword: str | None,
+) -> PaginatedResponse[Article]:
+    """分页查询已发布文章，关键词使用 LIKE 兼容查询。"""
+
     # 基础查询条件
     base_condition = Article.status == ArticleStatus.PUBLISHED, Article.is_deleted.is_(False)
-    
+
     statement: Select[tuple[Article]] = (
         select(Article)
         .where(*base_condition)
         .options(*get_article_eager_loaders())
     )
-    
+
     # 优化的计数查询：不加载关联数据
     count_statement = select(func.count(Article.id)).where(*base_condition)
-    
+
     if keyword:
         like_keyword = f"%{keyword}%"
         condition = or_(
@@ -81,6 +101,85 @@ async def paginate_published_articles(
     )
 
 
+async def _paginate_published_articles_by_keyword(
+    session: AsyncSession,
+    page: int,
+    page_size: int,
+    keyword: str,
+) -> PaginatedResponse[Article]:
+    """分页搜索已发布文章，优先使用 SQLite FTS5。"""
+
+    fts_query = _build_fts_query(keyword)
+    if not fts_query:
+        return await _paginate_published_articles_by_like(session, page, page_size, keyword)
+
+    offset = (page - 1) * page_size
+    params = {
+        "query": fts_query,
+        "status": ArticleStatus.PUBLISHED.name,
+        "limit": page_size,
+        "offset": offset,
+    }
+
+    try:
+        id_result = await session.execute(text("""
+            SELECT articles.id
+            FROM article_search
+            JOIN articles ON articles.id = article_search.rowid
+            WHERE article_search MATCH :query
+              AND articles.status = :status
+              AND articles.is_deleted = 0
+            ORDER BY bm25(article_search, 8.0, 3.0, 1.0), articles.published_at DESC, articles.id DESC
+            LIMIT :limit OFFSET :offset
+        """), params)
+        article_ids = [int(row[0]) for row in id_result.fetchall()]
+
+        total_result = await session.execute(text("""
+            SELECT count(articles.id)
+            FROM article_search
+            JOIN articles ON articles.id = article_search.rowid
+            WHERE article_search MATCH :query
+              AND articles.status = :status
+              AND articles.is_deleted = 0
+        """), params)
+        total = int(total_result.scalar_one())
+    except SQLAlchemyError:
+        await session.rollback()
+        return await _paginate_published_articles_by_like(session, page, page_size, keyword)
+
+    if total == 0:
+        return await _paginate_published_articles_by_like(session, page, page_size, keyword)
+
+    if article_ids:
+        result = await session.execute(
+            select(Article)
+            .where(Article.id.in_(article_ids))
+            .options(*get_article_eager_loaders())
+        )
+        article_map = {article.id: article for article in result.scalars().unique().all()}
+        items = [article_map[article_id] for article_id in article_ids if article_id in article_map]
+    else:
+        items = []
+
+    total_pages = ceil(total / page_size) if total else 1
+    return PaginatedResponse[Article](
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
+
+
+def _build_fts_query(keyword: str) -> str:
+    """将用户输入转成安全的 FTS5 短语查询。"""
+
+    phrase = " ".join(keyword.split())
+    if not phrase or len(phrase) < 3:
+        return ""
+    return f'"{phrase.replace(chr(34), chr(34) + chr(34))}"'
+
+
 async def list_hot_articles(session: AsyncSession, limit: int = 5) -> list[Article]:
     """查询热门文章。"""
 
@@ -108,32 +207,6 @@ async def list_rss_articles(session: AsyncSession, limit: int = 20) -> list[Arti
     result = await session.execute(statement)
     return list(result.scalars().unique().all())
 
-
-
-
-async def _should_count_view(session: AsyncSession, article_id: int, client_ip: str) -> bool:
-    """检查是否应该计入浏览量（24 小时内同一 IP 不重复计数）。"""
-
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=_VIEW_DEDUP_HOURS)
-    result = await session.execute(
-        select(ArticleViewLog.id).where(
-            ArticleViewLog.article_id == article_id,
-            ArticleViewLog.client_ip == client_ip,
-            ArticleViewLog.viewed_at > cutoff,
-        ).limit(1)
-    )
-    if result.scalar_one_or_none() is not None:
-        return False
-
-    session.add(ArticleViewLog(
-        article_id=article_id,
-        client_ip=client_ip,
-        viewed_at=datetime.now(timezone.utc),
-    ))
-    await session.flush()
-    return True
-
-
 async def _cleanup_old_view_logs(session: AsyncSession) -> None:
     """清理超过 24 小时的浏览记录，防止表无限增长。"""
 
@@ -154,13 +227,8 @@ async def get_published_article_detail(session: AsyncSession, article_id: int, c
     ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
-    if article is not None and await _should_count_view(session, article_id, client_ip):
-        await session.execute(
-            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
-            {"article_id": article_id},
-        )
-        await session.commit()
-        await session.refresh(article)
+    if article is not None:
+        enqueue_article_view(article_id, client_ip)
     return article
 
 
@@ -174,13 +242,8 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str,
     ).options(*get_article_eager_loaders())
     result = await session.execute(statement)
     article = result.scalar_one_or_none()
-    if article is not None and await _should_count_view(session, article.id, client_ip):
-        await session.execute(
-            text("UPDATE articles SET view_count = view_count + 1 WHERE id = :article_id"),
-            {"article_id": article.id},
-        )
-        await session.commit()
-        await session.refresh(article)
+    if article is not None:
+        enqueue_article_view(article.id, client_ip)
     return article
 
 
@@ -240,14 +303,24 @@ async def get_prev_next_published_articles(session: AsyncSession, article: Artic
     return prev_result.scalar_one_or_none(), next_result.scalar_one_or_none()
 
 
-async def get_search_page_data(session: AsyncSession, keyword: str, page: int) -> dict:
+async def get_search_page_data(
+    session: AsyncSession,
+    keyword: str,
+    page: int,
+    page_size: int | None = None,
+) -> dict:
     """获取搜索页数据。"""
 
     site = await get_or_create_site_setting(session)
     nav_items = await list_nav_items(session, visible_only=True, location='header')
     categories = await list_public_categories(session)
     tags = await list_public_tags(session)
-    articles = await paginate_published_articles(session, page=page, page_size=site.homepage_page_size, keyword=keyword)
+    articles = await paginate_published_articles(
+        session,
+        page=page,
+        page_size=page_size or site.homepage_page_size,
+        keyword=keyword,
+    )
     return {
         "keyword": keyword,
         "site": site,
@@ -476,9 +549,20 @@ async def list_public_tags(session: AsyncSession) -> list[Tag]:
 
 
 async def like_article(session: AsyncSession, article_id: int, client_ip: str) -> dict:
-    """点赞文章（仅允许一次）。返回 { liked: bool, like_count: int }。"""
+    """切换文章点赞状态。返回 { liked: bool, like_count: int }。"""
 
     from app.models.article import ArticleLike
+
+    article_result = await session.execute(
+        select(Article).where(
+            Article.id == article_id,
+            Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
+        )
+    )
+    article = article_result.scalar_one_or_none()
+    if article is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
 
     existing = await session.execute(
         select(ArticleLike).where(
@@ -489,9 +573,14 @@ async def like_article(session: AsyncSession, article_id: int, client_ip: str) -
     record = existing.scalar_one_or_none()
 
     if record:
-        result = await session.execute(select(Article.like_count).where(Article.id == article_id))
-        count = result.scalar_one()
-        return {"liked": True, "like_count": count or 0}
+        await session.delete(record)
+        await session.execute(
+            text("UPDATE articles SET like_count = max(like_count - 1, 0) WHERE id = :aid"),
+            {"aid": article_id},
+        )
+        await session.commit()
+        await session.refresh(article)
+        return {"liked": False, "like_count": article.like_count or 0}
 
     session.add(ArticleLike(
         article_id=article_id,
@@ -503,6 +592,5 @@ async def like_article(session: AsyncSession, article_id: int, client_ip: str) -
         {"aid": article_id},
     )
     await session.commit()
-    result = await session.execute(select(Article.like_count).where(Article.id == article_id))
-    count = result.scalar_one()
-    return {"liked": True, "like_count": count or 0}
+    await session.refresh(article)
+    return {"liked": True, "like_count": article.like_count or 0}

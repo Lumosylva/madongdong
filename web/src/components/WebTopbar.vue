@@ -155,7 +155,7 @@
             <RouterLink
               v-for="(item, index) in searchPanelResults"
               :key="item.id"
-              :to="`/article/details/${item.id}`"
+              :to="articlePath(item)"
               class="search-overlay-result-item"
               :class="{ active: index === searchPanelActiveIndex }"
               @mouseenter="searchPanelActiveIndex = index"
@@ -183,6 +183,7 @@ import { setLocale } from '../i18n'
 
 import { webApi } from '../api'
 import type { ThemeMode, NavItem, Article } from '../types'
+import { articlePath } from '../utils/articleLink'
 
 const { t, locale } = useI18n()
 

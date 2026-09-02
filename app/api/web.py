@@ -1,6 +1,7 @@
 """前台公开接口。"""
 
 from datetime import datetime, timezone
+from urllib.parse import quote
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
@@ -8,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
+from app.core.config import settings
 from app.core.security import (
     clear_auth_cookies,
     create_access_token,
@@ -21,6 +23,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.auth import User
+from app.models.article import Article, ArticleStatus
 from app.models.friend_link import FriendLink
 from app.schemas.auth import CurrentUserResponse, LoginRequest, ProfileUpdateRequest, ReaderRegisterRequest, RefreshRequest, RevokeRequest, TokenResponse
 from app.schemas.comment import CommentCreate, CommentResponse
@@ -51,6 +54,28 @@ from app.utils.ip import get_client_ip
 router = APIRouter(prefix="/web", tags=["web"])
 
 
+def _get_public_base_url(request: Request) -> str:
+    """获取用于公开索引和订阅的站点根地址。"""
+
+    return (settings.public_base_url or str(request.base_url)).rstrip("/")
+
+
+def _get_public_api_url(path: str, request: Request) -> str:
+    """根据公开站点地址和配置的 API 前缀生成绝对地址。"""
+
+    api_prefix = settings.api_v1_prefix.rstrip("/")
+    return f"{_get_public_base_url(request)}{api_prefix}{path}"
+
+
+def _get_public_article_path(article) -> str:
+    """生成公开文章路径，优先使用 slug，兼容缺失 slug 的历史数据。"""
+
+    slug = str(getattr(article, "slug", "") or "").strip()
+    if slug:
+        return f"/article/{quote(slug, safe='')}"
+    return f"/article/details/{article.id}"
+
+
 async def _get_site_and_nav(session: AsyncSession) -> tuple[SiteSettingResponse, list[NavItemResponse]]:
     """获取站点配置和导航项（复用，避免加载首页文章列表）。"""
     site = await get_or_create_site_setting(session)
@@ -61,9 +86,10 @@ async def _get_site_and_nav(session: AsyncSession) -> tuple[SiteSettingResponse,
 @router.get("/home", summary="获取首页数据")
 async def home(
     page: int = Query(default=1, ge=1),
+    page_size: int | None = Query(default=None, ge=1, le=100),
     session: AsyncSession = Depends(get_db_session),
 ) -> HomeResponse:
-    data = await get_homepage_data(session, page)
+    data = await get_homepage_data(session, page, page_size)
     return HomeResponse.model_validate(data)
 
 
@@ -72,7 +98,7 @@ async def rss_feed(request: Request, session: AsyncSession = Depends(get_db_sess
     site = await get_or_create_site_setting(session)
     articles = await list_rss_articles(session, limit=20)
 
-    base_url = str(request.base_url).rstrip("/")
+    base_url = _get_public_base_url(request)
     site_title = site.site_title or "MaDongDong Blog"
     site_subtitle = site.site_subtitle or ""
 
@@ -86,15 +112,16 @@ async def rss_feed(request: Request, session: AsyncSession = Depends(get_db_sess
     SubElement(channel, "language").text = "zh-CN"
     SubElement(channel, "lastBuildDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
     atom_link = SubElement(channel, "{http://www.w3.org/2005/Atom}link")
-    atom_link.set("href", f"{base_url}/api/v1/web/rss")
+    atom_link.set("href", _get_public_api_url("/web/rss", request))
     atom_link.set("rel", "self")
     atom_link.set("type", "application/rss+xml")
 
     for article in articles:
         item = SubElement(channel, "item")
         SubElement(item, "title").text = article.title
-        SubElement(item, "link").text = f"{base_url}/article/details/{article.id}"
-        SubElement(item, "guid").text = f"{base_url}/article/details/{article.id}"
+        article_path = _get_public_article_path(article)
+        SubElement(item, "link").text = f"{base_url}{article_path}"
+        SubElement(item, "guid").text = f"{base_url}{article_path}"
         SubElement(item, "description").text = article.summary
         if article.published_at:
             SubElement(item, "pubDate").text = article.published_at.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -120,7 +147,7 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
     site = await get_or_create_site_setting(session)
     articles = await list_rss_articles(session, limit=500)
 
-    base_url = str(request.base_url).rstrip("/")
+    base_url = _get_public_base_url(request)
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     urlset = Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
@@ -133,7 +160,7 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
 
     for article in articles:
         url = SubElement(urlset, "url")
-        SubElement(url, "loc").text = f"{base_url}/article/details/{article.id}"
+        SubElement(url, "loc").text = f"{base_url}{_get_public_article_path(article)}"
         lastmod_date = article.updated_at or article.published_at
         if lastmod_date:
             SubElement(url, "lastmod").text = lastmod_date.strftime("%Y-%m-%d")
@@ -176,7 +203,7 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_db_sessi
 
 @router.get("/robots.txt", summary="获取 robots.txt")
 async def robots_txt(request: Request, session: AsyncSession = Depends(get_db_session)) -> Response:
-    base_url = str(request.base_url).rstrip("/")
+    base_url = _get_public_base_url(request)
     
     # 获取站点配置
     site = await get_or_create_site_setting(session)
@@ -213,7 +240,7 @@ async def robots_txt(request: Request, session: AsyncSession = Depends(get_db_se
         "# Crawl-delay: 1",
         "",
         "# ===== Sitemap =====",
-        f"Sitemap: {base_url}/api/v1/web/sitemap.xml",
+        f"Sitemap: {_get_public_api_url('/web/sitemap.xml', request)}",
         "",
         "# ===== 其他 =====",
         "# 禁止抓取搜索结果页",
@@ -250,8 +277,17 @@ async def redirect_old_slug(
     
     article_id = await find_article_by_old_slug(session, old_slug)
     if article_id:
+        article_result = await session.execute(
+            select(Article).where(
+                Article.id == article_id,
+                Article.status == ArticleStatus.PUBLISHED,
+                Article.is_deleted.is_(False),
+            )
+        )
+        article = article_result.scalar_one_or_none()
+        target = _get_public_article_path(article) if article is not None else f"/article/details/{article_id}"
         return RedirectResponse(
-            url=f"/article/details/{article_id}",
+            url=target,
             status_code=301,
         )
     raise HTTPException(status_code=404, detail="未找到对应的文章")
@@ -271,6 +307,46 @@ async def categories_index(
 ) -> CategoriesResponse:
     data = await get_categories_page_data(session)
     return CategoriesResponse.model_validate(data)
+
+
+@router.get("/search", summary="搜索文章")
+async def search_articles(
+    keyword: str = Query(min_length=1, max_length=100),
+    page: int = Query(default=1, ge=1),
+    page_size: int | None = Query(default=None, ge=1, le=100),
+    session: AsyncSession = Depends(get_db_session),
+) -> SearchResponse:
+    keyword = keyword.strip()
+    if not keyword:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="搜索关键词不能为空")
+    data = await get_search_page_data(session, keyword, page, page_size)
+    return SearchResponse.model_validate(data)
+
+
+@router.get("/articles/slug/{slug}", summary="通过 slug 获取前台文章详情")
+async def article_detail_by_slug(
+    slug: str,
+    request: Request,
+    session: AsyncSession = Depends(get_db_session),
+):
+    client_ip = get_client_ip(request)
+    article = await get_published_article_detail_by_slug(session, slug, client_ip)
+    if article is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
+    site, nav_items = await _get_site_and_nav(session)
+    comments = await list_approved_comments_by_article(session, article.id)
+    previous_article, next_article = await get_prev_next_published_articles(session, article)
+    resp = ArticlePageResponse(
+        site=site,
+        nav_items=nav_items,
+        article=ArticleDetailResponse.model_validate(article),
+        previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
+        next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
+        comments=[CommentResponse.model_validate(item) for item in comments],
+    )
+    data = resp.model_dump()
+    data["article"]["like_count"] = article.like_count
+    return data
 
 
 @router.get("/articles/{article_id}", summary="获取前台文章详情")
@@ -307,11 +383,7 @@ async def get_article_comments(
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
     from app.services.comment import list_article_comments_paginated
-    from app.services.article import get_article_or_404
-    
-    # 验证文章存在
-    await get_article_or_404(session, article_id)
-    
+
     result = await list_article_comments_paginated(session, article_id, page, page_size)
     comments = [CommentResponse.model_validate(item).model_dump() for item in result["items"]]
     
@@ -382,15 +454,10 @@ async def like_article(
     request: Request,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    from app.models.article import Article as ArticleModel
-    from app.services.web import like_article
-
-    article = await session.get(ArticleModel, article_id)
-    if not article or article.is_deleted:
-        raise HTTPException(status_code=404, detail="Article not found")
+    from app.services.web import like_article as like_published_article
 
     client_ip = get_client_ip(request)
-    return await like_article(session, article_id, client_ip)
+    return await like_published_article(session, article_id, client_ip)
 
 
 @router.get("/friend-links", summary="获取友情链接")
@@ -559,12 +626,17 @@ async def reader_revoke_token(
         clear_auth_cookies(response, source="web")
         return
 
-    if data.get('sub') != current_user.username:
+    if data.get('sub') != str(current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='无权撤销他人的令牌')
 
     jti = data.get('jti')
     if jti:
-        result = await session.execute(_select(RefreshToken).where(RefreshToken.jti == jti))
+        result = await session.execute(
+            _select(RefreshToken).where(
+                RefreshToken.jti == jti,
+                RefreshToken.user_id == current_user.id,
+            )
+        )
         rt = result.scalar_one_or_none()
         if rt:
             rt.revoked = True
@@ -595,4 +667,3 @@ async def reader_update_me(
         password=payload.password,
     )
     return CurrentUserResponse.model_validate(user)
-

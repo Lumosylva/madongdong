@@ -320,10 +320,9 @@ async def get_article_revisions_endpoint(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
-    from app.services.article import get_article_revisions, get_article_or_404
+    from app.services.article import get_article_revisions, get_article_for_revision
     
-    # 验证文章存在
-    await get_article_or_404(session, article_id)
+    await get_article_for_revision(session, article_id, current_user)
     
     result = await get_article_revisions(session, article_id, page, page_size)
     return success_response(result)
@@ -336,9 +335,10 @@ async def get_article_revision_detail_endpoint(
     session: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ) -> dict[str, object]:
-    from app.services.article import get_article_revision_detail
+    from app.services.article import get_article_for_revision, get_article_revision_detail
     
-    result = await get_article_revision_detail(session, revision_id)
+    await get_article_for_revision(session, article_id, current_user)
+    result = await get_article_revision_detail(session, revision_id, article_id)
     if not result:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="修订版本不存在")
@@ -354,7 +354,7 @@ async def restore_article_revision_endpoint(
 ) -> dict[str, object]:
     from app.services.article import restore_article_revision
     
-    article = await restore_article_revision(session, revision_id, article_id)
+    article = await restore_article_revision(session, revision_id, article_id, current_user)
     if not article:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="修订版本不存在")

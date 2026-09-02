@@ -37,7 +37,10 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 - Public web endpoints: home / article detail / search / comment submission / friend links / archive / categories / tags
 - RSS Feed (`/api/v1/web/rss`), Sitemap (`/api/v1/web/sitemap.xml`), and robots.txt (`/api/v1/web/robots.txt`)
 - View deduplication (same IP counts only once per article per 24 hours)
-- Rate limiting (per-endpoint config, brute-force protection)
+- Asynchronous batched view writes (queue + background worker reduce article detail latency)
+- Optional Redis shared cache (for multi-worker / multi-instance deployments, with automatic in-memory fallback)
+- SQLite FTS5 trigram full-text search (better Chinese keyword matching and search performance)
+- Rate limiting (per-endpoint config, optional Redis-shared backend, brute-force protection)
 - Login failure lockout (DB-persisted, 6 failures = 15-minute lock, auto-cleanup on startup)
 - Math CAPTCHA (HMAC-signed, prevents bulk registration and brute-force)
 - Cookie isolation (admin / web frontends use separate cookie namespaces)
@@ -51,12 +54,12 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 - Homepage hero image, background music player (BGM), hot articles sidebar
 - Article detail page: Markdown rendering, table of contents, view count, tag list, prev/next navigation
 - **Article TOC sidebar**: desktop fixed sidebar + mobile bottom sheet, auto-extracts h2-h6 headings, scroll-spy highlighting
-- **Article like**: one-way like (IP dedup), like count displayed on button, large number formatting (k/w)
+- **Article like**: toggle like/unlike with IP dedup, like count displayed on button, large number formatting (k/w)
 - **Combined login/register page**: tab switching between login and register, URL syncs with active tab
 - **Post-login redirect**: returns to the page user was on before login (stored in localStorage)
 - **Smart logout**: stays on current page after logout, no forced redirect to homepage
 - Comment system: supports anonymous and logged-in submissions, Markdown preview, review status display
-- Search: real-time overlay search with keyboard navigation
+- Search: SQLite FTS5 trigram search, real-time overlay search with keyboard navigation and safe keyword highlighting
 - Archive page: collapsible year/month grouping
 - Categories page: hierarchical category display with article count
 - Tag page: article list filtered by tag
@@ -71,7 +74,7 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 - Dashboard shell with sidebar navigation (single-page, no full reloads)
 - Article management: rich Markdown editor (Vditor), publish / draft / scheduled publish / revision history / lock status
 - Category & tag management
-- Media library: upload, folder management (create/rename/delete), pagination, bulk operations
+- Media library: upload with image dimension/pixel limits, folder management (create/rename/delete), pagination, bulk operations
 - Comment moderation: approve / reject / spam / trash
 - User management: create / edit / delete / bulk role change
 - Friend link management: review / edit / delete
@@ -82,7 +85,7 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 ## Security Features
 
 - **Authentication**: JWT (RS256-style signing), refresh token rotation, login lockout (6 failures → 15-min lock)
-- **Request Protection**: CSRF double-submit cookie on all write requests, per-endpoint rate limiting
+- **Request Protection**: CSRF double-submit cookie on all write requests, per-endpoint rate limiting with optional Redis sharing
 - **Input Validation**: Pydantic schemas at API boundary, XSS filtering on comment HTML
 - **XSS Protection**: DOMPurify sanitization for all user-generated content rendered in the browser
 - **Other Security Headers**: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
@@ -99,6 +102,7 @@ A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 +
 | Auth | JWT (python-jose) |
 | Validation | Pydantic v2 |
 | Server | Uvicorn |
+| Cache / Search | Redis (optional) / SQLite FTS5 |
 
 ### Frontend
 | Layer | Technology |
@@ -497,6 +501,25 @@ The scanner detects `http://`, `ws://`, `localhost:`, `127.0.0.1:`, and absolute
 </table>
 
 ## Changelog
+### 2026-09-02
+
+**Performance and scalability**
+- Added an optional Redis cache backend for shared caching across workers/instances, with automatic in-memory fallback when Redis is unavailable
+- Moved article view counting to an asynchronous queue with batched database writes, keeping the request path lightweight
+- Added a SQLite FTS5 trigram full-text index with synchronization triggers for faster Chinese keyword search
+- Added explicit page-size support for home, search, and admin comment queries; admin comment filters, sorting, spam, and trash states now use server-side pagination
+
+**Security and resilience**
+- Added maximum image dimension and total-pixel validation, tightened image format checks, and rejected SVG uploads to reduce resource-exhaustion and XSS risks
+- Changed article likes to a toggle operation and require the article to be published and not deleted
+- Admin authentication is cleared only for an explicit 401 response; network or temporary server errors no longer falsely log users out
+- Added `PUBLIC_BASE_URL` support for stable absolute URLs in RSS, Sitemap, and robots.txt behind reverse proxies
+
+**Frontend and maintainability**
+- Centralized article slug/ID link generation while retaining `/article/details/{id}` compatibility for legacy data
+- Replaced HTML-string search highlighting with safe Vue rendering
+- Added keyboard focus-visible styles, minimum touch target sizes, and `prefers-reduced-motion` support
+- Added automated tests for the article workflow and media upload security
 
 ### 2026-08-16
 

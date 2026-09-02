@@ -1,4 +1,5 @@
 import { resolveAssetUrl } from '../../assets'
+import { API_BASE } from './api'
 import type { SiteSetting } from './types'
 
 let siteSetting: SiteSetting | null = null
@@ -267,6 +268,7 @@ export const applyArticleMeta = (
   coverUrl?: string | null,
   options?: {
     id?: number
+    slug?: string | null
     publishedAt?: string | null
     updatedAt?: string | null
     author?: string | null
@@ -286,7 +288,9 @@ export const applyArticleMeta = (
   setMetaTag('twitter:description', description || title)
   setRobotsMeta(RobotsDirectives.ARTICLE)
 
-  if (options?.id) {
+  if (options?.slug) {
+    setCanonicalUrl(`${window.location.origin}/article/${encodeURIComponent(options.slug)}`)
+  } else if (options?.id) {
     setCanonicalUrl(`${window.location.origin}/article/details/${options.id}`)
   } else {
     setCanonicalUrl(window.location.href)
@@ -345,7 +349,7 @@ function ensureRssLink() {
     rssLink.title = 'RSS'
     document.head.appendChild(rssLink)
   }
-  rssLink.href = '/api/v1/web/rss'
+  rssLink.href = `${API_BASE.replace(/\/$/, '')}/web/rss`
 }
 
 export const applyArticleJsonLd = (options: {

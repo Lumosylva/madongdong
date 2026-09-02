@@ -29,7 +29,7 @@
 
     <section class="search-result-panel unified-list-panel">
       <article v-for="article in data.articles.items" :key="article.id" class="search-card unified-list-card">
-        <RouterLink :to="`/article/details/${article.id}`" class="search-title">{{ article.title }}</RouterLink>
+        <RouterLink :to="articlePath(article)" class="search-title">{{ article.title }}</RouterLink>
         <p>{{ article.summary }}</p>
         <div class="search-meta unified-list-meta">
           <span>{{ article.author?.nickname || 'admin' }}</span>
@@ -79,6 +79,7 @@ import { applyCategoryMeta, applySiteMetaFromSetting, setSiteSetting } from '../
 import { useFormatRelativeTime } from '../utils/time'
 import type { CategoryArticlesResponse } from '../types'
 import { useTheme } from '../composables/useTheme'
+import { articlePath } from '../utils/articleLink'
 
 const { t } = useI18n()
 const { formatRelativeTime } = useFormatRelativeTime()

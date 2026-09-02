@@ -1,10 +1,17 @@
-"""对象缓存系统 - 内存缓存实现。"""
+"""对象缓存系统，支持内存和 Redis 后端。"""
 
 from __future__ import annotations
 
+import logging
+import pickle
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Optional
+
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+_REDIS_PREFIX = "blog-cache:"
 
 
 class CacheBackend(ABC):
@@ -111,33 +118,101 @@ class MemoryCache(CacheBackend):
         del self._store[oldest_key]
 
 
+class RedisCache(CacheBackend):
+    """Redis 缓存实现，用于多 worker 或多实例部署。"""
+
+    def __init__(self, redis_url: str, default_ttl: int = 3600):
+        from redis.asyncio import Redis
+
+        self._redis = Redis.from_url(redis_url)
+        self._default_ttl = default_ttl
+
+    def _key(self, key: str) -> str:
+        return f"{_REDIS_PREFIX}{key}"
+
+    async def get(self, key: str) -> Optional[Any]:
+        value = await self._redis.get(self._key(key))
+        if value is None:
+            return None
+        return pickle.loads(value)
+
+    async def set(self, key: str, value: Any, ttl: int = 3600) -> None:
+        await self._redis.set(
+            self._key(key),
+            pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL),
+            ex=ttl or self._default_ttl,
+        )
+
+    async def delete(self, key: str) -> None:
+        await self._redis.delete(self._key(key))
+
+    async def clear(self) -> None:
+        keys = [key async for key in self._redis.scan_iter(match=f"{_REDIS_PREFIX}*")]
+        if keys:
+            await self._redis.delete(*keys)
+
+    def size(self) -> int:
+        # size() 保持同步接口；管理统计不依赖 Redis 条目数。
+        return 0
+
+
 # 全局缓存实例
-_cache: Optional[MemoryCache] = None
+_cache: Optional[CacheBackend] = None
+_redis_warning_logged = False
 
 
-def get_cache() -> MemoryCache:
+def get_cache() -> CacheBackend:
     """获取全局缓存实例。"""
     global _cache
     if _cache is None:
+        if settings.redis_url:
+            try:
+                _cache = RedisCache(settings.redis_url, default_ttl=3600)
+            except ImportError:
+                logger.warning("已配置 REDIS_URL，但未安装 redis 包，将使用进程内缓存")
+                _cache = MemoryCache(max_size=1000, default_ttl=3600)
+        else:
+            _cache = MemoryCache(max_size=1000, default_ttl=3600)
+    return _cache
+
+
+def _fallback_to_memory() -> MemoryCache:
+    global _cache, _redis_warning_logged
+    if not _redis_warning_logged:
+        logger.warning("Redis 缓存不可用，将回退到进程内缓存", exc_info=True)
+        _redis_warning_logged = True
+    if not isinstance(_cache, MemoryCache):
         _cache = MemoryCache(max_size=1000, default_ttl=3600)
     return _cache
 
 
 async def cache_get(key: str) -> Optional[Any]:
     """快捷获取缓存。"""
-    return await get_cache().get(key)
+    try:
+        return await get_cache().get(key)
+    except Exception:
+        return await _fallback_to_memory().get(key)
 
 
 async def cache_set(key: str, value: Any, ttl: int = 3600) -> None:
     """快捷设置缓存。"""
-    await get_cache().set(key, value, ttl)
+    try:
+        await get_cache().set(key, value, ttl)
+    except Exception:
+        await _fallback_to_memory().set(key, value, ttl)
 
 
 async def cache_delete(key: str) -> None:
     """快捷删除缓存。"""
-    await get_cache().delete(key)
+    try:
+        await get_cache().delete(key)
+    except Exception:
+        await _fallback_to_memory().delete(key)
 
 
 async def cache_clear() -> None:
     """快捷清空缓存。"""
-    await get_cache().clear()
+    try:
+        await get_cache().clear()
+    except Exception:
+        await _fallback_to_memory().clear()

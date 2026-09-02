@@ -78,7 +78,7 @@
           <span>{{ t('login.captcha') }}</span>
           <div class="login-captcha-row">
             <input v-model="captchaAnswer" :placeholder="captchaQuestion || t('login.captchaPlaceholder')" />
-            <button type="button" class="login-captcha-refresh" :title="t('login.refreshCaptcha')" @click="loadCaptcha">
+            <button type="button" class="login-captcha-refresh" :aria-label="t('login.refreshCaptcha')" :title="t('login.refreshCaptcha')" @click="loadCaptcha">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5M20 20v-5h-5"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L4 4m16 16-1.64-1.64A9 9 0 0 1 3.51 15"/></svg>
             </button>
           </div>
@@ -116,8 +116,7 @@ const applyTitle = () => {
 
 const loadCaptcha = async () => {
   try {
-    const res = await fetch(`${(import.meta.env.VITE_API_BASE as string || '/api/v1')}/web/captcha`, { credentials: 'include' })
-    const data = await res.json() as { question: string; token: string }
+    const data = await adminApi.getCaptcha()
     captchaQuestion.value = data.question
     captchaToken.value = data.token
     captchaAnswer.value = ''

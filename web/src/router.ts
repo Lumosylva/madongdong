@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { API_BASE } from './api'
 
 /** 安装状态缓存：首次查询后不再重复请求（安装态在运行期不会变） */
 let cachedInstallStatus: boolean | null = null
@@ -19,8 +20,14 @@ export const router = createRouter({
       meta: { title: 'common.home' },
     },
     {
-      path: '/article/details/:id',
+      path: '/article/:slug',
       name: 'article',
+      component: () => import('./views/ArticleView.vue'),
+      meta: { title: 'article.content' },
+    },
+    {
+      path: '/article/details/:id',
+      name: 'article-legacy',
       component: () => import('./views/ArticleView.vue'),
       meta: { title: 'article.content' },
     },
@@ -98,16 +105,22 @@ router.beforeEach(async (to) => {
 
   // 安装状态缓存：只在首次导航时查询一次，后续不再请求
   if (!cachedInstallStatus) {
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 5000)
     try {
-      const res = await fetch('/api/v1/install/status')
+      const res = await fetch(`${API_BASE}/install/status`, { signal: controller.signal })
       if (!res.ok) {
-        cachedInstallStatus = false
+        // 状态接口暂时不可用时不要误判为未安装，交给页面显示请求错误。
+        cachedInstallStatus = true
       } else {
         const data = (await res.json()) as { success?: boolean; data?: { installed?: boolean } }
         cachedInstallStatus = !!data?.data?.installed
       }
     } catch {
-      cachedInstallStatus = false
+      // 网络异常不是安装状态，避免把用户带到错误的安装页面。
+      cachedInstallStatus = true
+    } finally {
+      window.clearTimeout(timeout)
     }
     if (!cachedInstallStatus) {
       return { name: 'install' }

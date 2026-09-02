@@ -52,7 +52,7 @@
                 ref="fileInputRef"
                 class="logo-file-input"
                 type="file"
-                accept="image/png,image/jpeg,image/svg+xml"
+                accept="image/png,image/jpeg"
                 :disabled="logoUploading"
                 @change="onSelectLogo"
               />
@@ -135,7 +135,7 @@
             <span>{{ t('siteSettings.domainLabel') }}</span>
             <div class="settings-field-row">
               <input class="settings-input" :value="serverDomain" :placeholder="t('siteSettings.domainPlaceholder')" @input="$emit('update:serverDomain', ($event.target as HTMLInputElement).value)" />
-              <button type="button" class="settings-field-btn" :title="t('siteSettings.autoDetectDomain')" @click="$emit('detect-domain')">
+              <button type="button" class="settings-field-btn" :aria-label="t('siteSettings.autoDetectDomain')" :title="t('siteSettings.autoDetectDomain')" @click="$emit('detect-domain')">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </button>
             </div>
@@ -146,7 +146,7 @@
             <span>{{ t('siteSettings.jwtLabel') }}</span>
             <div class="settings-field-row">
               <input class="settings-input" :type="showSecretKey ? 'text' : 'password'" :value="serverSecretKey" :placeholder="t('siteSettings.jwtPlaceholder')" @input="$emit('update:serverSecretKey', ($event.target as HTMLInputElement).value)" />
-              <button type="button" class="settings-field-btn" :title="showSecretKey ? t('siteSettings.hideKey') : t('siteSettings.showKey')" @click="showSecretKey = !showSecretKey">
+            <button type="button" class="settings-field-btn" :aria-label="showSecretKey ? t('siteSettings.hideKey') : t('siteSettings.showKey')" :title="showSecretKey ? t('siteSettings.hideKey') : t('siteSettings.showKey')" @click="showSecretKey = !showSecretKey">
                 <svg v-if="showSecretKey" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.53 2.47 2.47 3.53l3.06 3.06C3.44 8.3 1.94 10.16 1 12c1.86 3.62 5.75 8 11 8 1.61 0 3.15-.32 4.57-.89l3.9 3.9 1.06-1.06-18-18Zm7.04 9.16 1.8 1.8a2.5 2.5 0 0 1-3.57-3.57l1.77 1.77ZM12 6c4.41 0 8.3 4.38 10 6-1.07 2.09-2.73 4.22-4.78 5.74l-2.05-2.05a4 4 0 0 0-5.61-5.61L7.51 7.51A10.16 10.16 0 0 1 12 6Zm0 12c-4.09 0-7.38-3.1-9.08-6 1.08-1.88 2.6-3.68 4.4-5.01l1.52 1.52a8 8 0 0 0 6.98 6.98l1.52 1.52C15.08 17.52 13.62 18 12 18Z" fill="currentColor"/></svg>
                 <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-5.25 0-9.14 4.38-11 7 1.86 2.62 5.75 7 11 7s9.14-4.38 11-7c-1.86-2.62-5.75-7-11-7Zm0 12c-4.09 0-7.38-3.1-9.08-5 1.7-1.9 5-5 9.08-5s7.38 3.1 9.08 5c-1.7 1.9-5 5-9.08 5Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor"/></svg>
               </button>
@@ -187,7 +187,7 @@
           <span>{{ t('siteSettings.heroLabel') }}</span>
           <div class="hero-input-row">
             <input class="settings-input" :value="homepageHeroImage" :placeholder="t('siteSettings.heroPlaceholder')" @input="$emit('update:homepageHeroImage', ($event.target as HTMLInputElement).value)" />
-            <button type="button" class="settings-field-btn" :title="t('siteSettings.heroPickFromMedia')" @click="showHeroPicker = !showHeroPicker">
+            <button type="button" class="settings-field-btn" :aria-label="t('siteSettings.heroPickFromMedia')" :title="t('siteSettings.heroPickFromMedia')" @click="showHeroPicker = !showHeroPicker">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </button>
           </div>
@@ -227,6 +227,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FooterMenuPanel from './FooterMenuPanel.vue'
+import { toAbsoluteAssetUrl } from '../api'
 
 const { t } = useI18n()
 
@@ -310,25 +311,25 @@ const emitFile = (file: File) => {
   emit('select-logo', file)
 }
 
-const API_ORIGIN = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/api\/v1\/?$/, '') || ''
-
-const fullUrl = (url: string) => {
-  const value = String(url || '').trim()
-  if (!value) return ''
-  if (/^https?:\/\//i.test(value)) return value
-  const origin = API_ORIGIN || window.location.origin
-  return `${origin}${value.startsWith('/') ? '' : '/'}${value}`
-}
+const fullUrl = (url: string) => toAbsoluteAssetUrl(url)
 
 const heroImageMedia = computed(() => {
   if (!props.media) return []
   return props.media.filter(
-    (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
+    (item) =>
+      String(item.media_type || '').toUpperCase() === 'IMAGE' &&
+      String(item.mime_type || '').toLowerCase() !== 'image/svg+xml',
   )
 })
 
 const selectHeroImage = (url: string) => {
-  emit('update:homepageHeroImage', fullUrl(url))
+  const value = String(url || '').trim()
+  try {
+    const parsed = new URL(value)
+    emit('update:homepageHeroImage', `${parsed.pathname}${parsed.search}${parsed.hash}`)
+  } catch {
+    emit('update:homepageHeroImage', value)
+  }
   showHeroPicker.value = false
 }
 

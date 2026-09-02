@@ -87,10 +87,10 @@
             <span class="media-tab-count">{{ tab.count }}</span>
           </button>
           <div class="media-view-toggle">
-            <button type="button" class="media-view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" :title="t('media.gridView')">
+            <button type="button" class="media-view-btn" :class="{ active: viewMode === 'grid' }" @click="viewMode = 'grid'" :aria-label="t('media.gridView')" :title="t('media.gridView')">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             </button>
-            <button type="button" class="media-view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" :title="t('media.listView')">
+            <button type="button" class="media-view-btn" :class="{ active: viewMode === 'list' }" @click="viewMode = 'list'" :aria-label="t('media.listView')" :title="t('media.listView')">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             </button>
           </div>

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from uuid import uuid4
 
@@ -18,6 +19,14 @@ from app.models.media import MediaFile, MediaFolder, MediaType
 IMAGE_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 AUDIO_MIME_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg"}
 VIDEO_MIME_TYPES = {"video/mp4", "video/webm", "video/ogg"}
+_DANGEROUS_UPLOAD_EXTENSIONS = {".html", ".htm", ".xhtml", ".svg", ".xml"}
+_IMAGE_FORMATS = {
+    ".jpg": "JPEG",
+    ".jpeg": "JPEG",
+    ".png": "PNG",
+    ".gif": "GIF",
+    ".webp": "WEBP",
+}
 
 # 哨兵值：区分"未传 folder_id"（返回全部）和"显式传 None"（返回未分类）
 _UNSET = object()
@@ -101,7 +110,7 @@ async def upload_media_file(
     safe_name = Path(upload_file.filename or "file").name
     suffix = Path(safe_name).suffix.lower()
 
-    if suffix not in settings.upload_allowed_extensions:
+    if suffix in _DANGEROUS_UPLOAD_EXTENSIONS or suffix not in settings.upload_allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"不允许上传 {suffix or '此类型'} 文件",
@@ -110,6 +119,11 @@ async def upload_media_file(
     file_size = await _check_upload_size(upload_file)
 
     media_type = _guess_media_type(upload_file.content_type or "application/octet-stream")
+    if suffix in _IMAGE_FORMATS and media_type != MediaType.IMAGE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="图片文件必须使用有效的图片 MIME 类型",
+        )
     uploads_dir = Path(settings.upload_dir)
     # 异步创建目录，避免在事件循环里做同步阻塞 I/O
     uploads_dir.mkdir(parents=True, exist_ok=True)
@@ -127,15 +141,26 @@ async def upload_media_file(
             await f.write(chunk)
     await upload_file.close()
 
+    if media_type == MediaType.IMAGE:
+        try:
+            await asyncio.to_thread(_validate_image_file, storage_path, suffix)
+        except (OSError, ValueError):
+            await asyncio.to_thread(_delete_files, [storage_path])
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="图片文件内容无效或与扩展名不匹配",
+            ) from None
+
     url = f"{settings.upload_url_prefix}/{generated_name}"
     thumbnail_url = url if media_type == MediaType.IMAGE else None
 
     width, height = None, None
     image_sizes = {}
     if media_type == MediaType.IMAGE:
-        width, height = _extract_image_dimensions(storage_path)
-        # 生成多尺寸图片
-        image_sizes = _generate_image_sizes(storage_path, uploads_dir, generated_name)
+        # Pillow 是同步 CPU/文件操作，放到线程池避免阻塞事件循环
+        width, height, image_sizes = await asyncio.to_thread(
+            _process_image, storage_path, uploads_dir, generated_name
+        )
         if "thumbnail" in image_sizes:
             thumbnail_url = f"{settings.upload_url_prefix}/{image_sizes['thumbnail']}"
 
@@ -194,12 +219,16 @@ async def delete_media_files(session: AsyncSession, current_user: User, media_id
     """批量删除媒体。"""
 
     files = await _get_media_files_by_ids(session, media_ids)
+    paths_to_delete: list[Path] = []
     for media in files:
         _ensure_media_permission(media, current_user)
         path = Path(media.storage_path)
-        if path.exists():
-            path.unlink()
+        paths_to_delete.append(path)
+        if media.media_type == MediaType.IMAGE:
+            paths_to_delete.extend(_get_image_derivative_paths(path))
         await session.delete(media)
+
+    await asyncio.to_thread(_delete_files, paths_to_delete)
     await session.commit()
 
 
@@ -301,6 +330,54 @@ def _extract_image_dimensions(path: Path) -> tuple[int | None, int | None]:
             return img.size
     except Exception:
         return None, None
+
+
+def _validate_image_file(path: Path, suffix: str) -> None:
+    """验证图片真实格式，防止伪造扩展名或 MIME 类型。"""
+
+    expected_format = _IMAGE_FORMATS.get(suffix)
+    with Image.open(path) as img:
+        if img.format != expected_format:
+            raise ValueError("图片格式与扩展名不匹配")
+        width, height = img.size
+        if max(width, height) > settings.upload_max_image_dimension:
+            raise ValueError("图片尺寸超过限制")
+        if width * height > settings.upload_max_image_pixels:
+            raise ValueError("图片像素数超过限制")
+        img.verify()
+
+
+def _process_image(
+    original_path: Path,
+    uploads_dir: Path,
+    base_name: str,
+) -> tuple[int | None, int | None, dict[str, str]]:
+    """在线程中读取尺寸并生成派生图片。"""
+
+    width, height = _extract_image_dimensions(original_path)
+    image_sizes = _generate_image_sizes(original_path, uploads_dir, base_name)
+    return width, height, image_sizes
+
+
+def _get_image_derivative_paths(original_path: Path) -> list[Path]:
+    """根据图片原文件名获取所有派生图片路径。"""
+
+    suffix = original_path.suffix
+    stem = original_path.stem
+    return [
+        original_path.parent / f"{size_name}_{stem}{suffix}"
+        for size_name in IMAGE_SIZES
+    ]
+
+
+def _delete_files(paths: list[Path]) -> None:
+    """删除存在的媒体文件，单个文件失败不影响其他文件。"""
+
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            continue
 
 
 # 多尺寸图片配置

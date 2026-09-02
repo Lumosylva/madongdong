@@ -179,7 +179,7 @@
               :key="item.id"
               type="button"
               class="article-cover-thumb"
-              :class="{ selected: item.url === coverUrl }"
+              :class="{ selected: isSelectedCover(item.url) }"
               @click="selectCover(item.url)"
             >
               <img :src="previewUrl(item.url)" :alt="item.original_name" />
@@ -247,7 +247,7 @@ import { MdEditor, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import 'md-editor-v3/lib/preview.css'
 
-import { adminApi, API_ORIGIN } from '../api'
+import { adminApi, API_ORIGIN, toAbsoluteAssetUrl } from '../api'
 
 const { t, locale } = useI18n()
 
@@ -342,7 +342,9 @@ const getChildCategories = (parentId: number) => props.categories.filter((cat) =
 
 const imageMedia = computed(() =>
   props.media.filter(
-    (item) => String(item.media_type || '').toUpperCase() === 'IMAGE' || String(item.mime_type || '').toLowerCase() === 'image/svg+xml',
+    (item) =>
+      String(item.media_type || '').toUpperCase() === 'IMAGE' &&
+      String(item.mime_type || '').toLowerCase() !== 'image/svg+xml',
   ),
 )
 
@@ -354,15 +356,26 @@ const formatSavedTime = (timestamp: number) => {
 
 const previewUrl = (url: string) => fullUrl(url)
 
-const fullUrl = (url: string) => {
+const fullUrl = (url: string) => toAbsoluteAssetUrl(url)
+
+const normalizeCoverValue = (url: string | null | undefined) => {
   const value = String(url || '').trim()
   if (!value) return ''
-  if (/^https?:\/\//i.test(value)) return value
-  return `${API_ORIGIN}${value.startsWith('/') ? '' : '/'}${value}`
+  try {
+    const parsed = new URL(value)
+    if (parsed.origin === API_ORIGIN || parsed.origin === window.location.origin) {
+      return parsed.pathname
+    }
+  } catch {
+    // Relative paths are already suitable for comparison/storage.
+  }
+  return value
 }
 
+const isSelectedCover = (url: string) => normalizeCoverValue(url) === normalizeCoverValue(props.coverUrl)
+
 const selectCover = (url: string) => {
-  emit('update:coverUrl', fullUrl(url))
+  emit('update:coverUrl', normalizeCoverValue(url))
   showCoverPicker.value = false
 }
 

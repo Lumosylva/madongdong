@@ -73,7 +73,7 @@
                 class="archive-article-row"
               >
                 <span class="archive-article-date">{{ formatDay(article.published_at) }}</span>
-                <RouterLink :to="`/article/details/${article.id}`" class="archive-article-link" :title="article.title">
+                <RouterLink :to="articlePath(article)" class="archive-article-link" :title="article.title">
                   {{ article.title }}
                 </RouterLink>
               </div>
@@ -108,6 +108,7 @@ import WebTopbar from '../components/WebTopbar.vue'
 import { applyArchiveMeta, setSiteSetting } from '../site-meta'
 import { useTheme } from '../composables/useTheme'
 import { parseDateTime } from '../utils/time'
+import { articlePath } from '../utils/articleLink'
 import type { ArchiveResponse } from '../types'
 
 const route = useRoute()

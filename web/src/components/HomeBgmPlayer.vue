@@ -6,12 +6,13 @@
     <transition name="bgm-tip-fade">
       <div v-if="showTip" class="bgm-tip">点击播放背景音乐</div>
     </transition>
-    <div ref="bgmContainerRef" class="bgm-container" v-html="renderedBgm"></div>
+    <div ref="bgmContainerRef" class="bgm-container" v-html="sanitizedBgm"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
+import DOMPurify from 'dompurify'
 
 const props = defineProps<{
   bgmUrl: string
@@ -49,6 +50,12 @@ const parseBgmEmbed = (input: string): string => {
 }
 
 const renderedBgm = computed(() => parseBgmEmbed(props.bgmUrl))
+const sanitizedBgm = computed(() => DOMPurify.sanitize(renderedBgm.value, {
+  USE_PROFILES: { html: true },
+  ADD_TAGS: ['iframe', 'audio', 'source'],
+  ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'marginheight', 'marginwidth', 'preload', 'type', 'width', 'height', 'controls'],
+  ALLOWED_URI_REGEXP: /^https:\/\/(?:[^/]+\.)?(?:music\.163\.com|qq\.com)(?:\/|$)/i,
+}))
 
 const togglePlay = async () => {
   isPlaying.value = !isPlaying.value

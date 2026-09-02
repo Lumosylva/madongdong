@@ -1,9 +1,21 @@
 import type { AdminUser, FriendLinkItem, LoginResponse } from './types'
 import { resolveAssetUrl } from '../../assets'
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
+export const API_BASE = import.meta.env.VITE_API_BASE || '/api/v1'
 const API_ORIGIN_ENV = String(import.meta.env.VITE_API_ORIGIN || '').trim()
 export const API_ORIGIN = API_ORIGIN_ENV || window.location.origin
+const DEFAULT_TIMEOUT = 15_000
+const REQUEST_FAILED_MESSAGE = '请求失败'
+
+export class ApiRequestError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiRequestError'
+    this.status = status
+  }
+}
 
 export const toAbsoluteAssetUrl = (url: string | null | undefined) => resolveAssetUrl(url, API_ORIGIN)
 
@@ -28,44 +40,106 @@ export function clearAdminAuthCookies() {
 export const isLoggedIn = () => document.cookie.split('; ').some(c => c.startsWith('admin_logged_in='))
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const method = (init?.method || 'GET').toUpperCase()
-  const isWrite = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
-  const csrfToken = isWrite ? getCookieValue('csrf_token') : ''
+  const { headers: extraHeaders, signal: userSignal, ...rest } = init ?? {}
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-    },
-  })
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      clearAdminAuthCookies()
-    }
-
-    const rawText = await response.text()
-    try {
-      const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
-      if (typeof parsed.detail === 'string') {
-        throw new Error(parsed.detail)
-      }
-      if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
-        const first = parsed.detail[0]
-        const msg = first?.msg || '请求失败'
-        throw new Error(msg.replace(/^Value error,?\s*/i, ''))
-      }
-    } catch {
-      // ignore JSON parse errors and fall through to raw text
-    }
-
-    throw new Error(rawText || '请求失败')
+  if (userSignal) {
+    userSignal.addEventListener('abort', () => controller.abort(), { once: true })
   }
 
-  return response.json() as Promise<T>
+  try {
+    const method = (rest.method || 'GET').toUpperCase()
+    const isWrite = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
+    const csrfToken = isWrite ? getCookieValue('csrf_token') : ''
+
+    const response = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...extraHeaders,
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearAdminAuthCookies()
+      }
+
+      throw new ApiRequestError(await parseErrorMessage(response), response.status)
+    }
+
+    return response.json() as Promise<T>
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiRequestError(REQUEST_FAILED_MESSAGE, 0)
+    }
+    throw error
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
+
+async function parseErrorMessage(response: Response): Promise<string> {
+  const rawText = await response.text()
+  try {
+    const parsed = JSON.parse(rawText) as { detail?: string | { msg?: string }[] }
+    if (typeof parsed.detail === 'string') {
+      return parsed.detail
+    }
+    if (Array.isArray(parsed.detail) && parsed.detail.length > 0) {
+      const first = parsed.detail[0]
+      const msg = first?.msg || REQUEST_FAILED_MESSAGE
+      return msg.replace(/^Value error,?\s*/i, '')
+    }
+  } catch {
+    // Fall through to raw text.
+  }
+  return rawText || REQUEST_FAILED_MESSAGE
+}
+
+async function uploadRequest<T>(path: string, body: FormData, init?: RequestInit): Promise<T> {
+  const { headers: extraHeaders, signal: userSignal, ...rest } = init ?? {}
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
+
+  if (userSignal) {
+    userSignal.addEventListener('abort', () => controller.abort(), { once: true })
+  }
+
+  try {
+    const csrfToken = getCookieValue('csrf_token')
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      ...rest,
+      signal: controller.signal,
+      headers: {
+        ...extraHeaders,
+        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+      },
+      body,
+    })
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearAdminAuthCookies()
+      }
+      throw new ApiRequestError(await parseErrorMessage(response), response.status)
+    }
+
+    return response.json() as Promise<T>
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiRequestError(REQUEST_FAILED_MESSAGE, 0)
+    }
+    throw error
+  } finally {
+    window.clearTimeout(timer)
+  }
 }
 
 export const adminApi = {
@@ -74,6 +148,9 @@ export const adminApi = {
       method: 'POST',
       body: JSON.stringify({ username, password, captcha_token: captchaToken, captcha_answer: captchaAnswer }),
     })
+  },
+  getCaptcha(): Promise<{ question: string; token: string }> {
+    return request<{ question: string; token: string }>('/web/captcha')
   },
   logout() {
     return request('/admin/auth/revoke', {
@@ -229,8 +306,21 @@ export const adminApi = {
       body: JSON.stringify({ media_ids: mediaIds }),
     })
   },
-  getComments(): Promise<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>> {
-    return request<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>>('/admin/comments')
+  getComments(options?: {
+    page?: number
+    pageSize?: number
+    keyword?: string
+    status?: string
+    sort?: 'newest' | 'oldest'
+  }): Promise<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>> {
+    const params = new URLSearchParams()
+    if (options?.page) params.set('page', String(options.page))
+    if (options?.pageSize) params.set('page_size', String(options.pageSize))
+    if (options?.keyword?.trim()) params.set('keyword', options.keyword.trim())
+    if (options?.status && options.status !== 'all') params.set('status', options.status)
+    if (options?.sort) params.set('sort', options.sort)
+    const qs = params.toString()
+    return request<WrappedResponse<{ items: any[]; total: number; page: number; page_size: number; total_pages: number }>>(`/admin/comments${qs ? `?${qs}` : ''}`)
   },
   approveComment(commentId: number): Promise<WrappedResponse<any>> {
     return request<WrappedResponse<any>>(`/admin/comments/${commentId}/approve`, {
@@ -308,23 +398,6 @@ export const adminApi = {
       formData.append('folder_id', String(folderId))
     }
 
-    const csrfToken = getCookieValue('csrf_token')
-    const response = await fetch(`${API_BASE}/admin/media/upload`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
-      },
-      body: formData,
-    })
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        document.cookie = 'admin_logged_in=; path=/; max-age=0'
-      }
-      throw new Error(await response.text())
-    }
-
-    return response.json() as Promise<WrappedResponse<any>>
+    return uploadRequest<WrappedResponse<any>>('/admin/media/upload', formData)
   },
 }

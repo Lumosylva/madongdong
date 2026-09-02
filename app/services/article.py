@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
@@ -64,12 +64,18 @@ async def save_slug_history(session: AsyncSession, article_id: int, old_slug: st
 
 
 async def find_article_by_old_slug(session: AsyncSession, old_slug: str) -> int | None:
-    """通过旧 slug 查找文章 ID，用于 301 重定向。"""
+    """通过旧 slug 查找公开文章 ID，用于 301 重定向。"""
     from app.models.article import ArticleSlugHistory
     
     result = await session.execute(
         select(ArticleSlugHistory.article_id)
+        .join(Article, Article.id == ArticleSlugHistory.article_id)
         .where(ArticleSlugHistory.old_slug == old_slug)
+        .where(
+            Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
+        )
+        .order_by(ArticleSlugHistory.created_at.desc(), ArticleSlugHistory.id.desc())
         .limit(1)
     )
     return result.scalar_one_or_none()
@@ -162,13 +168,17 @@ async def get_article_revisions(
 async def get_article_revision_detail(
     session: AsyncSession,
     revision_id: int,
+    article_id: int,
 ) -> dict | None:
     """获取文章修订详情。"""
     from app.models.article import ArticleRevision
     from app.models.auth import User
     
     result = await session.execute(
-        select(ArticleRevision).where(ArticleRevision.id == revision_id)
+        select(ArticleRevision).where(
+            ArticleRevision.id == revision_id,
+            ArticleRevision.article_id == article_id,
+        )
     )
     revision = result.scalar_one_or_none()
     
@@ -202,6 +212,7 @@ async def restore_article_revision(
     session: AsyncSession,
     revision_id: int,
     article_id: int,
+    current_user: User,
 ) -> Article | None:
     """从修订版本恢复文章内容。"""
     from app.models.article import ArticleRevision
@@ -219,10 +230,10 @@ async def restore_article_revision(
         return None
     
     # 获取文章
-    article = await get_article_or_404(session, article_id)
+    article = await get_article_for_edit(session, article_id, current_user)
     
     # 先保存当前版本到修订历史
-    await create_article_revision(session, article, revision.revised_by)
+    await create_article_revision(session, article, current_user.id)
     
     # 恢复内容
     article.title = revision.title
@@ -232,6 +243,8 @@ async def restore_article_revision(
     
     await session.commit()
     await session.refresh(article)
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
     return article
 
 
@@ -458,6 +471,12 @@ async def update_article(
     """更新文章。"""
 
     article = await get_article_for_edit(session, article_id, current_user)
+
+    # 先删除旧标签关联，避免 merge 带入的旧数据触发 autoflush 唯一约束冲突
+    await session.execute(
+        text("DELETE FROM article_tags WHERE article_id = :aid"), {"aid": article.id}
+    )
+
     category = await get_category_or_404(session, category_id)
     tags = await _load_tags(session, tag_ids)
 
@@ -558,7 +577,7 @@ async def get_article_or_404(session: AsyncSession, article_id: int) -> Article:
     from app.core.cache import cache_get, cache_set
     cached = await cache_get(cache_key)
     if cached is not None:
-        return cached
+        return await session.merge(cached)
 
     result = await session.execute(
         select(Article).where(Article.id == article_id).options(*get_article_eager_loaders())
@@ -584,6 +603,15 @@ async def get_article_for_edit(session: AsyncSession, article_id: int, current_u
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权编辑该文章")
     if article.status == ArticleStatus.PUBLISHED:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="已发布文章不可由作者直接编辑")
+    return article
+
+
+async def get_article_for_revision(session: AsyncSession, article_id: int, current_user: User) -> Article:
+    """获取当前用户有权查看修订历史的文章。"""
+
+    article = await get_article_or_404(session, article_id)
+    if not _is_admin(current_user) and article.author_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权访问该文章的修订历史")
     return article
 
 
@@ -710,6 +738,8 @@ async def restore_article(
     article.deleted_at = None
     await session.commit()
     await session.refresh(article)
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
     return article
 
 
@@ -728,6 +758,8 @@ async def permanently_delete_article(
 
     await session.delete(article)
     await session.commit()
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
     return {"message": "文章已彻底删除"}
 
 
@@ -766,6 +798,8 @@ async def schedule_article(
     
     await session.commit()
     await session.refresh(article)
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
     return article
 
 
@@ -791,6 +825,8 @@ async def cancel_scheduled_article(
     
     await session.commit()
     await session.refresh(article)
+    from app.core.cache import cache_delete
+    await cache_delete(f"article:{article.id}")
     return article
 
 
@@ -818,7 +854,10 @@ async def publish_scheduled_articles(session: AsyncSession) -> int:
     
     if published_count > 0:
         await session.commit()
-    
+        from app.core.cache import cache_delete
+        for article in articles:
+            await cache_delete(f"article:{article.id}")
+
     return published_count
 
 
@@ -1057,8 +1096,8 @@ async def convert_category_to_tag(
         )
     
     # 创建同名标签
-    new_slug = await _ensure_tag_slug_unique(session, category.slug)
-    tag = Tag(name=category.name, slug=new_slug)
+    await _ensure_tag_slug_unique(session, category.slug)
+    tag = Tag(name=category.name, slug=category.slug)
     session.add(tag)
     await session.flush()
     

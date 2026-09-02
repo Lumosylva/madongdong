@@ -49,8 +49,13 @@ async def lifespan(_: FastAPI):
     # 启动定时文章调度器
     from app.core.scheduler import start_scheduler
     start_scheduler()
+    from app.core.view_counter import start_view_counter, stop_view_counter
+    start_view_counter()
 
-    yield
+    try:
+        yield
+    finally:
+        await stop_view_counter()
 
 
 app = FastAPI(
@@ -71,6 +76,7 @@ app.add_middleware(
 )
 app.add_middleware(
     RateLimitMiddleware,
+    redis_url=settings.redis_url,
     rules={
         f"{settings.api_v1_prefix}/admin/auth/login": (10, 60),
         f"{settings.api_v1_prefix}/web/auth/login": (10, 60),

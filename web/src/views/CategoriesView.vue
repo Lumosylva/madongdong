@@ -100,7 +100,7 @@
               <RouterLink
                 v-for="article in catArticles"
                 :key="article.id"
-                :to="`/article/details/${article.id}`"
+                :to="articlePath(article)"
                 class="cat-article-item"
               >
                 <div class="cat-article-main">
@@ -157,6 +157,7 @@ import { applySiteMetaFromSetting, buildPageTitle, setSiteSetting } from '../sit
 import { useTheme } from '../composables/useTheme'
 import type { Article, CategoriesResponse, CategoryWithCount } from '../types'
 import { useFormatRelativeTime } from '../utils/time'
+import { articlePath } from '../utils/articleLink'
 
 const { t } = useI18n()
 const { formatRelativeTime } = useFormatRelativeTime()
