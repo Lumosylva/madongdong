@@ -35,7 +35,7 @@
 - 应用密码（API 认证增强，支持创建/删除/查询应用密码）
 - 个人资料更新（头像 base64 存储、昵称、邮箱、密码）
 - 前台公开接口：首页 / 文章详情 / 搜索 / 评论提交 / 友链 / 归档 / 分类 / 标签 / 文章点赞
-- RSS Feed（`/api/v1/web/rss`）、Sitemap（`/api/v1/web/sitemap.xml`）和 robots.txt（`/api/v1/web/robots.txt`）
+- RSS Feed（`/api/v1/web/rss`）、Sitemap（`/api/v1/web/sitemap.xml`）和 robots.txt（`/robots.txt`）
 - 浏览量去重（同一 IP 24 小时内同一文章只计 1 次）
 - 浏览量异步批量写入（队列 + 后台 worker，降低文章详情请求延迟）
 - 可选 Redis 共享缓存（多 worker / 多实例部署；Redis 不可用时自动回退内存缓存）
@@ -271,14 +271,14 @@ VITE_ADMIN_BASE_PATH=/admin
 
 ```env
 VITE_API_BASE=/api/v1
-VITE_WEB_BASE_URL=http://localhost:5173
+VITE_WEB_BASE_URL=http://localhost:5173  # 开发模式默认配置 web 端地址 http://localhost:5173，生产环境留空
 ```
 
 ---
 
 ## 默认管理员账号
 
-首次启动后访问 `http://127.0.0.1:5173/install` 进入安装向导，可配置：
+首次启动后访问 `http://127.0.0.1:5173/install`(开发环境) 或者  `http://IP/install` 进入安装向导，可配置：
 
 - 站点标题、副标题、域名（自动检测）
 - JWT 签名密钥（自动生成或手动设置）
