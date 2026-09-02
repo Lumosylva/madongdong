@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
 
 .bgm-tip {
   position: absolute;
-  bottom: 48px;
+  bottom: 40px;
   left: 0;
   white-space: nowrap;
   padding: 6px 12px;
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
 .bgm-container {
   /* Keep the embedded player available, but show it only after clicking the button. */
   position: absolute;
-  bottom: 48px;
+  bottom: 40px;
   left: 0;
   opacity: 0;
   pointer-events: none;
