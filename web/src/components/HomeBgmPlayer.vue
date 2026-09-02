@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
 .bgm-container {
   /* Keep the embedded player available, but show it only after clicking the button. */
   position: absolute;
-  bottom: 40px;
+  bottom: 28px;
   left: 0;
   opacity: 0;
   pointer-events: none;
