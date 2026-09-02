@@ -97,6 +97,8 @@ onBeforeUnmount(() => {
   z-index: 998;
   display: flex;
   align-items: flex-end;
+  width: 40px;
+  height: 40px;
   gap: 8px;
 }
 
@@ -110,10 +112,16 @@ onBeforeUnmount(() => {
   box-shadow: 0 12px 30px rgba(16, 35, 63, 0.18);
   backdrop-filter: blur(12px);
   cursor: pointer;
-  display: grid;
+  display: grid !important;
+  visibility: visible;
+  opacity: 1;
   place-items: center;
   transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
   flex: 0 0 auto;
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 9999;
 }
 
 .bgm-toggle:hover {
@@ -200,6 +208,8 @@ onBeforeUnmount(() => {
   .bgm-toggle {
     width: 36px;
     height: 36px;
+    left: 12px;
+    bottom: 12px;
   }
 }
 </style>
