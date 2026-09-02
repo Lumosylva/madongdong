@@ -154,13 +154,23 @@ onBeforeUnmount(() => {
 }
 
 .bgm-container {
-  /* Keep the embedded player loaded, but hide its rectangular UI. */
+  /* Keep the embedded player loaded without letting its UI affect the button. */
   position: absolute;
-  width: 0;
-  height: 0;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  opacity: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
   pointer-events: none;
+}
+
+.bgm-container :deep(iframe),
+.bgm-container :deep(audio) {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  border: 0;
 }
 
 :root[data-theme='dark'] .bgm-toggle {
