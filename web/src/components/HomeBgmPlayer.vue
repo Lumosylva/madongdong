@@ -53,8 +53,8 @@ const renderedBgm = computed(() => parseBgmEmbed(props.bgmUrl))
 const sanitizedBgm = computed(() => DOMPurify.sanitize(renderedBgm.value, {
   USE_PROFILES: { html: true },
   ADD_TAGS: ['iframe', 'audio', 'source'],
-  ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'marginheight', 'marginwidth', 'preload', 'type', 'width', 'height', 'controls'],
-  ALLOWED_URI_REGEXP: /^https:\/\/(?:[^/]+\.)?(?:music\.163\.com|qq\.com)(?:\/|$)/i,
+  ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'marginheight', 'marginwidth', 'preload', 'type', 'width', 'height', 'controls', 'src'],
+  ALLOWED_URI_REGEXP: /^(?:https?:|\/)/i,
 }))
 
 const togglePlay = async () => {
@@ -154,17 +154,13 @@ onBeforeUnmount(() => {
 }
 
 .bgm-container {
+  /* Keep the embedded player loaded, but hide its rectangular UI. */
   position: absolute;
-  bottom: 48px;
-  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.bgm-toggle.playing ~ .bgm-container {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 :root[data-theme='dark'] .bgm-toggle {
