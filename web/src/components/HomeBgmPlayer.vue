@@ -97,8 +97,6 @@ onBeforeUnmount(() => {
   z-index: 998;
   display: flex;
   align-items: flex-end;
-  width: 40px;
-  height: 40px;
   gap: 8px;
 }
 
@@ -118,10 +116,6 @@ onBeforeUnmount(() => {
   place-items: center;
   transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
   flex: 0 0 auto;
-  position: fixed;
-  left: 18px;
-  bottom: 18px;
-  z-index: 9999;
 }
 
 .bgm-toggle:hover {
@@ -162,25 +156,25 @@ onBeforeUnmount(() => {
 }
 
 .bgm-container {
-  /* Keep the embedded player loaded without letting its UI affect the button. */
+  /* Keep the embedded player available, but show it only after clicking the button. */
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
+  bottom: 48px;
+  left: 0;
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.bgm-toggle.playing ~ .bgm-container {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .bgm-container :deep(iframe),
 .bgm-container :deep(audio) {
-  position: absolute;
-  width: 1px !important;
-  height: 1px !important;
+  display: block;
   border: 0;
 }
-
 :root[data-theme='dark'] .bgm-toggle {
   background: rgba(9, 20, 38, 0.88);
   color: var(--text);
@@ -208,8 +202,6 @@ onBeforeUnmount(() => {
   .bgm-toggle {
     width: 36px;
     height: 36px;
-    left: 12px;
-    bottom: 12px;
   }
 }
 </style>
