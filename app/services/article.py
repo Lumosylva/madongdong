@@ -472,6 +472,14 @@ async def update_article(
 
     article = await get_article_for_edit(session, article_id, current_user)
 
+    # Read the persisted value directly before editing. The article may have come
+    # from the object cache, so relying only on the cached ORM attribute could
+    # accidentally treat an existing publication as a first publication.
+    original_published_at_result = await session.execute(
+        select(Article.published_at).where(Article.id == article.id)
+    )
+    original_published_at = original_published_at_result.scalar_one_or_none()
+
     # 先删除旧标签关联，避免 merge 带入的旧数据触发 autoflush 唯一约束冲突
     await session.execute(
         text("DELETE FROM article_tags WHERE article_id = :aid"), {"aid": article.id}
@@ -509,6 +517,10 @@ async def update_article(
     article.review_comment = None if action != "draft" else article.review_comment
     _apply_editor_action(article, current_user, action)
 
+    # An existing publication date is immutable. Only an article that has never
+    # been published may receive a new publication timestamp from the action.
+    if original_published_at is not None:
+        article.published_at = original_published_at
     await session.commit()
     await session.refresh(article)
 
