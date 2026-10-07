@@ -533,7 +533,9 @@ async def approve_article(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="当前文章不在待审核状态")
     article.status = ArticleStatus.PUBLISHED
     article.review_comment = comment
-    article.published_at = datetime.now(timezone.utc)
+    # published_at records the first publication time and must not move on re-publish.
+    if article.published_at is None:
+        article.published_at = datetime.now(timezone.utc)
     await session.commit()
     await session.refresh(article)
 
@@ -558,7 +560,6 @@ async def reject_article(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="当前文章不在待审核状态")
     article.status = ArticleStatus.REJECTED
     article.review_comment = comment
-    article.published_at = None
     await session.commit()
     await session.refresh(article)
 
@@ -674,17 +675,17 @@ async def _ensure_tag_slug_unique(
 def _apply_editor_action(article: Article, current_user: User, action: str) -> None:
     if action == "draft":
         article.status = ArticleStatus.DRAFT
-        article.published_at = None
         return
     if action == "submit":
         article.status = ArticleStatus.PENDING_REVIEW
-        article.published_at = None
         return
     if action == "publish":
         if not _is_admin(current_user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅管理员可直接发布文章")
         article.status = ArticleStatus.PUBLISHED
-        article.published_at = datetime.now(timezone.utc)
+        # Keep the original publication time when an existing article is edited and published again.
+        if article.published_at is None:
+            article.published_at = datetime.now(timezone.utc)
         return
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不支持的文章操作")
 
@@ -848,7 +849,9 @@ async def publish_scheduled_articles(session: AsyncSession) -> int:
     published_count = 0
     for article in articles:
         article.status = ArticleStatus.PUBLISHED
-        article.published_at = article.scheduled_at
+        # A scheduled article only gets its first publication time when it actually goes live.
+        if article.published_at is None:
+            article.published_at = article.scheduled_at
         article.scheduled_at = None
         published_count += 1
     
