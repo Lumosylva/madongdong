@@ -18,6 +18,10 @@ jobs:
   backend:
     name: Backend tests
     runs-on: ubuntu-latest
+    env:
+      # The application requires an explicit secret in production mode. CI uses
+      # an isolated test secret; no production credentials are used.
+      SECRET_KEY: ci-test-secret-key
 
     steps:
       - name: Check out repository
