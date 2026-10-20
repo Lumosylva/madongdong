@@ -1,12 +1,18 @@
-# MaDongDong Blog
+<p align="center">
+  <img src="assets/readme-logo.svg" alt="MaDongDong Blog logo" width="112" height="112">
+</p>
 
-[中文](README.md)
+<h1 align="center">MaDongDong Blog</h1>
 
-![Python](https://img.shields.io/badge/Python-3.13%2B-blue?logo=python&logoColor=white)
-![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-latest-009688?logo=fastapi&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+<p align="center"><a href="README.md">中文</a></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13%2B-blue?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue">
+  <img src="https://img.shields.io/badge/FastAPI-latest-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License: MIT">
+</p>
 
 A full-stack, frontend-backend separated blog system built on `FastAPI + Vue 3 + SQLite`, supporting public-facing display and admin management. Supports three languages: Chinese, English, and Japanese.
 
