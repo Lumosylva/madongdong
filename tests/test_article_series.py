@@ -11,14 +11,75 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 import app.api.web as web_api
+import app.models  # noqa: F401
+from app.core.database import Base
 from app.core.init_db import _migrate_article_series_columns
-from app.models.article import Article, ArticleStatus
+from app.models.article import Article, ArticleStatus, ArticleTag, Category, Tag
+from app.models.auth import Role, User, UserRole
 from app.schemas.article import ArticleCreate
+from app.schemas.article import ArticleSummaryResponse
 from app.schemas.site import SiteSettingResponse
+from app.services.article import list_articles, list_deleted_articles
 from app.services.web import list_published_series_articles
 
 
 class ArticleSeriesTests(unittest.TestCase):
+    def test_admin_article_lists_serialize_series_fields(self) -> None:
+        async def query_and_serialize() -> tuple[dict, dict]:
+            engine = create_async_engine('sqlite+aiosqlite:///:memory:')
+            try:
+                async with engine.begin() as connection:
+                    await connection.run_sync(
+                        lambda sync_connection: Base.metadata.create_all(
+                            sync_connection,
+                            tables=[
+                                User.__table__, Role.__table__, UserRole.__table__,
+                                Category.__table__, Tag.__table__, Article.__table__, ArticleTag.__table__,
+                            ],
+                        )
+                    )
+                async with AsyncSession(engine) as session:
+                    author = User(
+                        username='series-author',
+                        password_hash='unused',
+                        nickname='Series Author',
+                        email='series-author@example.com',
+                    )
+                    category = Category(name='Category', slug='category')
+                    session.add_all([author, category])
+                    await session.flush()
+                    session.add_all(
+                        [
+                            Article(
+                                id=1, slug='series-visible', title='Visible', summary='Summary',
+                                content_markdown='Body', status=ArticleStatus.DRAFT, author_id=author.id, category_id=category.id,
+                                series_name='A series', series_order=1,
+                            ),
+                            Article(
+                                id=2, slug='series-deleted', title='Deleted', summary='Summary',
+                                content_markdown='Body', status=ArticleStatus.DRAFT, author_id=author.id, category_id=category.id,
+                                series_name='A series', series_order=2, is_deleted=True,
+                                deleted_at=datetime.now(timezone.utc),
+                            ),
+                        ]
+                    )
+                    await session.commit()
+                current_user = SimpleNamespace(id=1, roles=[])
+                async with AsyncSession(engine) as session:
+                    visible = (await list_articles(session, current_user))[0]
+                    deleted = (await list_deleted_articles(session, current_user))[0]
+                    return (
+                        ArticleSummaryResponse.model_validate(visible).model_dump(),
+                        ArticleSummaryResponse.model_validate(deleted).model_dump(),
+                    )
+            finally:
+                await engine.dispose()
+
+        visible, deleted = asyncio.run(query_and_serialize())
+
+        self.assertEqual((visible['series_name'], visible['series_order']), ('A series', 1))
+        self.assertEqual((deleted['series_name'], deleted['series_order']), ('A series', 2))
+
     def test_existing_sqlite_articles_table_migrates_idempotently(self) -> None:
         async def exercise_migration() -> None:
             engine = create_async_engine("sqlite+aiosqlite:///:memory:")

@@ -366,6 +366,7 @@ async def update_tag(session: AsyncSession, tag_id: int, name: str, slug: str) -
 
 _LIST_COLUMNS = [
     Article.id, Article.slug, Article.title, Article.summary, Article.cover_url,
+    Article.series_name, Article.series_order,
     Article.status, Article.review_comment, Article.published_at,
     Article.view_count, Article.comment_count, Article.like_count, Article.is_deleted, Article.deleted_at,
     Article.created_at, Article.updated_at, Article.author_id, Article.category_id,
