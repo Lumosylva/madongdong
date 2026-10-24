@@ -23,6 +23,7 @@ async def init_db() -> None:
         await _migrate_refresh_token_expires_at(session)
         await _migrate_police_beian_column(session)
         await _migrate_scheduled_at_column(session)
+        await _migrate_article_series_columns(session)
         await _migrate_lock_columns(session)
         await _migrate_comment_spam_score(session)
         await _migrate_application_passwords(session)
@@ -30,6 +31,32 @@ async def init_db() -> None:
         await _migrate_article_search_index(session)
         await _rebuild_article_comment_counts(session)
         await _normalize_local_upload_urls(session)
+
+
+async def _migrate_article_series_columns(session: AsyncSession) -> None:
+    """为 articles 表添加合集字段并建立查询索引。"""
+
+    try:
+        result = await session.execute(text("PRAGMA table_info(articles)"))
+        columns = {row[1] for row in result.fetchall()}
+    except Exception:
+        return
+
+    if not columns:
+        return
+
+    if "series_name" not in columns:
+        await session.execute(text("ALTER TABLE articles ADD COLUMN series_name VARCHAR(120)"))
+    if "series_order" not in columns:
+        await session.execute(text("ALTER TABLE articles ADD COLUMN series_order INTEGER"))
+
+    await session.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS ix_articles_series_order "
+            "ON articles (series_name, series_order)"
+        )
+    )
+    await session.commit()
 
 
 async def _migrate_slug_column(session: AsyncSession) -> None:
