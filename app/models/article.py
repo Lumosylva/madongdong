@@ -75,6 +75,7 @@ class Article(TimestampMixin, Base):
     """文章主体。"""
 
     __tablename__ = "articles"
+    __table_args__ = (Index("ix_articles_series_order", "series_name", "series_order"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     slug: Mapped[str] = mapped_column(String(280), unique=True, index=True)
@@ -90,6 +91,8 @@ class Article(TimestampMixin, Base):
         index=True,
     )
     review_comment: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    series_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    series_order: Mapped[int | None] = mapped_column(Integer, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

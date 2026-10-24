@@ -25,6 +25,18 @@ def generate_article_slug(title: str) -> str:
     return slug
 
 
+def _normalize_article_series(
+    series_name: str | None,
+    series_order: int | None,
+) -> tuple[str | None, int | None]:
+    """规范合集名称，并在未设置名称时清除合集序号。"""
+
+    normalized_name = series_name.strip() if series_name else ""
+    if not normalized_name:
+        return None, None
+    return normalized_name, series_order
+
+
 async def _ensure_slug_unique(session: AsyncSession, slug: str, exclude_id: int | None = None) -> str:
     """确保 slug 唯一，重复时追加数字后缀。"""
 
@@ -432,9 +444,12 @@ async def create_article(
     category_id: int,
     tag_ids: list[int],
     action: str,
+    series_name: str | None = None,
+    series_order: int | None = None,
 ) -> Article:
     """创建文章。"""
 
+    series_name, series_order = _normalize_article_series(series_name, series_order)
     category = await get_category_or_404(session, category_id)
     tags = await _load_tags(session, tag_ids)
     slug = await _ensure_slug_unique(session, generate_article_slug(title))
@@ -445,6 +460,8 @@ async def create_article(
         content_markdown=content_markdown,
         content_html="",
         cover_url=cover_url,
+        series_name=series_name,
+        series_order=series_order,
         category=category,
         tags=tags,
         author_id=current_user.id,
@@ -467,9 +484,12 @@ async def update_article(
     category_id: int,
     tag_ids: list[int],
     action: str,
+    series_name: str | None = None,
+    series_order: int | None = None,
 ) -> Article:
     """更新文章。"""
 
+    series_name, series_order = _normalize_article_series(series_name, series_order)
     article = await get_article_for_edit(session, article_id, current_user)
 
     # Read the persisted value directly before editing. The article may have come
@@ -512,6 +532,8 @@ async def update_article(
     article.content_markdown = content_markdown
     article.content_html = ""
     article.cover_url = cover_url
+    article.series_name = series_name
+    article.series_order = series_order
     article.category = category
     article.tags = tags
     article.review_comment = None if action != "draft" else article.review_comment

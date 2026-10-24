@@ -64,6 +64,8 @@ class ArticleEditorPayload(BaseModel):
     summary: str = Field(min_length=1, max_length=500)
     content_markdown: str = Field(min_length=1, max_length=500000)
     cover_url: str | None = Field(default=None, max_length=500)
+    series_name: str | None = Field(default=None, max_length=120)
+    series_order: int | None = Field(default=None, ge=1)
     category_id: int
     tag_ids: list[int] = Field(default_factory=list)
 
@@ -96,6 +98,8 @@ class ArticleSummaryResponse(BaseModel):
     title: str
     summary: str
     cover_url: str | None
+    series_name: str | None
+    series_order: int | None
     status: ArticleStatus
     review_comment: str | None
     published_at: datetime | None
