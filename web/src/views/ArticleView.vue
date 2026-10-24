@@ -144,6 +144,30 @@
           </div>
         </div>
 
+        <div v-if="data.series_articles?.length" class="article-series">
+          <h2 class="article-series-heading">{{ t('article.seriesArticles') }}</h2>
+          <ol class="article-series-list">
+            <li
+              v-for="item in data.series_articles"
+              :key="item.id"
+              class="article-series-item"
+              :class="{ 'is-current': item.id === data.article.id }"
+            >
+              <span
+                v-if="item.id === data.article.id"
+                class="article-series-current"
+                aria-current="page"
+              >
+                <span class="article-series-title-text">{{ item.title }}</span>
+                <span class="article-series-current-label">{{ t('article.currentSeriesArticle') }}</span>
+              </span>
+              <RouterLink v-else :to="articlePath(item)" class="article-series-link">
+                <span class="article-series-title-text">{{ item.title }}</span>
+              </RouterLink>
+            </li>
+          </ol>
+        </div>
+
         <div class="article-nav-links">
           <div class="nav-row">
             <span class="meta-label">{{ t('article.prevArticle') }}</span>

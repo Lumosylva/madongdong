@@ -220,6 +220,31 @@
     </div>
 
     <div class="article-create-field">
+      <label for="article-series-name-input">{{ t('articleCreate.seriesNameLabel') }}</label>
+      <input
+        id="article-series-name-input"
+        :value="seriesName"
+        :placeholder="t('articleCreate.seriesNamePlaceholder')"
+        @input="emit('update:seriesName', ($event.target as HTMLInputElement).value)"
+      />
+    </div>
+
+    <div class="article-create-field">
+      <label for="article-series-order-input">{{ t('articleCreate.seriesOrderLabel') }}</label>
+      <input
+        id="article-series-order-input"
+        ref="seriesOrderInputRef"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        :value="seriesOrder ?? ''"
+        :placeholder="t('articleCreate.seriesOrderPlaceholder')"
+        @input="emit('update:seriesOrder', ($event.target as HTMLInputElement).value === '' ? null : ($event.target as HTMLInputElement).valueAsNumber)"
+      />
+    </div>
+
+    <div class="article-create-field">
       <label for="article-action-select">{{ t('articleCreate.statusLabel') }}</label>
       <select
         id="article-action-select"
@@ -259,6 +284,8 @@ const props = defineProps<{
   categoryId: number
   categories: Array<{ id: number; name: string; parent_id: number | null }>
   tagIdsText: string
+  seriesName: string
+  seriesOrder: number | null
   action: 'draft' | 'submit' | 'publish'
   media: Array<{ id: number; url: string; original_name: string; media_type?: string; mime_type?: string }>
   showToolbarName?: boolean
@@ -266,7 +293,7 @@ const props = defineProps<{
   draftSavedAt?: number | null
   draftSessionSaved?: boolean
   submitError?: string
-  submitFocusField?: 'title' | 'content' | null
+  submitFocusField?: 'title' | 'content' | 'seriesOrder' | null
   editorMode?: 'create' | 'edit'
   editorTitle?: string
 }>()
@@ -277,6 +304,8 @@ const emit = defineEmits<{
   'update:contentMarkdown': [value: string]
   'update:categoryId': [value: number]
   'update:tagIdsText': [value: string]
+  'update:seriesName': [value: string]
+  'update:seriesOrder': [value: number | null]
   'update:action': [value: 'draft' | 'submit' | 'publish']
   submit: []
 }>()
@@ -305,6 +334,7 @@ onBeforeUnmount(() => {
 })
 
 const titleInputRef = ref<HTMLInputElement | null>(null)
+const seriesOrderInputRef = ref<HTMLInputElement | null>(null)
 const videoFileInputRef = ref<HTMLInputElement | null>(null)
 const audioFileInputRef = ref<HTMLInputElement | null>(null)
 const mediaModalOpen = ref(false)
@@ -313,10 +343,12 @@ const mediaModalTab = ref<'upload' | 'embed'>('upload')
 const mediaUploading = ref(false)
 const embedMediaUrl = ref('')
 
-const focusFirstMissingField = async (missingField?: 'title' | 'content') => {
+const focusFirstMissingField = async (missingField?: 'title' | 'content' | 'seriesOrder') => {
   await nextTick()
   if (missingField === 'title') {
     titleInputRef.value?.focus()
+  } else if (missingField === 'seriesOrder') {
+    seriesOrderInputRef.value?.focus()
   }
 }
 

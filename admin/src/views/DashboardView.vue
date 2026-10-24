@@ -59,7 +59,7 @@ import OverviewPanel from '../components/OverviewPanel.vue'
 import SiteSettingsPanel from '../components/SiteSettingsPanel.vue'
 import UserManagementPanel from '../components/UserManagementPanel.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
-import type { AdminUser, FriendLinkItem } from '../types'
+import type { AdminUser, ArticlePayload, FriendLinkItem } from '../types'
 
 type ViewType = 'overview' | 'articles' | 'media' | 'comments' | 'friend-links' | 'users' | 'profile' | 'site'
 type ArticleSubView = 'manage' | 'trash' | 'create' | 'edit' | 'category'
@@ -157,7 +157,7 @@ const errorMessage = ref('')
 
 const articleSubmitting = ref(false)
 const articleSubmitError = ref('')
-const articleSubmitFocusField = ref<'title' | 'content' | null>(null)
+const articleSubmitFocusField = ref<'title' | 'content' | 'seriesOrder' | null>(null)
 const articleSubmitFocusNonce = ref(0)
 let articleSubmitErrorTimer: number | null = null
 const title = ref('')
@@ -165,6 +165,8 @@ const coverUrl = ref('')
 const contentMarkdown = ref('')
 const categoryId = ref(1)
 const tagIdsText = ref('')
+const seriesName = ref('')
+const seriesOrder = ref<number | null>(null)
 const defaultAction = computed<'draft' | 'submit' | 'publish'>(() => (isAdmin.value ? 'publish' : 'draft'))
 const action = ref<'draft' | 'submit' | 'publish'>('draft')
 const articleDraftStorageKey = 'md-admin-article-draft'
@@ -205,6 +207,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
+    seriesName.value = ''
+    seriesOrder.value = null
     action.value = defaultAction.value
     clearArticleDraft()
     resetArticleEditorState()
@@ -214,6 +218,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
   if (subView === 'create') {
     editingArticleId.value = null
     editingArticleTitle.value = ''
+    seriesName.value = ''
+    seriesOrder.value = null
     const savedDraftRaw = localStorage.getItem(articleDraftStorageKey)
     if (savedDraftRaw) {
       try {
@@ -223,6 +229,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
           contentMarkdown?: string
           categoryId?: number
           tagIdsText?: string
+          seriesName?: string
+          seriesOrder?: number | null
           action?: 'draft' | 'submit' | 'publish'
         }
         if (typeof savedDraft.title === 'string') title.value = savedDraft.title
@@ -230,6 +238,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
         if (typeof savedDraft.contentMarkdown === 'string') contentMarkdown.value = savedDraft.contentMarkdown
         if (typeof savedDraft.categoryId === 'number') categoryId.value = savedDraft.categoryId
         if (typeof savedDraft.tagIdsText === 'string') tagIdsText.value = savedDraft.tagIdsText
+        if (typeof savedDraft.seriesName === 'string') seriesName.value = savedDraft.seriesName
+        if (typeof savedDraft.seriesOrder === 'number' || savedDraft.seriesOrder === null) seriesOrder.value = savedDraft.seriesOrder
         if (savedDraft.action) action.value = savedDraft.action
         articleDraftSavedAt.value = null
         articleDraftSessionSaved.value = true
@@ -238,6 +248,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
         coverUrl.value = ''
         contentMarkdown.value = ''
         tagIdsText.value = ''
+        seriesName.value = ''
+        seriesOrder.value = null
         action.value = defaultAction.value
         clearArticleDraft()
       }
@@ -246,6 +258,8 @@ const setArticleSubView = (subView: ArticleSubView) => {
       coverUrl.value = ''
       contentMarkdown.value = ''
       tagIdsText.value = ''
+      seriesName.value = ''
+      seriesOrder.value = null
       action.value = defaultAction.value
       clearArticleDraft()
     }
@@ -336,6 +350,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         categoryId: categoryId.value,
         categories: categories.value,
         tagIdsText: tagIdsText.value,
+        seriesName: seriesName.value,
+        seriesOrder: seriesOrder.value,
         action: action.value,
         media: media.value,
         showToolbarName: isSidebarCollapsed.value,
@@ -356,6 +372,8 @@ const activePanelProps = computed<Record<string, unknown>>(() => {
         categoryId: categoryId.value,
         categories: categories.value,
         tagIdsText: tagIdsText.value,
+        seriesName: seriesName.value,
+        seriesOrder: seriesOrder.value,
         action: action.value,
         media: media.value,
         showToolbarName: isSidebarCollapsed.value,
@@ -460,6 +478,12 @@ const activePanelListeners = computed(() => {
         },
         'update:tagIdsText': (value: string) => {
           tagIdsText.value = value
+        },
+        'update:seriesName': (value: string) => {
+          seriesName.value = value
+        },
+        'update:seriesOrder': (value: number | null) => {
+          seriesOrder.value = value
         },
         'update:action': (value: 'draft' | 'submit' | 'publish') => {
           action.value = value
@@ -672,7 +696,7 @@ const logout = async () => {
 
 const persistArticleDraft = () => {
   if (editingArticleId.value !== null) return
-  if (!title.value && !coverUrl.value && !contentMarkdown.value && !tagIdsText.value) {
+  if (!title.value && !coverUrl.value && !contentMarkdown.value && !tagIdsText.value && !seriesName.value && seriesOrder.value === null) {
     localStorage.removeItem(articleDraftStorageKey)
     articleDraftSavedAt.value = null
     articleDraftSessionSaved.value = false
@@ -686,6 +710,8 @@ const persistArticleDraft = () => {
       contentMarkdown: contentMarkdown.value,
       categoryId: categoryId.value,
       tagIdsText: tagIdsText.value,
+      seriesName: seriesName.value,
+      seriesOrder: seriesOrder.value,
       action: action.value,
     }),
   )
@@ -918,7 +944,7 @@ const createCategory = async (payload: { name: string; slug: string; description
   await loadAll()
 }
 
-watch([title, coverUrl, contentMarkdown, categoryId, tagIdsText, action], () => {
+watch([title, coverUrl, contentMarkdown, categoryId, tagIdsText, seriesName, seriesOrder, action], () => {
   scheduleArticleDraftSave()
 })
 
@@ -1322,7 +1348,7 @@ const getArticleCreateFocusField = (error: unknown) => {
   return null
 }
 
-const showArticleSubmitError = (message: string, focusField: 'title' | 'content' | null = null) => {
+const showArticleSubmitError = (message: string, focusField: 'title' | 'content' | 'seriesOrder' | null = null) => {
   articleSubmitError.value = message
   articleSubmitFocusField.value = focusField
   articleSubmitFocusNonce.value += 1
@@ -1347,6 +1373,8 @@ const fillArticleEditor = (article: any) => {
   contentMarkdown.value = String(article.content_markdown || '')
   categoryId.value = Number(article.category_id || categories.value[0]?.id || 1)
   tagIdsText.value = Array.isArray(article.tags) ? article.tags.map((tag: any) => tag.name).join(', ') : ''
+  seriesName.value = String(article.series_name || '')
+  seriesOrder.value = article.series_order == null ? null : Number(article.series_order)
   action.value = normalizeArticleAction(article.status)
 }
 
@@ -1396,15 +1424,23 @@ const createArticle = async () => {
       showArticleSubmitError(t('toast.contentRequired'), 'content')
       return
     }
+    const normalizedSeriesName = seriesName.value.trim()
+    const normalizedSeriesOrder = normalizedSeriesName ? seriesOrder.value : null
+    if (normalizedSeriesOrder !== null && (!Number.isInteger(normalizedSeriesOrder) || normalizedSeriesOrder < 1)) {
+      showArticleSubmitError(t('toast.seriesOrderInvalid'), 'seriesOrder')
+      return
+    }
 
     const autoSummary = extractSummary(contentMarkdown.value, 120)
     const resolvedTagIds = await resolveTagIdsByNames(tagIdsText.value)
 
-    const payload = {
+    const payload: ArticlePayload = {
       title: trimmedTitle,
       summary: autoSummary || t('toast.noSummary'),
       content_markdown: contentMarkdown.value,
       cover_url: normalizeStoredUploadUrl(coverUrl.value) || null,
+      series_name: normalizedSeriesName || null,
+      series_order: normalizedSeriesOrder,
       category_id: categoryId.value,
       tag_ids: resolvedTagIds,
       action: finalAction,
@@ -1419,6 +1455,8 @@ const createArticle = async () => {
     coverUrl.value = ''
     contentMarkdown.value = ''
     tagIdsText.value = ''
+    seriesName.value = ''
+    seriesOrder.value = null
     resetArticleEditorState()
     clearArticleDraft()
     if (articleSubmitErrorTimer !== null) {
@@ -1462,6 +1500,8 @@ onMounted(async () => {
         contentMarkdown?: string
         categoryId?: number
         tagIdsText?: string
+        seriesName?: string
+        seriesOrder?: number | null
         action?: 'draft' | 'submit' | 'publish'
       }
       if (typeof savedDraft.title === 'string') title.value = savedDraft.title
@@ -1469,6 +1509,8 @@ onMounted(async () => {
       if (typeof savedDraft.contentMarkdown === 'string') contentMarkdown.value = savedDraft.contentMarkdown
       if (typeof savedDraft.categoryId === 'number') categoryId.value = savedDraft.categoryId
       if (typeof savedDraft.tagIdsText === 'string') tagIdsText.value = savedDraft.tagIdsText
+      if (typeof savedDraft.seriesName === 'string') seriesName.value = savedDraft.seriesName
+      if (typeof savedDraft.seriesOrder === 'number' || savedDraft.seriesOrder === null) seriesOrder.value = savedDraft.seriesOrder
       if (savedDraft.action) action.value = savedDraft.action
       articleDraftSavedAt.value = null
       articleDraftSessionSaved.value = false
