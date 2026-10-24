@@ -95,6 +95,8 @@ export default {
     noTags: 'No tags',
     prevArticle: 'Previous',
     nextArticle: 'Next',
+    seriesArticles: 'Articles in this series',
+    currentSeriesArticle: 'Current',
     noMore: 'None',
     comments: 'Comments',
     commentCount: '{n} comments',

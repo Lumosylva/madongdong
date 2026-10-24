@@ -95,6 +95,8 @@ export default {
     noTags: 'タグなし',
     prevArticle: '前の記事',
     nextArticle: '次の記事',
+    seriesArticles: 'シリーズの記事',
+    currentSeriesArticle: 'この記事',
     noMore: 'なし',
     comments: 'コメント',
     commentCount: '{n}件のコメント',

@@ -95,6 +95,8 @@ export default {
     noTags: '无标签',
     prevArticle: '上一篇',
     nextArticle: '下一篇',
+    seriesArticles: '合集文章',
+    currentSeriesArticle: '当前',
     noMore: '没有了',
     comments: '评论',
     commentCount: '共 {n} 条',
