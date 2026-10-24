@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from math import ceil
 
 from fastapi import HTTPException, status
-from sqlalchemy import Select, func, or_, select, text
+from sqlalchemy import Select, case, func, or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -245,6 +245,38 @@ async def get_published_article_detail_by_slug(session: AsyncSession, slug: str,
     if article is not None:
         enqueue_article_view(article.id, client_ip)
     return article
+
+
+async def list_published_series_articles(session: AsyncSession, article: Article) -> list[dict[str, object]]:
+    """查询当前文章所属合集内已发布且未删除的文章。"""
+
+    series_name = (article.series_name or "").strip()
+    if not series_name:
+        return []
+
+    statement = (
+        select(Article.id, Article.slug, Article.title, Article.series_order)
+        .where(
+            Article.series_name == series_name,
+            Article.status == ArticleStatus.PUBLISHED,
+            Article.is_deleted.is_(False),
+        )
+        .order_by(
+            case((Article.series_order.is_(None), 1), else_=0),
+            Article.series_order.asc(),
+            Article.id.asc(),
+        )
+    )
+    result = await session.execute(statement)
+    return [
+        {
+            "id": row.id,
+            "slug": row.slug,
+            "title": row.title,
+            "series_order": row.series_order,
+        }
+        for row in result.all()
+    ]
 
 
 async def list_approved_comments_by_article(session: AsyncSession, article_id: int) -> list[Comment]:

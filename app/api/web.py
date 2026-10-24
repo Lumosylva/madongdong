@@ -30,7 +30,16 @@ from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.site import NavItemResponse, SiteSettingResponse
 from app.schemas.friend_link import FriendLinkApplicationRequest, FriendLinkPublicResponse
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse
-from app.schemas.web import ArchiveResponse, ArticlePageResponse, CategoriesResponse, CategoryArticlesResponse, HomeResponse, SearchResponse, TagArticlesResponse
+from app.schemas.web import (
+    ArchiveResponse,
+    ArticlePageResponse,
+    CategoriesResponse,
+    CategoryArticlesResponse,
+    HomeResponse,
+    SearchResponse,
+    SeriesArticleResponse,
+    TagArticlesResponse,
+)
 from app.services.auth import get_user_by_id, get_user_by_username, register_reader_user, update_current_user_profile
 from app.services.comment import create_comment
 from app.services.site import get_or_create_site_setting, list_nav_items
@@ -45,6 +54,7 @@ from app.services.web import (
     get_search_page_data,
     get_tag_page_data,
     list_approved_comments_by_article,
+    list_published_series_articles,
     list_public_categories,
     list_public_tags,
     list_rss_articles,
@@ -335,11 +345,13 @@ async def article_detail_by_slug(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     site, nav_items = await _get_site_and_nav(session)
     comments = await list_approved_comments_by_article(session, article.id)
+    series_articles = await list_published_series_articles(session, article)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
     resp = ArticlePageResponse(
         site=site,
         nav_items=nav_items,
         article=ArticleDetailResponse.model_validate(article),
+        series_articles=[SeriesArticleResponse.model_validate(item) for item in series_articles],
         previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
         next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
         comments=[CommentResponse.model_validate(item) for item in comments],
@@ -361,11 +373,13 @@ async def article_detail(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="文章不存在或未发布")
     site, nav_items = await _get_site_and_nav(session)
     comments = await list_approved_comments_by_article(session, article_id)
+    series_articles = await list_published_series_articles(session, article)
     previous_article, next_article = await get_prev_next_published_articles(session, article)
     resp = ArticlePageResponse(
         site=site,
         nav_items=nav_items,
         article=ArticleDetailResponse.model_validate(article),
+        series_articles=[SeriesArticleResponse.model_validate(item) for item in series_articles],
         previous_article=ArticleSummaryResponse.model_validate(previous_article) if previous_article is not None else None,
         next_article=ArticleSummaryResponse.model_validate(next_article) if next_article is not None else None,
         comments=[CommentResponse.model_validate(item) for item in comments],

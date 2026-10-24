@@ -2,7 +2,7 @@
 
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.generics import GenericModel
 
 from app.schemas.article import ArticleDetailResponse, ArticleSummaryResponse, CategoryResponse, TagResponse
@@ -33,12 +33,22 @@ class HomeResponse(BaseModel):
     latest_articles: PaginatedResponse[ArticleSummaryResponse]
 
 
+class SeriesArticleResponse(BaseModel):
+    """文章合集中的文章条目。"""
+
+    id: int
+    slug: str
+    title: str
+    series_order: int | None
+
+
 class ArticlePageResponse(BaseModel):
     """文章详情页响应。"""
 
     site: SiteSettingResponse
     nav_items: list[NavItemResponse]
     article: ArticleDetailResponse
+    series_articles: list[SeriesArticleResponse] = Field(default_factory=list)
     previous_article: ArticleSummaryResponse | None = None
     next_article: ArticleSummaryResponse | None = None
     comments: list[CommentResponse]
