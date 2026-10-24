@@ -51,6 +51,8 @@ export type Article = {
   slug: string
   title: string
   summary: string
+  series_name: string | null
+  series_order: number | null
   content_markdown?: string
   content_html?: string
   cover_url: string | null
@@ -104,9 +106,17 @@ export type ArticlePageResponse = {
   site: SiteSetting
   nav_items: NavItem[]
   article: Article
+  series_articles: SeriesArticle[]
   previous_article: Article | null
   next_article: Article | null
   comments: Comment[]
+}
+
+export type SeriesArticle = {
+  id: number
+  slug: string
+  title: string
+  series_order: number | null
 }
 
 export type SearchResponse = {

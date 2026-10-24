@@ -25,6 +25,8 @@ export type ArticlePayload = {
   summary: string
   content_markdown: string
   cover_url: string | null
+  series_name: string | null
+  series_order: number | null
   category_id: number
   tag_ids: number[]
   action: 'draft' | 'submit' | 'publish'
